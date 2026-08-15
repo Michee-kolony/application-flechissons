@@ -1,20 +1,18 @@
-import { CanActivateFn, Router, UrlTree } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 
-import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, Auth, User } from 'firebase/auth';
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 
 export const guestGuard: CanActivateFn = () => {
 
-  // =====================================================
-  // LOG 01 - LE GUARD EST-IL APPELE ?
-  // =====================================================
-
-  console.log('========== GUEST GUARD START ==========');
+  console.log('========================================');
+  console.log('🔥 GUEST GUARD START');
+  console.log('========================================');
 
   const router = inject(Router);
 
-  console.log('GUEST GUARD: Router OK');
+  console.log('🔥 GUEST GUARD : Router OK');
 
   // =====================================================
   // FIREBASE CONFIG
@@ -29,54 +27,39 @@ export const guestGuard: CanActivateFn = () => {
     appId: '1:345155809498:web:81707390dd617802dd35e3'
   };
 
-  console.log('GUEST GUARD: Firebase config OK');
+  console.log('🔥 GUEST GUARD : Firebase config OK');
 
   // =====================================================
-  // FIREBASE APP
+  // INITIALISER FIREBASE
   // =====================================================
 
-  let firebaseApp: FirebaseApp;
+  let firebaseApp;
 
   try {
 
-    const apps = getApps();
-
     console.log(
-      'GUEST GUARD: Firebase apps existantes =',
-      apps.length
+      '🔥 GUEST GUARD : Firebase apps existantes =',
+      getApps().length
     );
 
-    if (apps.length > 0) {
+    firebaseApp =
+      getApps().length > 0
+        ? getApps()[0]
+        : initializeApp(firebaseConfig);
 
-      firebaseApp = apps[0];
-
-      console.log(
-        'GUEST GUARD: Firebase App deja initialisee'
-      );
-
-    } else {
-
-      firebaseApp = initializeApp(firebaseConfig);
-
-      console.log(
-        'GUEST GUARD: Firebase App nouvellement initialisee'
-      );
-    }
+    console.log(
+      '🔥 GUEST GUARD : Firebase App OK'
+    );
 
   } catch (error) {
 
     console.error(
-      'GUEST GUARD ERROR: Firebase initializeApp',
+      '❌ GUEST GUARD : Erreur initializeApp',
       error
     );
 
-    console.error(
-      'GUEST GUARD ERROR TYPE:',
-      typeof error
-    );
-
-    // IMPORTANT :
-    // On ne bloque PAS Login/Register
+    // En cas d'erreur Firebase,
+    // on laisse l'utilisateur accéder à Login/Register.
     return true;
   }
 
@@ -84,164 +67,95 @@ export const guestGuard: CanActivateFn = () => {
   // FIREBASE AUTH
   // =====================================================
 
-  let auth: Auth;
+  let auth;
 
   try {
 
     auth = getAuth(firebaseApp);
 
     console.log(
-      'GUEST GUARD: Firebase Auth OK'
+      '🔥 GUEST GUARD : Firebase Auth OK'
     );
 
   } catch (error) {
 
     console.error(
-      'GUEST GUARD ERROR: getAuth',
+      '❌ GUEST GUARD : Erreur getAuth',
       error
     );
 
-    // On laisse l'utilisateur accéder à Login/Register
     return true;
   }
 
   // =====================================================
-  // SESSION FIREBASE
+  // VÉRIFICATION DIRECTE
   // =====================================================
 
   console.log(
-    'GUEST GUARD: Debut verification session Firebase...'
+    '🔥 GUEST GUARD : Vérification de currentUser...'
   );
 
-  return new Promise<boolean | UrlTree>((resolve) => {
+  try {
 
-    let alreadyResolved = false;
+    const user = auth.currentUser;
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user: User | null) => {
+    // ===================================================
+    // UTILISATEUR CONNECTÉ
+    // ===================================================
 
-        console.log(
-          'GUEST GUARD: onAuthStateChanged EXECUTE'
-        );
+    if (user) {
 
-        console.log(
-          'GUEST GUARD: USER =',
-          user
-        );
+      console.log(
+        '🔐 GUEST GUARD : UTILISATEUR CONNECTÉ'
+      );
 
-        // -------------------------------------------------
-        // EVITER UNE DOUBLE RESOLUTION
-        // -------------------------------------------------
+      console.log(
+        '📧 Email :',
+        user.email
+      );
 
-        if (alreadyResolved) {
+      console.log(
+        '🆔 UID :',
+        user.uid
+      );
 
-          console.log(
-            'GUEST GUARD: Resolution deja effectuee'
-          );
+      console.log(
+        '➡️ Redirection vers /tabs/tab1'
+      );
 
-          return;
-        }
+      return router.createUrlTree(['/tabs/tab1']);
+    }
 
-        alreadyResolved = true;
+    // ===================================================
+    // AUCUN UTILISATEUR
+    // ===================================================
 
-        unsubscribe();
-
-        // =================================================
-        // UTILISATEUR CONNECTE
-        // =================================================
-
-        if (user) {
-
-          console.log(
-            'GUEST GUARD RESULT: USER CONNECTE'
-          );
-
-          console.log(
-            'GUEST GUARD UID:',
-            user.uid
-          );
-
-          console.log(
-            'GUEST GUARD EMAIL:',
-            user.email
-          );
-
-          console.log(
-            'GUEST GUARD ACTION: REDIRECTION TAB1'
-          );
-
-          const urlTree = router.createUrlTree(
-            ['/tabs/tab1']
-          );
-
-          console.log(
-            'GUEST GUARD: UrlTree cree',
-            urlTree
-          );
-
-          resolve(urlTree);
-
-          return;
-        }
-
-        // =================================================
-        // UTILISATEUR NON CONNECTE
-        // =================================================
-
-        console.log(
-          'GUEST GUARD RESULT: AUCUN UTILISATEUR'
-        );
-
-        console.log(
-          'GUEST GUARD ACTION: LOGIN/REGISTER AUTORISE'
-        );
-
-        resolve(true);
-
-        console.log(
-          '========== GUEST GUARD END =========='
-        );
-      },
-      (error) => {
-
-        // =================================================
-        // ERREUR FIREBASE AUTH
-        // =================================================
-
-        console.error(
-          'GUEST GUARD ERROR: onAuthStateChanged',
-          error
-        );
-
-        console.error(
-          'GUEST GUARD ERROR NAME:',
-          error?.name
-        );
-
-        console.error(
-          'GUEST GUARD ERROR MESSAGE:',
-          error?.message
-        );
-
-        if (!alreadyResolved) {
-
-          alreadyResolved = true;
-
-          unsubscribe();
-
-          // IMPORTANT :
-          // Une erreur Firebase ne doit pas bloquer
-          // la page Login/Register.
-
-          console.log(
-            'GUEST GUARD ACTION: ERREUR -> LOGIN AUTORISE'
-          );
-
-          resolve(true);
-        }
-      }
+    console.log(
+      '👤 GUEST GUARD : AUCUN UTILISATEUR CONNECTÉ'
     );
 
-  });
+    console.log(
+      '✅ GUEST GUARD : accès Login/Register autorisé'
+    );
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      '❌ GUEST GUARD : Erreur pendant currentUser',
+      error
+    );
+
+    // Sécurité :
+    // si Firebase rencontre un problème,
+    // on ne bloque PAS Login/Register.
+
+    console.log(
+      '➡️ GUEST GUARD : Firebase en erreur → accès autorisé'
+    );
+
+    return true;
+  }
+
 };
