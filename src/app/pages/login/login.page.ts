@@ -143,34 +143,98 @@ export class LoginPage implements OnInit {
 
   async ngOnInit() {
 
-    const platform =
-      Capacitor.getPlatform();
+    console.log('');
+    console.log('========================================');
+    console.log('🚀 LOGIN PAGE INIT');
+    console.log('========================================');
 
-    console.log(
-      '📱 Plateforme détectée :',
-      platform
-    );
+    try {
+
+      const platform =
+        Capacitor.getPlatform();
+
+      console.log(
+        '📱 Plateforme détectée :',
+        platform
+      );
+
+      console.log(
+        '🌐 Capacitor.isNativePlatform() :',
+        Capacitor.isNativePlatform()
+      );
+
+      console.log(
+        '🔥 Firebase App :',
+        this.firebaseApp
+      );
+
+      console.log(
+        '🔥 Firebase Auth :',
+        this.auth
+      );
+
+      console.log(
+        '👤 Firebase currentUser au démarrage :',
+        this.auth.currentUser
+      );
 
 
-    // ---------------------------------------------------
-    // GOOGLE NATIF
-    // ---------------------------------------------------
+      // ---------------------------------------------------
+      // GOOGLE NATIF
+      // ---------------------------------------------------
 
-    if (
-      platform === 'android' ||
-      platform === 'ios'
-    ) {
+      if (
+        platform === 'android' ||
+        platform === 'ios'
+      ) {
 
-      await this.initializeGoogle();
+        console.log(
+          '🔵 Plateforme native détectée.'
+        );
+
+        console.log(
+          '🔵 Initialisation Google Sign-In...'
+        );
+
+        await this.initializeGoogle();
+
+      } else {
+
+        console.log(
+          '🌐 Plateforme Web détectée.'
+        );
+
+      }
+
+
+      // ---------------------------------------------------
+      // SESSION FIREBASE
+      // ---------------------------------------------------
+
+      console.log(
+        '🔎 Lancement vérification session Firebase...'
+      );
+
+      this.checkFirebaseSession();
+
+    } catch (error) {
+
+      console.error(
+        '💥 ERREUR CRITIQUE ngOnInit :',
+        error
+      );
+
+      console.error(
+        '💥 ERREUR CRITIQUE ngOnInit JSON :',
+        this.safeJson(error)
+      );
 
     }
 
-
-    // ---------------------------------------------------
-    // VÉRIFICATION SESSION FIREBASE
-    // ---------------------------------------------------
-
-    this.checkFirebaseSession();
+    console.log('========================================');
+    console.log('🚀 LOGIN PAGE INIT TERMINÉ');
+    console.log('========================================');
+    console.log('');
 
   }
 
@@ -181,66 +245,174 @@ export class LoginPage implements OnInit {
 
   private checkFirebaseSession() {
 
-    onAuthStateChanged(
-      this.auth,
-      async (firebaseUser) => {
+    console.log('');
+    console.log('========================================');
+    console.log('🔎 CHECK FIREBASE SESSION');
+    console.log('========================================');
 
-        if (this.authChecked) {
-          return;
-        }
+    try {
 
-        this.authChecked = true;
-
-
-        if (!firebaseUser) {
-
-          console.log(
-            'ℹ️ Aucune session Firebase active.'
-          );
-
-          return;
-
-        }
+      console.log(
+        '👤 currentUser avant listener :',
+        this.auth.currentUser
+      );
 
 
-        console.log(
-          '🔥 Session Firebase trouvée :',
-          firebaseUser.email
-        );
+      const unsubscribe =
+        onAuthStateChanged(
 
+          this.auth,
 
-        try {
+          async (firebaseUser) => {
 
-          this.isLoading = true;
+            console.log('');
+            console.log(
+              '🔥 onAuthStateChanged déclenché'
+            );
 
-
-          const firebaseToken =
-            await firebaseUser.getIdToken(
-              true
+            console.log(
+              '👤 Firebase User :',
+              firebaseUser
             );
 
 
-          await this.authenticateBackend(
-            firebaseToken,
-            true
-          );
+            if (this.authChecked) {
+
+              console.log(
+                '⚠️ Session déjà vérifiée.'
+              );
+
+              unsubscribe();
+
+              return;
+
+            }
 
 
-        } catch (error) {
+            this.authChecked = true;
 
-          console.error(
-            '❌ Erreur restauration session :',
-            error
-          );
 
-        } finally {
+            // ------------------------------------------------
+            // AUCUN UTILISATEUR
+            // ------------------------------------------------
 
-          this.isLoading = false;
+            if (!firebaseUser) {
 
-        }
+              console.log(
+                '👤 Aucune session Firebase active.'
+              );
 
-      }
-    );
+              console.log(
+                '➡️ Login disponible.'
+              );
+
+              unsubscribe();
+
+              return;
+
+            }
+
+
+            // ------------------------------------------------
+            // UTILISATEUR CONNECTÉ
+            // ------------------------------------------------
+
+            console.log(
+              '🔥 SESSION FIREBASE TROUVÉE'
+            );
+
+            console.log(
+              '📧 Email :',
+              firebaseUser.email
+            );
+
+            console.log(
+              '🆔 UID :',
+              firebaseUser.uid
+            );
+
+            console.log(
+              '🔐 Provider ID :',
+              firebaseUser.providerData
+            );
+
+
+            try {
+
+              this.isLoading = true;
+
+              console.log(
+                '🔑 Récupération Firebase ID Token...'
+              );
+
+
+              const firebaseToken =
+                await firebaseUser.getIdToken(
+                  true
+                );
+
+
+              console.log(
+                '✅ Firebase ID Token récupéré.'
+              );
+
+              console.log(
+                '🔑 Token présent :',
+                !!firebaseToken
+              );
+
+              console.log(
+                '🔑 Longueur token :',
+                firebaseToken?.length
+              );
+
+
+              console.log(
+                '📡 Restauration session backend...'
+              );
+
+
+              await this.authenticateBackend(
+                firebaseToken,
+                true
+              );
+
+
+            } catch (error) {
+
+              console.error(
+                '❌ ERREUR RESTAURATION SESSION :',
+                error
+              );
+
+              console.error(
+                '❌ JSON ERREUR :',
+                this.safeJson(error)
+              );
+
+            } finally {
+
+              this.isLoading = false;
+
+            }
+
+          }
+
+        );
+
+    } catch (error) {
+
+      console.error(
+        '💥 ERREUR CRÉATION onAuthStateChanged :',
+        error
+      );
+
+      console.error(
+        '💥 JSON :',
+        this.safeJson(error)
+      );
+
+    }
 
   }
 
@@ -251,10 +423,20 @@ export class LoginPage implements OnInit {
 
   private async initializeGoogle() {
 
+    console.log('');
+    console.log('========================================');
+    console.log('🔵 GOOGLE SIGN-IN INITIALIZATION');
+    console.log('========================================');
+
     try {
 
       console.log(
-        '🔵 Initialisation Google Sign-In natif...'
+        '🔵 Client ID Google :',
+        this.GOOGLE_WEB_CLIENT_ID
+      );
+
+      console.log(
+        '🔵 Appel GoogleSignIn.initialize()...'
       );
 
 
@@ -280,9 +462,16 @@ export class LoginPage implements OnInit {
     } catch (error) {
 
       console.error(
-        '❌ Erreur initialisation Google :',
+        '❌ ERREUR GOOGLE INITIALIZE :',
         error
       );
+
+      console.error(
+        '❌ GOOGLE INITIALIZE JSON :',
+        this.safeJson(error)
+      );
+
+      throw error;
 
     }
 
@@ -295,15 +484,35 @@ export class LoginPage implements OnInit {
 
   async login() {
 
+    console.log('');
+    console.log('========================================');
+    console.log('🔐 LOGIN EMAIL/PASSWORD START');
+    console.log('========================================');
+
+
     if (this.isLoading) {
+
+      console.log(
+        '⚠️ Login déjà en cours.'
+      );
+
       return;
+
     }
 
+
+    // ---------------------------------------------------
+    // VALIDATION CHAMPS
+    // ---------------------------------------------------
 
     if (
       !this.loginData.email ||
       !this.loginData.password
     ) {
+
+      console.log(
+        '⚠️ Champs email/password incomplets.'
+      );
 
       this.showToastError(
         'Veuillez remplir tous les champs.'
@@ -324,6 +533,11 @@ export class LoginPage implements OnInit {
 
     if (!emailRegex.test(email)) {
 
+      console.log(
+        '⚠️ Email invalide :',
+        email
+      );
+
       this.showToastError(
         'Veuillez entrer une adresse email valide.'
       );
@@ -339,22 +553,87 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '🔐 Connexion Firebase avec email :',
+        '📧 Email utilisé :',
         email
+      );
+
+      console.log(
+        '🔐 Mot de passe présent :',
+        !!this.loginData.password
+      );
+
+      console.log(
+        '🔥 Firebase Auth avant connexion :',
+        this.auth
+      );
+
+      console.log(
+        '👤 currentUser avant connexion :',
+        this.auth.currentUser
+      );
+
+
+      // ---------------------------------------------------
+      // FIREBASE EMAIL LOGIN
+      // ---------------------------------------------------
+
+      console.log(
+        '📡 Appel signInWithEmailAndPassword()...'
       );
 
 
       const credential =
         await signInWithEmailAndPassword(
+
           this.auth,
+
           email,
+
           this.loginData.password
+
         );
 
 
       console.log(
-        '✅ Utilisateur Firebase connecté :',
+        '========================================'
+      );
+
+      console.log(
+        '✅ FIREBASE EMAIL LOGIN RÉUSSI'
+      );
+
+      console.log(
+        '========================================'
+      );
+
+
+      console.log(
+        '👤 Firebase User :',
+        credential.user
+      );
+
+      console.log(
+        '📧 Email :',
         credential.user.email
+      );
+
+      console.log(
+        '🆔 UID :',
+        credential.user.uid
+      );
+
+      console.log(
+        '📱 Provider :',
+        credential.user.providerData
+      );
+
+
+      // ---------------------------------------------------
+      // TOKEN
+      // ---------------------------------------------------
+
+      console.log(
+        '🔑 Récupération Firebase ID Token...'
       );
 
 
@@ -365,7 +644,26 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '🔥 Firebase ID Token récupéré.'
+        '✅ Firebase ID Token récupéré.'
+      );
+
+      console.log(
+        '🔑 Token présent :',
+        !!firebaseToken
+      );
+
+      console.log(
+        '🔑 Token longueur :',
+        firebaseToken?.length
+      );
+
+
+      // ---------------------------------------------------
+      // BACKEND
+      // ---------------------------------------------------
+
+      console.log(
+        '📡 Envoi du token Firebase au backend...'
       );
 
 
@@ -375,11 +673,46 @@ export class LoginPage implements OnInit {
       );
 
 
+      console.log(
+        '✅ LOGIN COMPLET TERMINÉ.'
+      );
+
+
     } catch (error: any) {
 
+      console.error('');
+      console.error('========================================');
+      console.error('❌ ERREUR LOGIN EMAIL');
+      console.error('========================================');
+
       console.error(
-        '❌ Erreur connexion email :',
+        '❌ Error complet :',
         error
+      );
+
+      console.error(
+        '❌ Error code :',
+        error?.code
+      );
+
+      console.error(
+        '❌ Error message :',
+        error?.message
+      );
+
+      console.error(
+        '❌ Error name :',
+        error?.name
+      );
+
+      console.error(
+        '❌ Error stack :',
+        error?.stack
+      );
+
+      console.error(
+        '❌ Error JSON :',
+        this.safeJson(error)
       );
 
 
@@ -444,16 +777,65 @@ export class LoginPage implements OnInit {
 
           break;
 
+
+        case 'auth/operation-not-allowed':
+
+          message =
+            'La connexion par email/mot de passe n’est pas activée dans Firebase.';
+
+          break;
+
+
+        case 'auth/internal-error':
+
+          message =
+            'Erreur interne Firebase. Consultez les logs Xcode.';
+
+          break;
+
+
+        default:
+
+          if (error?.message) {
+
+            message =
+              error.message;
+
+          }
+
+          break;
+
       }
+
+
+      console.error(
+        '📢 Message utilisateur final :',
+        message
+      );
 
 
       this.showToastError(
         message
       );
 
+
     } finally {
 
       this.isLoading = false;
+
+      console.log(
+        '🔓 isLoading = false'
+      );
+
+      console.log(
+        '========================================'
+      );
+      console.log(
+        '🔐 LOGIN EMAIL/PASSWORD END'
+      );
+      console.log(
+        '========================================'
+      );
 
     }
 
@@ -466,8 +848,20 @@ export class LoginPage implements OnInit {
 
   async googleLogin() {
 
+    console.log('');
+    console.log('========================================');
+    console.log('🔵 GOOGLE LOGIN START');
+    console.log('========================================');
+
+
     if (this.isLoading) {
+
+      console.log(
+        '⚠️ Une authentification est déjà en cours.'
+      );
+
       return;
+
     }
 
 
@@ -481,12 +875,16 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '🔵 Connexion Google :',
+        '📱 Plateforme :',
         platform
       );
 
 
       if (platform === 'web') {
+
+        console.log(
+          '🌐 Utilisation Google Firebase Web.'
+        );
 
         await this.googleLoginWeb();
 
@@ -499,6 +897,10 @@ export class LoginPage implements OnInit {
         platform === 'android' ||
         platform === 'ios'
       ) {
+
+        console.log(
+          '📱 Utilisation Google Sign-In natif.'
+        );
 
         await this.googleLoginNative();
 
@@ -514,9 +916,37 @@ export class LoginPage implements OnInit {
 
     } catch (error: any) {
 
+      console.error('');
       console.error(
-        '❌ Erreur Google :',
+        '========================================'
+      );
+
+      console.error(
+        '❌ ERREUR GOOGLE LOGIN'
+      );
+
+      console.error(
+        '========================================'
+      );
+
+      console.error(
+        '❌ Error :',
         error
+      );
+
+      console.error(
+        '❌ Code :',
+        error?.code
+      );
+
+      console.error(
+        '❌ Message :',
+        error?.message
+      );
+
+      console.error(
+        '❌ Error JSON :',
+        this.safeJson(error)
       );
 
 
@@ -586,6 +1016,22 @@ export class LoginPage implements OnInit {
 
       this.isLoading = false;
 
+      console.log(
+        '🔓 Google login : isLoading = false'
+      );
+
+      console.log(
+        '========================================'
+      );
+
+      console.log(
+        '🔵 GOOGLE LOGIN END'
+      );
+
+      console.log(
+        '========================================'
+      );
+
     }
 
   }
@@ -597,8 +1043,9 @@ export class LoginPage implements OnInit {
 
   private async googleLoginWeb() {
 
+    console.log('');
     console.log(
-      '🌐 Google via Firebase Web...'
+      '🌐 GOOGLE WEB LOGIN'
     );
 
 
@@ -615,6 +1062,11 @@ export class LoginPage implements OnInit {
     );
 
 
+    console.log(
+      '🌐 Ouverture popup Google...'
+    );
+
+
     const result =
       await signInWithPopup(
         this.auth,
@@ -623,8 +1075,27 @@ export class LoginPage implements OnInit {
 
 
     console.log(
-      '✅ Google Web connecté :',
+      '✅ Google Web connecté.'
+    );
+
+    console.log(
+      '👤 User :',
+      result.user
+    );
+
+    console.log(
+      '📧 Email :',
       result.user.email
+    );
+
+    console.log(
+      '🆔 UID :',
+      result.user.uid
+    );
+
+
+    console.log(
+      '🔑 Récupération Firebase Token...'
     );
 
 
@@ -635,7 +1106,12 @@ export class LoginPage implements OnInit {
 
 
     console.log(
-      '🔥 Firebase ID Token récupéré.'
+      '✅ Firebase ID Token récupéré.'
+    );
+
+    console.log(
+      '🔑 Token longueur :',
+      firebaseToken?.length
     );
 
 
@@ -653,69 +1129,181 @@ export class LoginPage implements OnInit {
 
   private async googleLoginNative() {
 
+    console.log('');
     console.log(
-      '📱 Google Sign-In natif...'
+      '========================================'
+    );
+
+    console.log(
+      '📱 GOOGLE NATIVE LOGIN'
+    );
+
+    console.log(
+      '========================================'
     );
 
 
-    const result =
-      await GoogleSignIn.signIn();
+    try {
 
-
-    console.log(
-      '📦 Résultat Google natif :',
-      result
-    );
-
-
-    if (!result.idToken) {
-
-      throw new Error(
-        'Google n’a pas retourné de ID Token.'
+      console.log(
+        '📱 Appel GoogleSignIn.signIn()...'
       );
+
+
+      const result =
+        await GoogleSignIn.signIn();
+
+
+      console.log(
+        '📦 Résultat Google natif :',
+        result
+      );
+
+
+      console.log(
+        '🆔 ID Token présent :',
+        !!result?.idToken
+      );
+
+
+      if (!result.idToken) {
+
+        console.error(
+          '❌ Google n’a fourni aucun ID Token.'
+        );
+
+        throw new Error(
+          'Google n’a pas retourné de ID Token.'
+        );
+
+      }
+
+
+      console.log(
+        '✅ Google ID Token reçu.'
+      );
+
+
+      // ---------------------------------------------------
+      // FIREBASE CREDENTIAL
+      // ---------------------------------------------------
+
+      console.log(
+        '🔥 Création Firebase Google Credential...'
+      );
+
+
+      const credential =
+        GoogleAuthProvider.credential(
+          result.idToken
+        );
+
+
+      console.log(
+        '✅ Firebase Google Credential créée.'
+      );
+
+
+      // ---------------------------------------------------
+      // FIREBASE SIGN IN
+      // ---------------------------------------------------
+
+      console.log(
+        '🔥 Connexion du credential à Firebase...'
+      );
+
+
+      const firebaseResult =
+        await signInWithCredential(
+          this.auth,
+          credential
+        );
+
+
+      console.log(
+        '========================================'
+      );
+
+      console.log(
+        '🔥 GOOGLE FIREBASE LOGIN RÉUSSI'
+      );
+
+      console.log(
+        '========================================'
+      );
+
+
+      console.log(
+        '👤 Firebase User :',
+        firebaseResult.user
+      );
+
+      console.log(
+        '📧 Email :',
+        firebaseResult.user.email
+      );
+
+      console.log(
+        '🆔 UID :',
+        firebaseResult.user.uid
+      );
+
+
+      // ---------------------------------------------------
+      // FIREBASE TOKEN
+      // ---------------------------------------------------
+
+      console.log(
+        '🔑 Récupération Firebase ID Token...'
+      );
+
+
+      const firebaseToken =
+        await firebaseResult.user.getIdToken(
+          true
+        );
+
+
+      console.log(
+        '✅ Firebase ID Token récupéré.'
+      );
+
+      console.log(
+        '🔑 Token longueur :',
+        firebaseToken?.length
+      );
+
+
+      // ---------------------------------------------------
+      // BACKEND
+      // ---------------------------------------------------
+
+      console.log(
+        '📡 Envoi token Firebase au backend...'
+      );
+
+
+      await this.authenticateBackend(
+        firebaseToken,
+        false
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        '❌ ERREUR GOOGLE NATIVE COMPLÈTE :',
+        error
+      );
+
+      console.error(
+        '❌ ERREUR GOOGLE NATIVE JSON :',
+        this.safeJson(error)
+      );
+
+      throw error;
 
     }
-
-
-    console.log(
-      '✅ Google ID Token reçu.'
-    );
-
-
-    const credential =
-      GoogleAuthProvider.credential(
-        result.idToken
-      );
-
-
-    const firebaseResult =
-      await signInWithCredential(
-        this.auth,
-        credential
-      );
-
-
-    console.log(
-      '🔥 Firebase connecté :',
-      firebaseResult.user.email
-    );
-
-
-    const firebaseToken =
-      await firebaseResult.user.getIdToken(
-        true
-      );
-
-
-    console.log(
-      '🔥 Firebase ID Token récupéré.'
-    );
-
-
-    await this.authenticateBackend(
-      firebaseToken,
-      false
-    );
 
   }
 
@@ -729,11 +1317,47 @@ export class LoginPage implements OnInit {
     restoringSession: boolean
   ) {
 
+    console.log('');
+    console.log('========================================');
+    console.log('📡 BACKEND AUTH START');
+    console.log('========================================');
+
+
     try {
 
       console.log(
-        '📡 Envoi Firebase Token au backend...'
+        '🌐 API URL :',
+        this.API_URL
       );
+
+      console.log(
+        '📍 Endpoint :',
+        `${this.API_URL}/user/firebase`
+      );
+
+      console.log(
+        '🔑 Token reçu :',
+        !!firebaseToken
+      );
+
+      console.log(
+        '🔑 Token longueur :',
+        firebaseToken?.length
+      );
+
+      console.log(
+        '♻️ Restoration session :',
+        restoringSession
+      );
+
+
+      if (!firebaseToken) {
+
+        throw new Error(
+          'Firebase Token vide.'
+        );
+
+      }
 
 
       const headers =
@@ -743,6 +1367,11 @@ export class LoginPage implements OnInit {
             `Bearer ${firebaseToken}`
 
         });
+
+
+      console.log(
+        '📡 Envoi HTTP POST au backend...'
+      );
 
 
       const response: any =
@@ -764,7 +1393,19 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '✅ Réponse backend :',
+        '========================================'
+      );
+
+      console.log(
+        '✅ BACKEND RESPONSE'
+      );
+
+      console.log(
+        '========================================'
+      );
+
+      console.log(
+        '📦 Réponse backend :',
         response
       );
 
@@ -772,6 +1413,10 @@ export class LoginPage implements OnInit {
       if (
         !response?.success
       ) {
+
+        console.error(
+          '❌ Backend retourne success=false.'
+        );
 
         throw new Error(
 
@@ -783,17 +1428,38 @@ export class LoginPage implements OnInit {
       }
 
 
+      // ---------------------------------------------------
+      // LOCAL STORAGE
+      // ---------------------------------------------------
+
       if (response.user) {
 
+        console.log(
+          '💾 Sauvegarde utilisateur localStorage...'
+        );
+
+
         localStorage.setItem(
+
           'user',
+
           JSON.stringify(
             response.user
           )
+
+        );
+
+
+        console.log(
+          '✅ Utilisateur sauvegardé.'
         );
 
       }
 
+
+      // ---------------------------------------------------
+      // RESTAURATION
+      // ---------------------------------------------------
 
       if (restoringSession) {
 
@@ -801,10 +1467,21 @@ export class LoginPage implements OnInit {
           '♻️ Session restaurée automatiquement.'
         );
 
+        console.log(
+          '➡️ Navigation vers /tabs/tab1...'
+        );
 
-        await this.router.navigate([
-          '/tabs/tab1'
-        ]);
+
+        const navigationResult =
+          await this.router.navigate([
+            '/tabs/tab1'
+          ]);
+
+
+        console.log(
+          '🧭 Navigation result :',
+          navigationResult
+        );
 
 
         return;
@@ -812,10 +1489,20 @@ export class LoginPage implements OnInit {
       }
 
 
+      // ---------------------------------------------------
+      // CONNEXION NORMALE
+      // ---------------------------------------------------
+
       const prenom =
         response.user?.prenom ||
         response.user?.nom ||
         'à vous';
+
+
+      console.log(
+        '👋 Utilisateur :',
+        prenom
+      );
 
 
       this.showToastSuccess(
@@ -825,12 +1512,46 @@ export class LoginPage implements OnInit {
       );
 
 
+      console.log(
+        '⏳ Navigation dans 1.2 seconde...'
+      );
+
+
       setTimeout(
         async () => {
 
-          await this.router.navigate([
-            '/tabs/tab1'
-          ]);
+          try {
+
+            console.log(
+              '➡️ Navigation vers /tabs/tab1...'
+            );
+
+
+            const navigationResult =
+              await this.router.navigate([
+                '/tabs/tab1'
+              ]);
+
+
+            console.log(
+              '🧭 Navigation result :',
+              navigationResult
+            );
+
+
+          } catch (navigationError) {
+
+            console.error(
+              '❌ ERREUR NAVIGATION :',
+              navigationError
+            );
+
+            console.error(
+              '❌ NAVIGATION JSON :',
+              this.safeJson(navigationError)
+            );
+
+          }
 
         },
         1200
@@ -839,9 +1560,53 @@ export class LoginPage implements OnInit {
 
     } catch (error: any) {
 
+      console.error('');
       console.error(
-        '❌ Erreur backend :',
+        '========================================'
+      );
+
+      console.error(
+        '❌ ERREUR BACKEND AUTH'
+      );
+
+      console.error(
+        '========================================'
+      );
+
+
+      console.error(
+        '❌ Error :',
         error
+      );
+
+      console.error(
+        '❌ Error status :',
+        error?.status
+      );
+
+      console.error(
+        '❌ Error statusText :',
+        error?.statusText
+      );
+
+      console.error(
+        '❌ Error message :',
+        error?.message
+      );
+
+      console.error(
+        '❌ Error error :',
+        error?.error
+      );
+
+      console.error(
+        '❌ Error headers :',
+        error?.headers
+      );
+
+      console.error(
+        '❌ Error JSON :',
+        this.safeJson(error)
       );
 
 
@@ -851,12 +1616,32 @@ export class LoginPage implements OnInit {
         'Impossible de communiquer avec le serveur.';
 
 
+      console.error(
+        '📢 Message final :',
+        message
+      );
+
+
       this.showToastError(
         message
       );
 
 
       throw error;
+
+    } finally {
+
+      console.log(
+        '========================================'
+      );
+
+      console.log(
+        '📡 BACKEND AUTH END'
+      );
+
+      console.log(
+        '========================================'
+      );
 
     }
 
@@ -869,13 +1654,37 @@ export class LoginPage implements OnInit {
 
   async logout() {
 
+    console.log('');
+    console.log(
+      '========================================'
+    );
+
+    console.log(
+      '👋 LOGOUT START'
+    );
+
+    console.log(
+      '========================================'
+    );
+
+
     try {
 
       this.isLoading = true;
 
 
+      console.log(
+        '🔥 Déconnexion Firebase...'
+      );
+
+
       await signOut(
         this.auth
+      );
+
+
+      console.log(
+        '✅ Firebase déconnecté.'
       );
 
 
@@ -885,12 +1694,17 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '👋 Déconnexion Firebase réussie.'
+        '🗑️ localStorage user supprimé.'
       );
 
 
       this.showToastSuccess(
         'Déconnexion réussie.'
+      );
+
+
+      console.log(
+        '➡️ Navigation vers /login...'
       );
 
 
@@ -905,8 +1719,13 @@ export class LoginPage implements OnInit {
     } catch (error) {
 
       console.error(
-        '❌ Erreur déconnexion :',
+        '❌ ERREUR LOGOUT :',
         error
+      );
+
+      console.error(
+        '❌ LOGOUT JSON :',
+        this.safeJson(error)
       );
 
 
@@ -932,6 +1751,14 @@ export class LoginPage implements OnInit {
 
       this.isLoading = false;
 
+      console.log(
+        '🔓 Logout isLoading = false'
+      );
+
+      console.log(
+        '👋 LOGOUT END'
+      );
+
     }
 
   }
@@ -951,11 +1778,9 @@ export class LoginPage implements OnInit {
     );
 
 
-    // Fermer un éventuel toast erreur
     this.showErrorToast = false;
 
 
-    // Annuler ancien timer
     if (
       this.successToastTimeout
     ) {
@@ -969,17 +1794,14 @@ export class LoginPage implements OnInit {
     }
 
 
-    // Message
     this.successMessage =
       message;
 
 
-    // Afficher
     this.showSuccessToast =
       true;
 
 
-    // Masquer après 4 secondes
     this.successToastTimeout =
       setTimeout(
         () => {
@@ -1001,17 +1823,15 @@ export class LoginPage implements OnInit {
     message: string
   ) {
 
-    console.log(
+    console.error(
       '🔴 TOAST ERROR :',
       message
     );
 
 
-    // Fermer un éventuel toast success
     this.showSuccessToast = false;
 
 
-    // Annuler ancien timer
     if (
       this.errorToastTimeout
     ) {
@@ -1025,17 +1845,14 @@ export class LoginPage implements OnInit {
     }
 
 
-    // Message
     this.errorMessage =
       message;
 
 
-    // Afficher
     this.showErrorToast =
       true;
 
 
-    // Masquer après 4 secondes
     this.errorToastTimeout =
       setTimeout(
         () => {
@@ -1110,6 +1927,13 @@ export class LoginPage implements OnInit {
     message: string
   ) {
 
+    console.log(
+      '⚠️ ALERT :',
+      header,
+      message
+    );
+
+
     const alert =
       await this.alertController.create({
 
@@ -1128,6 +1952,29 @@ export class LoginPage implements OnInit {
 
 
     await alert.present();
+
+  }
+
+
+  // =====================================================
+  // SAFE JSON
+  // =====================================================
+
+  private safeJson(
+    value: any
+  ): any {
+
+    try {
+
+      return JSON.parse(
+        JSON.stringify(value)
+      );
+
+    } catch {
+
+      return String(value);
+
+    }
 
   }
 
