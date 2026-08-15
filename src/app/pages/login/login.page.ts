@@ -10,9 +10,15 @@ import {
 import { firstValueFrom } from 'rxjs';
 
 import { Capacitor } from '@capacitor/core';
-import { GoogleSignIn } from '@capawesome/capacitor-google-sign-in';
 
-import { initializeApp } from 'firebase/app';
+import {
+  GoogleSignIn
+} from '@capawesome/capacitor-google-sign-in';
+
+import {
+  initializeApp,
+  FirebaseApp
+} from 'firebase/app';
 
 import {
   getAuth,
@@ -64,8 +70,11 @@ export class LoginPage implements OnInit {
   successMessage = '';
   errorMessage = '';
 
-  private successToastTimeout: ReturnType<typeof setTimeout> | null = null;
-  private errorToastTimeout: ReturnType<typeof setTimeout> | null = null;
+  private successToastTimeout:
+    ReturnType<typeof setTimeout> | null = null;
+
+  private errorToastTimeout:
+    ReturnType<typeof setTimeout> | null = null;
 
 
   // =====================================================
@@ -107,7 +116,7 @@ export class LoginPage implements OnInit {
   // FIREBASE
   // =====================================================
 
-  private firebaseApp =
+  private firebaseApp: FirebaseApp =
     initializeApp(
       this.firebaseConfig
     );
@@ -527,6 +536,10 @@ export class LoginPage implements OnInit {
       this.loginData.email.trim();
 
 
+    const password =
+      this.loginData.password;
+
+
     const emailRegex =
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -559,7 +572,7 @@ export class LoginPage implements OnInit {
 
       console.log(
         '🔐 Mot de passe présent :',
-        !!this.loginData.password
+        !!password
       );
 
       console.log(
@@ -589,7 +602,7 @@ export class LoginPage implements OnInit {
 
           email,
 
-          this.loginData.password
+          password
 
         );
 
@@ -830,9 +843,11 @@ export class LoginPage implements OnInit {
       console.log(
         '========================================'
       );
+
       console.log(
         '🔐 LOGIN EMAIL/PASSWORD END'
       );
+
       console.log(
         '========================================'
       );
@@ -1166,7 +1181,7 @@ export class LoginPage implements OnInit {
       );
 
 
-      if (!result.idToken) {
+      if (!result?.idToken) {
 
         console.error(
           '❌ Google n’a fourni aucun ID Token.'
