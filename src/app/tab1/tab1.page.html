@@ -1,0 +1,305 @@
+<!-- tab1.page.html -->
+<ion-header class="ion-no-border">
+  <ion-toolbar class="container">
+    <div class="flex items-center py-2 justify-between w-full">
+      <!-- TITRE -->
+      <div>
+        <h1 class="text-xl font-bold text-orange-500">Accueil</h1>
+        <p class="text-sm text-gray-500">Bienvenue dans notre plateforme Fléchissons</p>
+      </div>
+
+      <!-- PHOTO DE PROFIL / INITIALE -->
+      <button
+        class="w-11 h-11 rounded-full overflow-hidden border-2 border-orange-500 shadow-sm flex items-center justify-center"
+        [class.bg-orange-100]="userPhoto"
+        [class.bg-orange-500]="!userPhoto"
+        (click)="goToProfile()">
+        
+        <!-- Cas 1: L'utilisateur a une photo -->
+        <img
+          *ngIf="userPhoto"
+          [src]="userPhoto"
+          alt="Photo de profil"
+          class="w-full h-full object-cover"
+          (error)="onPhotoError()">
+        
+        <!-- Cas 2: L'utilisateur n'a pas de photo → afficher l'initiale -->
+        <span
+          *ngIf="!userPhoto"
+          class="text-white text-lg font-bold uppercase">
+          {{ userInitiale }}
+        </span>
+      </button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding-top">
+  
+  <!-- ===================================================== -->
+  <!-- PULL-TO-REFRESH NATIF IONIC                           -->
+  <!-- ===================================================== -->
+  
+  <ion-refresher 
+    slot="fixed" 
+    (ionRefresh)="handleRefresh($event)"
+    [pullFactor]="0.5"
+    [pullMin]="100"
+    [pullMax]="200">
+    
+    <ion-refresher-content>
+    </ion-refresher-content>
+    
+  </ion-refresher>
+
+  <div class="container mx-auto pb-32">
+
+    <!-- ===================================================== -->
+    <!-- HERO -->
+    <!-- ===================================================== -->
+
+    <section
+      class="relative overflow-hidden -mt-[0%] md:-mt-[9%] rounded-3xl min-h-[280px] shadow-xl bg-gradient-to-br from-orange-500 via-orange-600 to-orange-950">
+
+      <!-- CERCLES DE DÉCORATION -->
+      <div class="absolute -top-32 -right-32 w-64 h-64 rounded-full bg-white/5"></div>
+      <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/10"></div>
+      <div class="absolute top-1/2 -right-20 w-40 h-40 rounded-full bg-white/5"></div>
+      <div class="absolute -bottom-32 -left-32 w-72 h-72 rounded-full bg-white/5"></div>
+      <div class="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-white/10"></div>
+      <div class="absolute top-10 -left-10 w-32 h-32 rounded-full bg-white/5"></div>
+
+      <!-- POINTS -->
+      <div class="absolute top-1/4 right-32 w-4 h-4 rounded-full bg-white/20"></div>
+      <div class="absolute bottom-1/3 left-1/2 w-3 h-3 rounded-full bg-white/20"></div>
+      <div class="absolute top-2/3 right-20 w-5 h-5 rounded-full bg-white/20"></div>
+      <div class="absolute top-1/2 left-20 w-2 h-2 rounded-full bg-white/20"></div>
+
+      <!-- FORMES -->
+      <div class="absolute top-12 left-1/3 w-12 h-12 rotate-45 bg-white/5 rounded-lg"></div>
+      <div class="absolute bottom-24 left-1/4 w-8 h-8 rotate-12 bg-white/5 rounded-lg"></div>
+      <div class="absolute top-1/3 right-1/4 w-10 h-10 rotate-45 bg-white/5 rounded-lg"></div>
+
+      <!-- CONTENU HERO -->
+      <div class="relative z-10 flex flex-col justify-center min-h-[280px] p-6 text-white">
+        <span class="text-xs font-medium text-orange-100 uppercase tracking-wider">
+          Bienvenue sur Fléchissons
+        </span>
+        <h1 class="text-3xl font-bold mt-2 leading-tight">
+          Salut ! {{ userNom || 'Invité' }} 👋
+        </h1>
+        <p class="text-sm text-orange-50 mt-3 font-thin leading-relaxed max-w-[280px]">
+          Que la grâce et la paix de Dieu t'accompagnent aujourd'hui.
+          Découvre des prédications, témoignages et moments de foi.
+        </p>
+        <button
+          [routerLink]="'/tabs/tab3'"
+          class="mt-6 bg-white text-orange-600 font-semibold text-sm px-5 py-3 rounded-full shadow-lg flex items-center gap-2 w-fit active:scale-95 transition">
+          <ion-icon name="play-circle-outline" class="text-xl"></ion-icon>
+          Découvrir
+        </button>
+      </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- DERNIÈRES PRÉDICATIONS -->
+    <!-- ===================================================== -->
+
+    <section class="mt-8">
+      <!-- TITRE -->
+      <div class="flex items-end justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">Dernières prédications</h2>
+          <p class="text-sm text-gray-500 mt-1">Les derniers messages inspirants</p>
+        </div>
+        <button [routerLink]="'/tabs/tab3'" class="text-orange-500 font-medium text-sm">
+          Voir tout
+        </button>
+      </div>
+
+      <!-- SKELETON PRÉDICATIONS -->
+      <div *ngIf="chargementPredications" class="flex gap-4 overflow-hidden">
+        <div *ngFor="let item of [1,2,3]" class="min-w-[85%] h-56 rounded-2xl bg-gray-200 animate-pulse"></div>
+      </div>
+
+      <!-- SPLIDE -->
+      <div *ngIf="!chargementPredications && predications.length > 0" id="image-carousel" class="splide">
+        <div class="splide__track">
+          <ul class="splide__list">
+            <li
+              *ngFor="let predication of predications"
+              class="splide__slide"
+              [routerLink]="['/article', predication._id]">
+              <div class="relative overflow-hidden rounded-2xl shadow-lg h-56 bg-gray-200">
+                <!-- IMAGE DE COUVERTURE -->
+                <img
+                  [src]="getImage(predication)"
+                  [alt]="predication.titre"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                  (error)="imageErreur($event)">
+
+                <!-- OVERLAY -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></div>
+
+                <!-- BOUTON PLAY -->
+                <div *ngIf="predication.youtube || predication.lien" 
+                     class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-xl">
+                  <ion-icon name="play" class="text-white text-2xl ml-1"></ion-icon>
+                </div>
+
+                <!-- INFORMATIONS -->
+                <div class="absolute bottom-4 left-4 right-4">
+                  <span class="inline-block bg-orange-500 text-white text-[10px] font-semibold px-2 py-1 rounded-full uppercase mb-2">
+                    Prédication
+                  </span>
+                  <h3 class="text-white font-bold text-lg leading-tight line-clamp-2">{{ predication.titre }}</h3>
+                  <p *ngIf="predication.theme" class="text-orange-100 text-sm mt-1 line-clamp-1">{{ predication.theme }}</p>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- AUCUNE PRÉDICATION -->
+      <div *ngIf="!chargementPredications && predications.length === 0" class="bg-gray-50 rounded-2xl p-6 text-center">
+        <ion-icon name="videocam-outline" class="text-4xl text-gray-400"></ion-icon>
+        <p class="text-gray-500 text-sm mt-2">Aucune prédication disponible pour le moment.</p>
+      </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- FIL D'ACTUALITÉS -->
+    <!-- ===================================================== -->
+
+    <section class="mt-10">
+      <!-- TITRE -->
+      <div class="mb-5">
+        <h2 class="text-xl font-bold text-gray-900">Fil d'actualités</h2>
+        <p class="text-sm text-gray-500 mt-1">Les dernières nouvelles de notre communauté</p>
+      </div>
+
+      <!-- SKELETON ANNONCES -->
+      <div *ngIf="chargementAnnonces" class="space-y-6">
+        <div *ngFor="let item of [1,2]" class="bg-white rounded-2xl shadow border border-gray-100 overflow-hidden">
+          <div class="p-4 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="space-y-2">
+              <div class="h-3 w-32 bg-gray-200 rounded animate-pulse"></div>
+              <div class="h-2 w-20 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          </div>
+          <div class="h-60 bg-gray-200 animate-pulse"></div>
+        </div>
+      </div>
+
+      <!-- LISTE DES ANNONCES -->
+      <div *ngIf="!chargementAnnonces" class="space-y-6">
+        <article
+          *ngFor="let annonce of annoncesVisibles"
+          [routerLink]="['/article', annonce._id]"
+          class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden cursor-pointer transition hover:shadow-xl">
+
+          <!-- HEADER -->
+          <div class="flex items-center gap-3 p-4">
+            <img
+              src="assets/logo.png"
+              class="w-12 h-12 rounded-full object-cover border-2 border-orange-500"
+              alt="Fléchissons">
+            <div class="min-w-0">
+              <h3 class="font-bold text-gray-900 text-sm">Fléchissons</h3>
+              <div class="flex items-center gap-1 text-xs text-gray-500">
+                <span>{{ formaterDate(annonce.createdAt) }}</span>
+                <span>•</span>
+                <ion-icon name="globe-outline"></ion-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- TEXTE -->
+          <div class="px-4 pb-4">
+            <h4 class="font-bold text-gray-900 text-base leading-tight">{{ annonce.titre }}</h4>
+            <p *ngIf="annonce.description" class="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line">
+              {{ annonce.description }}
+            </p>
+          </div>
+
+          <!-- PREMIÈRE IMAGE UNIQUEMENT -->
+          <div *ngIf="annonce.images && annonce.images.length > 0" class="w-full">
+            <img
+              [src]="annonce.images[0]"
+              [alt]="annonce.titre"
+              class="w-full h-64 object-cover"
+              loading="lazy"
+              (error)="imageErreur($event)">
+          </div>
+
+          <!-- AUCUNE IMAGE -->
+          <div *ngIf="!annonce.images || annonce.images.length === 0" class="w-full h-48 bg-orange-50 flex flex-col items-center justify-center">
+            <ion-icon name="image-outline" class="text-4xl text-orange-300"></ion-icon>
+            <span class="text-sm text-gray-400 mt-2">Aucune image</span>
+          </div>
+
+          <!-- STATISTIQUES avec affichage du cœur -->
+          <div class="flex justify-between px-4 py-3 text-sm text-gray-500">
+            <span>
+              {{ annonce.likes?.length || 0 }} J'aime
+            </span>
+            <span>{{ annonce.commentaires?.length || 0 }} commentaires</span>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="border-t border-gray-100 flex items-center justify-around py-2">
+            <button class="flex items-center gap-2 font-medium active:scale-95 transition" [class.text-orange-500]="isAnnonceLiked(annonce)" [class.text-gray-600]="!isAnnonceLiked(annonce)">
+              <ion-icon 
+                [name]="isAnnonceLiked(annonce) ? 'heart' : 'heart-outline'"
+                class="text-xl"
+                [class.text-orange-500]="isAnnonceLiked(annonce)">
+              </ion-icon>
+              <span [class.text-orange-500]="isAnnonceLiked(annonce)" [class.text-gray-600]="!isAnnonceLiked(annonce)">
+                J'aime
+              </span>
+            </button>
+            <button class="flex items-center gap-2 text-gray-600 font-medium active:scale-95 transition">
+              <ion-icon name="chatbubble-outline" class="text-orange-500 text-xl"></ion-icon>
+              Commenter
+            </button>
+            <button
+              class="flex items-center gap-2 text-gray-600 font-medium active:scale-95 transition"
+              (click)="partagerAnnonce(annonce); $event.stopPropagation()">
+              <ion-icon name="share-social-outline" class="text-orange-500 text-xl"></ion-icon>
+              Partager
+            </button>
+          </div>
+        </article>
+
+        <!-- INFINITE SCROLL IONIC -->
+        <ion-infinite-scroll
+          threshold="150px"
+          [disabled]="!plusDAnnonces"
+          (ionInfinite)="chargerPlusAnnonces($event)">
+          <ion-infinite-scroll-content
+            loadingSpinner="crescent"
+            loadingText="Chargement des annonces...">
+          </ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+
+        <!-- FIN DES ANNONCES -->
+        <div *ngIf="!plusDAnnonces && annonces.length > 0" class="text-center py-6">
+          <div class="w-10 h-10 mx-auto rounded-full bg-orange-50 flex items-center justify-center">
+            <ion-icon name="checkmark-outline" class="text-orange-500 text-xl"></ion-icon>
+          </div>
+          <p class="text-xs text-gray-400 mt-3">Vous avez vu toutes les annonces.</p>
+        </div>
+
+        <!-- AUCUNE ANNONCE -->
+        <div *ngIf="annonces.length === 0" class="bg-gray-50 rounded-2xl p-6 text-center">
+          <ion-icon name="newspaper-outline" class="text-4xl text-gray-400"></ion-icon>
+          <p class="text-gray-500 text-sm mt-2">Aucune annonce disponible pour le moment.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</ion-content>

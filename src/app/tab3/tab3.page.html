@@ -1,0 +1,227 @@
+<!-- tab3.page.html -->
+<ion-header class="ion-no-border">
+  <ion-toolbar class="container">
+    <div class="flex items-center py-2 justify-between w-full">
+      <!-- TITRE -->
+      <div>
+        <h1 class="text-xl font-bold text-orange-500">Prédications</h1>
+        <p class="text-sm text-gray-500">Nourrissez votre foi</p>
+      </div>
+
+      <!-- PHOTO DE PROFIL / INITIALE -->
+      <button
+        class="w-11 h-11 rounded-full overflow-hidden border-2 border-orange-500 shadow-sm flex items-center justify-center"
+        [class.bg-orange-100]="userPhoto"
+        [class.bg-orange-500]="!userPhoto"
+        (click)="goToProfile()">
+        
+        <!-- Cas 1: L'utilisateur a une photo -->
+        <img
+          *ngIf="userPhoto"
+          [src]="userPhoto"
+          alt="Photo de profil"
+          class="w-full h-full object-cover"
+          (error)="onPhotoError()">
+        
+        <!-- Cas 2: L'utilisateur n'a pas de photo → afficher l'initiale -->
+        <span
+          *ngIf="!userPhoto"
+          class="text-white text-lg font-bold uppercase">
+          {{ userInitiale }}
+        </span>
+      </button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" style="--background: #f9fafb;">
+
+  <!-- ===================================================== -->
+  <!-- BARRE DE RECHERCHE - DESIGN MODERNE                   -->
+  <!-- ===================================================== -->
+
+  <div class="search-container">
+    <div class="search-wrapper">
+      <div class="search-box">
+        <ion-icon name="search-outline" class="search-icon"></ion-icon>
+        <input
+          type="text"
+          [(ngModel)]="searchText"
+          (input)="rechercher()"
+          placeholder="Rechercher une prédication..."
+          class="search-input"
+          [class.has-text]="searchText">
+        <ion-icon
+          *ngIf="searchText"
+          (click)="clearSearch()"
+          name="close-circle"
+          class="clear-icon">
+        </ion-icon>
+        <button class="search-btn" (click)="rechercher()">
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- PULL-TO-REFRESH NATIF IONIC                           -->
+  <!-- ===================================================== -->
+
+  <ion-refresher 
+    slot="fixed" 
+    (ionRefresh)="handleRefresh($event)"
+    [pullFactor]="0.5"
+    [pullMin]="100"
+    [pullMax]="200">
+    <ion-refresher-content>
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <!-- ===================================================== -->
+  <!-- SKELETONS ANIMÉS (CHARGEMENT)                         -->
+  <!-- ===================================================== -->
+
+  <div *ngIf="isLoading" class="space-y-6">
+    <div *ngFor="let item of skeletonItems" class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="flex items-center gap-3 p-4">
+        <div class="skeleton w-12 h-12 rounded-full"></div>
+        <div class="flex-1 space-y-2">
+          <div class="skeleton h-4 w-32 rounded"></div>
+          <div class="skeleton h-3 w-24 rounded"></div>
+        </div>
+      </div>
+      <div class="px-4 pb-4 space-y-2">
+        <div class="skeleton h-6 w-3/4 rounded"></div>
+        <div class="skeleton h-4 w-full rounded"></div>
+        <div class="skeleton h-4 w-5/6 rounded"></div>
+        <div class="skeleton h-4 w-2/3 rounded"></div>
+      </div>
+      <div class="skeleton w-full h-60"></div>
+      <div class="flex justify-between px-4 py-3">
+        <div class="skeleton h-4 w-24 rounded"></div>
+        <div class="skeleton h-4 w-28 rounded"></div>
+      </div>
+      <div class="border-t border-gray-100 flex justify-around py-3">
+        <div class="skeleton h-6 w-16 rounded"></div>
+        <div class="skeleton h-6 w-20 rounded"></div>
+        <div class="skeleton h-6 w-18 rounded"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- ERREUR                                                -->
+  <!-- ===================================================== -->
+
+  <div *ngIf="!isLoading && errorMessage" class="error-container">
+    <div class="error-content">
+      <ion-icon name="alert-circle-outline" class="text-6xl text-red-500"></ion-icon>
+      <p class="text-gray-500 mt-4">{{ errorMessage }}</p>
+      <ion-button (click)="chargerPredications()" class="mt-4" color="orange">
+        Réessayer
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- LISTE DES PRÉDICATIONS                                -->
+  <!-- ===================================================== -->
+
+  <div *ngIf="!isLoading && !errorMessage" class="predications-list">
+
+    <!-- Aucun résultat -->
+    <div *ngIf="predicationsFiltrees.length === 0" class="empty-state">
+      <ion-icon name="videocam-outline" class="empty-icon"></ion-icon>
+      <p class="empty-title">Aucune prédication trouvée</p>
+      <p class="empty-subtitle">Essayez une autre recherche</p>
+    </div>
+
+    <!-- Article -->
+    <article
+      *ngFor="let predication of predicationsFiltrees"
+      [routerLink]="['/article', predication._id]"
+      class="article-card">
+
+      <!-- Auteur -->
+      <div class="article-header">
+        <img
+          src="assets/logo.png"
+          class="author-avatar"
+          alt="Fléchissons">
+        <div class="author-info">
+          <h3 class="author-name">Fléchissons</h3>
+          <div class="author-meta">
+            <span>{{ getTimeAgo(predication.createdAt) }}</span>
+            <span>•</span>
+            <ion-icon name="globe-outline"></ion-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- Texte -->
+      <div class="article-body">
+        <h4 class="article-title">{{ predication.titre }}</h4>
+        <p class="article-description">{{ predication.description }}</p>
+        <div *ngIf="predication.theme" class="theme-tag">
+          <span>Thème : {{ predication.theme }}</span>
+        </div>
+      </div>
+
+      <!-- Image avec Play -->
+      <div class="article-media">
+        <img
+          [src]="getImageUrl(predication)"
+          [alt]="predication.titre"
+          class="media-image"
+          (error)="imageErreur($event)">
+        <div class="media-overlay">
+          <button class="play-btn">
+            <ion-icon name="play" class="play-icon"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="article-stats">
+        <span>
+          {{ predication.likes?.length ?? 0 }} J'aime
+        </span>
+        <span>{{ predication.commentaires?.length ?? 0 }} commentaires</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="article-actions">
+        <!-- Bouton Like désactivé mais affiche l'état -->
+        <button class="action-btn" [class.liked]="isLiked(predication)">
+          <ion-icon 
+            [name]="isLiked(predication) ? 'heart' : 'heart-outline'"
+            class="action-icon"
+            [class.text-orange-500]="isLiked(predication)">
+          </ion-icon>
+          <span [class.text-orange-500]="isLiked(predication)">
+            {{ isLiked(predication) ? 'J\'aime' : 'J\'aime' }}
+          </span>
+        </button>
+        
+        <button class="action-btn">
+          <ion-icon name="chatbubble-outline" class="action-icon"></ion-icon>
+          Commenter
+        </button>
+        
+        <button 
+          (click)="partagerPredication(predication, $event)"
+          class="action-btn">
+          <ion-icon name="share-social-outline" class="action-icon"></ion-icon>
+          Partager
+        </button>
+      </div>
+    </article>
+
+    <!-- Fin des résultats -->
+    <div *ngIf="predicationsFiltrees.length > 0" class="results-footer">
+      <p>{{ predicationsFiltrees.length }} prédication{{ predicationsFiltrees.length > 1 ? 's' : '' }} trouvée{{ predicationsFiltrees.length > 1 ? 's' : '' }}</p>
+    </div>
+  </div>
+
+</ion-content>

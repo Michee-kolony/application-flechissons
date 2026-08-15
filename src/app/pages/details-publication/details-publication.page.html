@@ -1,0 +1,330 @@
+<ion-header class="ion-no-border">
+
+  <ion-toolbar class="px-4 py-3 !bg-white !shadow-sm">
+
+    <div class="flex items-center gap-3">
+
+      <ion-back-button
+        defaultHref="/tabs/tab3"
+        text=""
+        class="text-orange-500">
+      </ion-back-button>
+
+
+      <div>
+
+        <h1 class="text-lg font-bold text-gray-900">
+          Prédication
+        </h1>
+
+        <p class="text-xs text-gray-500">
+          {{publication.auteur}}
+        </p>
+
+      </div>
+
+
+    </div>
+
+
+  </ion-toolbar>
+
+</ion-header>
+
+
+
+
+
+
+<ion-content
+[fullscreen]="true"
+class="!bg-gray-50 pb-24">
+
+
+
+
+
+<!-- VIDEO YOUTUBE -->
+
+
+<div class="w-full bg-black">
+
+  <iframe
+    class="w-full h-64"
+    [src]="youtubeUrl"
+    frameborder="0"
+    allow="autoplay; encrypted-media"
+    allowfullscreen>
+  </iframe>
+
+</div>
+
+
+
+
+
+
+
+
+<div class="px-4 py-5 space-y-5">
+
+
+
+
+
+<!-- TITRE -->
+
+
+<div>
+
+
+<h2 class="text-xl font-bold text-gray-900">
+
+{{publication.titre}}
+
+</h2>
+
+
+
+<p class="text-sm text-gray-600 mt-2 leading-relaxed">
+
+{{publication.description}}
+
+</p>
+
+
+
+<div class="flex items-center gap-2 mt-3 text-xs text-gray-400">
+
+<ion-icon name="time-outline"></ion-icon>
+
+{{publication.date}}
+
+</div>
+
+
+
+</div>
+
+
+<!-- ACTIONS -->
+
+
+<div
+class="bg-white rounded-2xl shadow-lg p-4 flex justify-around">
+
+
+
+
+
+
+<button
+(click)="toggleLike()"
+class="flex flex-col items-center gap-1">
+
+
+<ion-icon
+[name]="publication.liked ? 'heart' : 'heart-outline'"
+class="text-2xl"
+[class.text-orange-500]="publication.liked"
+[class.text-gray-500]="!publication.liked">
+</ion-icon>
+
+
+<span class="text-sm font-semibold">
+
+{{publication.likes}}
+
+</span>
+
+
+</button>
+
+
+
+
+
+
+
+
+<button
+(click)="focusComment()"
+class="flex flex-col items-center gap-1">
+
+
+<ion-icon
+name="chatbubble-outline"
+class="text-2xl text-orange-500">
+</ion-icon>
+
+
+<span class="text-sm font-semibold">
+
+{{commentaires.length}}
+
+</span>
+
+
+</button>
+
+
+
+
+
+
+
+
+<button
+class="flex flex-col items-center gap-1">
+
+
+<ion-icon
+name="share-social-outline"
+class="text-2xl text-orange-500">
+</ion-icon>
+
+
+<span class="text-sm font-semibold">
+Partager
+</span>
+
+
+</button>
+
+
+
+
+
+</div>
+
+
+<!-- COMMENTAIRES -->
+
+
+<div class="space-y-4 pb-28">
+
+
+
+<h3 class="font-bold text-lg text-gray-900">
+
+Commentaires
+
+</h3>
+
+
+
+
+
+
+<div
+*ngFor="let commentaire of commentaires"
+class="bg-white rounded-2xl p-4 shadow-lg flex gap-3">
+
+
+
+<img
+[src]="commentaire.avatar"
+class="w-11 h-11 rounded-full object-cover">
+
+
+
+<div class="flex-1">
+
+
+<h4 class="font-bold text-sm text-gray-900">
+
+{{commentaire.nom}}
+
+</h4>
+
+
+<p class="text-sm text-gray-600 mt-1">
+
+{{commentaire.message}}
+
+</p>
+
+
+
+<span class="text-xs text-gray-400">
+
+{{commentaire.date}}
+
+</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+</ion-content>
+
+
+
+
+
+
+
+
+<!-- COMMENTAIRE INPUT -->
+
+
+<div
+class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-50">
+
+
+<div class="flex items-center gap-3">
+
+
+
+<div
+class="flex-1 bg-gray-100 rounded-full px-4 py-3">
+
+
+<input
+#commentInput
+[(ngModel)]="nouveauCommentaire"
+placeholder="Commenter..."
+class="bg-transparent outline-none w-full text-sm">
+
+
+</div>
+
+
+
+
+
+<button
+(click)="ajouterCommentaire()"
+class="w-12 h-12 bg-orange-500 rounded-full text-white flex items-center justify-center">
+
+
+<ion-icon
+name="send">
+</ion-icon>
+
+
+</button>
+
+
+
+</div>
+
+
+</div>

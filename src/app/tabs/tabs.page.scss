@@ -1,0 +1,199 @@
+/* Barre de navigation */
+.custom-tab-bar {
+  --background: #ffffff;
+  --border: none;
+  padding: 8px 12px;
+  height: 75px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Container pour chaque bouton */
+.custom-tab-bar ion-tab-button {
+  --background: transparent;
+  --color: #777;
+  --background-focused: transparent;
+  --ripple-color: transparent;
+  border-radius: 30px;
+  margin: 0 4px;
+  padding: 0 12px;
+  height: 54px;
+  min-height: 54px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 0 1 auto;
+  min-width: 56px;
+}
+
+/* Contenu du bouton */
+.tab-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Icônes */
+.custom-tab-bar ion-tab-button ion-icon {
+  font-size: 24px;
+  min-width: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #777;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+/* Labels (titres) - cachés par défaut */
+.custom-tab-bar ion-tab-button .tab-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #777;
+  opacity: 0;
+  max-width: 0;
+  transform: scale(0.8) translateX(-10px);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  overflow: hidden;
+  margin: 0;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+/* --- ÉTAT ACTIF --- */
+.custom-tab-bar ion-tab-button.tab-selected {
+  background: linear-gradient(135deg, #ff9800, #ff6f00);
+  padding: 0 20px;
+  min-width: auto;
+  flex: 0 1 auto;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+}
+
+/* Icône active */
+.custom-tab-bar ion-tab-button.tab-selected ion-icon {
+  color: #fff;
+  transform: scale(1);
+}
+
+/* Label actif - apparaît complètement sans coupure */
+.custom-tab-bar ion-tab-button.tab-selected .tab-label {
+  opacity: 1;
+  max-width: 200px; /* Augmenté pour permettre l'affichage complet */
+  transform: scale(1) translateX(0);
+  color: #fff;
+  margin-left: 6px;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* Ajustement du contenu actif */
+.custom-tab-bar ion-tab-button.tab-selected .tab-content {
+  justify-content: flex-start;
+}
+
+/* Effet de survol pour les boutons inactifs */
+.custom-tab-bar ion-tab-button:not(.tab-selected):hover {
+  background: rgba(255, 152, 0, 0.08);
+}
+
+.custom-tab-bar ion-tab-button:not(.tab-selected):hover ion-icon {
+  color: #ff9800;
+  transform: scale(1.1);
+}
+
+/* Animation au clic */
+.custom-tab-bar ion-tab-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  background: radial-gradient(circle at center, rgba(255, 152, 0, 0.2), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.custom-tab-bar ion-tab-button:active::after {
+  opacity: 1;
+  transition: opacity 0s;
+}
+
+/* Responsive - petits écrans */
+@media (max-width: 480px) {
+  .custom-tab-bar {
+    padding: 6px 8px;
+    height: 68px;
+  }
+  
+  .custom-tab-bar ion-tab-button {
+    padding: 0 8px;
+    height: 48px;
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  .custom-tab-bar ion-tab-button ion-icon {
+    font-size: 22px;
+    min-width: 22px;
+  }
+  
+  .custom-tab-bar ion-tab-button .tab-label {
+    font-size: 12px;
+  }
+  
+  .custom-tab-bar ion-tab-button.tab-selected {
+    padding: 0 14px;
+    min-width: auto;
+  }
+  
+  .custom-tab-bar ion-tab-button.tab-selected .tab-label {
+    max-width: 150px;
+    font-size: 12px;
+  }
+}
+
+/* Pour les très petits écrans */
+@media (max-width: 360px) {
+  .custom-tab-bar {
+    padding: 6px 4px;
+    height: 64px;
+  }
+  
+  .custom-tab-bar ion-tab-button {
+    padding: 0 6px;
+    height: 44px;
+    min-height: 44px;
+    min-width: 40px;
+  }
+  
+  .custom-tab-bar ion-tab-button.tab-selected {
+    padding: 0 10px;
+  }
+  
+  .custom-tab-bar ion-tab-button .tab-label {
+    font-size: 11px;
+  }
+  
+  .custom-tab-bar ion-tab-button.tab-selected .tab-label {
+    max-width: 120px;
+    font-size: 11px;
+  }
+}
+
+/* Support pour les très longs textes */
+.custom-tab-bar ion-tab-button.tab-selected .tab-label {
+  max-width: 300px; /* Pour les textes longs */
+}
+
+/* Option: si vous voulez que le texte s'adapte à la longueur réelle */
+.custom-tab-bar ion-tab-button.tab-selected {
+  padding: 0 20px;
+}
+
+.custom-tab-bar ion-tab-button.tab-selected .tab-label {
+  max-width: none; /* Supprime la limite de largeur */
+  width: auto;
+}

@@ -1,0 +1,506 @@
+/* =========================================================
+   SPLASH
+========================================================= */
+
+.splash-content {
+  --background: #ffffff;
+}
+
+
+/* =========================================================
+   CONTAINER
+========================================================= */
+
+.splash-container {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   LÉGÈRE LUEUR D'AMBIANCE
+========================================================= */
+
+.splash-container::before {
+  content: "";
+
+  position: absolute;
+
+  width: 280px;
+  height: 280px;
+
+  border-radius: 50%;
+
+  background: rgba(249, 115, 22, 0.08);
+
+  filter: blur(50px);
+
+  animation: ambientGlow 3s ease-in-out infinite;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.logo-wrapper {
+
+  position: relative;
+
+  width: 130px;
+  height: 130px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+}
+
+
+/* =========================================================
+   GLOW ORANGE
+========================================================= */
+
+.glow {
+
+  position: absolute;
+
+  width: 90px;
+  height: 90px;
+
+  border-radius: 50%;
+
+  background: rgba(249, 115, 22, 0.25);
+
+  filter: blur(25px);
+
+  animation: glowPulse 2s ease-in-out infinite;
+
+}
+
+
+/* =========================================================
+   FORME PRINCIPALE
+========================================================= */
+
+.morph-shape {
+
+  position: relative;
+
+  width: 78px;
+  height: 78px;
+
+  background: linear-gradient(
+    135deg,
+    #fb923c,
+    #f97316,
+    #ea580c
+  );
+
+  box-shadow:
+    0 15px 35px rgba(249, 115, 22, 0.25);
+
+  animation:
+    morphShape 4s ease-in-out infinite,
+    floatShape 3s ease-in-out infinite;
+
+}
+
+
+/* =========================================================
+   PETITE FORME INTÉRIEURE
+========================================================= */
+
+.inner-shape {
+
+  position: absolute;
+
+  width: 28px;
+  height: 28px;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  background: rgba(255, 255, 255, 0.9);
+
+  border-radius: 50%;
+
+  animation: innerPulse 2s ease-in-out infinite;
+
+}
+
+
+/* =========================================================
+   NOM DE L'APP
+========================================================= */
+
+.app-name {
+
+  margin-top: 28px;
+
+  font-size: 25px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.8px;
+
+  color: #111827;
+
+  animation: textAppear 1s ease-out forwards;
+
+}
+
+
+.app-name span {
+
+  color: #f97316;
+
+}
+
+
+/* =========================================================
+   ZONE LOADING
+========================================================= */
+
+.loading-area {
+
+  position: absolute;
+
+  bottom: 55px;
+
+  left: 0;
+  right: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+}
+
+
+/* =========================================================
+   TEXTE
+========================================================= */
+
+.loading-text {
+
+  margin: 0;
+
+  min-height: 20px;
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  color: #9ca3af;
+
+  text-align: center;
+
+  animation: messageFade 1s ease-in-out;
+
+}
+
+
+/* =========================================================
+   POINTS
+========================================================= */
+
+.dots {
+
+  display: flex;
+
+  gap: 5px;
+
+  margin-top: 12px;
+
+}
+
+
+.dots span {
+
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: #f97316;
+
+  animation: dotBounce 1.2s infinite ease-in-out;
+
+}
+
+
+.dots span:nth-child(2) {
+
+  animation-delay: 0.15s;
+
+}
+
+
+.dots span:nth-child(3) {
+
+  animation-delay: 0.3s;
+
+}
+
+
+/* =========================================================
+   MORPHING
+========================================================= */
+
+@keyframes morphShape {
+
+  0% {
+
+    border-radius: 22% 78% 65% 35%
+      / 35% 45% 55% 65%;
+
+    transform: rotate(0deg)
+      scale(1);
+
+  }
+
+
+  25% {
+
+    border-radius: 50%;
+
+    transform: rotate(90deg)
+      scale(1.08);
+
+  }
+
+
+  50% {
+
+    border-radius: 65% 35% 30% 70%
+      / 60% 40% 60% 40%;
+
+    transform: rotate(180deg)
+      scale(0.95);
+
+  }
+
+
+  75% {
+
+    border-radius: 35% 65% 70% 30%
+      / 40% 60% 35% 65%;
+
+    transform: rotate(270deg)
+      scale(1.07);
+
+  }
+
+
+  100% {
+
+    border-radius: 22% 78% 65% 35%
+      / 35% 45% 55% 65%;
+
+    transform: rotate(360deg)
+      scale(1);
+
+  }
+
+}
+
+
+/* =========================================================
+   FLOTTEMENT
+========================================================= */
+
+@keyframes floatShape {
+
+  0%,
+  100% {
+
+    margin-top: 0;
+
+  }
+
+  50% {
+
+    margin-top: -8px;
+
+  }
+
+}
+
+
+/* =========================================================
+   GLOW
+========================================================= */
+
+@keyframes glowPulse {
+
+  0%,
+  100% {
+
+    transform: scale(0.9);
+
+    opacity: 0.5;
+
+  }
+
+  50% {
+
+    transform: scale(1.25);
+
+    opacity: 0.8;
+
+  }
+
+}
+
+
+/* =========================================================
+   GLOW AMBIANT
+========================================================= */
+
+@keyframes ambientGlow {
+
+  0%,
+  100% {
+
+    transform: scale(0.8);
+
+    opacity: 0.5;
+
+  }
+
+  50% {
+
+    transform: scale(1.2);
+
+    opacity: 1;
+
+  }
+
+}
+
+
+/* =========================================================
+   FORME INTÉRIEURE
+========================================================= */
+
+@keyframes innerPulse {
+
+  0%,
+  100% {
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.8);
+
+    opacity: 0.7;
+
+  }
+
+  50% {
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.15);
+
+    opacity: 1;
+
+  }
+
+}
+
+
+/* =========================================================
+   APP NAME
+========================================================= */
+
+@keyframes textAppear {
+
+  0% {
+
+    opacity: 0;
+
+    transform: translateY(10px);
+
+  }
+
+  100% {
+
+    opacity: 1;
+
+    transform: translateY(0);
+
+  }
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+@keyframes messageFade {
+
+  0% {
+
+    opacity: 0;
+
+    transform: translateY(5px);
+
+  }
+
+  100% {
+
+    opacity: 1;
+
+    transform: translateY(0);
+
+  }
+
+}
+
+
+/* =========================================================
+   DOTS
+========================================================= */
+
+@keyframes dotBounce {
+
+  0%,
+  60%,
+  100% {
+
+    transform: translateY(0);
+
+    opacity: 0.4;
+
+  }
+
+  30% {
+
+    transform: translateY(-5px);
+
+    opacity: 1;
+
+  }
+
+}

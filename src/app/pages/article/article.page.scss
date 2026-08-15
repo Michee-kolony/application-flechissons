@@ -1,0 +1,160 @@
+ion-content {
+  --background: white;
+  --padding-bottom: 0 !important;
+}
+
+ion-toolbar {
+  --background: white;
+  color: orange;
+}
+
+ h1 {
+      font-size: 1.1rem !important;
+    }
+
+
+// =====================================================
+// CONTENEUR DU COMMENTAIRE FIXE EN BAS
+// =====================================================
+
+.comment-input-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 10px 16px;
+  padding-bottom: var(--ion-safe-area-bottom, 20px);
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+  
+  @media (max-width: 480px) {
+    padding: 8px 12px;
+    padding-bottom: var(--ion-safe-area-bottom, 16px);
+  }
+}
+
+.comment-input-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+// =====================================================
+// ANIMATIONS POUR LES SQUELETTES
+// =====================================================
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// =====================================================
+// ANIMATION POUR LES IMAGES
+// =====================================================
+
+img {
+  transition: opacity 0.3s ease;
+}
+
+// =====================================================
+// HOVER EFFETS
+// =====================================================
+
+.hover\:shadow-xl:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+// =====================================================
+// RESPONSIVE
+// =====================================================
+
+@media (max-width: 640px) {
+  .w-64 {
+    width: 80%;
+  }
+  
+  .comment-input-container {
+    padding: 8px 12px;
+    padding-bottom: var(--ion-safe-area-bottom, 16px);
+  }
+  
+  .comment-input-container .w-10 {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .comment-input-container .rounded-full.px-4 {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .comment-input-container input {
+    font-size: 13px;
+  }
+}
+
+// =====================================================
+// STYLE POUR LES COMMENTAIRES
+// =====================================================
+
+.bg-orange-200 {
+  background-color: #fed7aa;
+}
+
+// Correction pour éviter que le contenu soit caché par le commentaire
+ion-content {
+  --padding-bottom: 80px !important;
+  
+  @media (max-width: 480px) {
+    --padding-bottom: 70px !important;
+  }
+}
+
+// Style pour l'input de commentaire
+.comment-input-container input::placeholder {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.comment-input-container .bg-gray-100 {
+  background-color: #f3f4f6;
+  transition: all 0.2s ease;
+}
+
+.comment-input-container .bg-gray-100:focus-within {
+  background-color: #f9fafb;
+}
+
+// Animation d'apparition du commentaire
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comment-input-container {
+  animation: slideUp 0.3s ease-out;
+}

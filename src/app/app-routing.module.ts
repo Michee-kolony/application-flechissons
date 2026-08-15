@@ -1,0 +1,61 @@
+import { NgModule } from '@angular/core';
+import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { guestGuard } from './guards/guest-guard';
+import { onboardingGuard } from './guards/onboarding-guard';
+
+const routes: Routes = [
+  {
+    path: '',
+    loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
+  },
+  {
+    path: 'contact',
+    loadChildren: () => import('./pages/contact/contact.module').then( m => m.ContactPageModule)
+  },
+  {
+    path: 'profil',
+    loadChildren: () => import('./pages/profil/profil.module').then( m => m.ProfilPageModule)
+  },
+  {
+    path: 'checkout',
+    loadChildren: () => import('./pages/checkout/checkout.module').then( m => m.CheckoutPageModule)
+  },
+  {
+    path: 'live',
+    loadChildren: () => import('./pages/live/live.module').then( m => m.LivePageModule)
+  },
+  {
+    path: 'onboarding',
+    canActivate:[onboardingGuard],
+    loadChildren: () => import('./pages/onboarding/onboarding.module').then( m => m.OnboardingPageModule)
+  },
+  {
+    path: 'details-publication',
+    loadChildren: () => import('./pages/details-publication/details-publication.module').then( m => m.DetailsPublicationPageModule)
+  },
+  {
+    path: 'login',
+    canActivate:[guestGuard],
+    loadChildren: () => import('./pages/login/login.module').then( m => m.LoginPageModule)
+  },
+  {
+    path: 'signup',
+    canActivate:[guestGuard],
+    loadChildren: () => import('./pages/signup/signup.module').then( m => m.SignupPageModule)
+  },
+  {
+    path: 'article/:id',
+    loadChildren: () => import('./pages/article/article.module').then( m => m.ArticlePageModule)
+  },
+  {
+    path: 'splash',
+    loadChildren: () => import('./pages/splash/splash.module').then( m => m.SplashPageModule)
+  }
+];
+@NgModule({
+  imports: [
+    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
+  ],
+  exports: [RouterModule]
+})
+export class AppRoutingModule {}

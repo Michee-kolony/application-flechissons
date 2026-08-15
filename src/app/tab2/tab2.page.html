@@ -1,0 +1,118 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="px-4 py-3">
+
+    <div>
+      <h1 class="text-xl font-bold text-orange-500">
+        Témoignages
+      </h1>
+
+      <p class="text-sm text-gray-500 mt-1">
+        Découvrez comment Dieu transforme des vies à travers des témoignages authentiques.
+      </p>
+    </div>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <div class="container pb-14">
+
+    <!-- Témoignage mis en avant -->
+
+    <div
+      class="relative h-56 rounded-3xl overflow-hidden m shadow-xl">
+
+      <img
+        [src]="featured.image"
+        class="w-full h-full object-cover">
+
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent">
+
+        <div class="absolute bottom-5 left-5 right-5">
+
+          <p class="text-white text-xs uppercase tracking-widest">
+            Témoignage du jour
+          </p>
+
+          <h2 class="text-white text-2xl font-bold mt-1">
+            {{featured.title}}
+          </h2>
+
+          <p class="text-gray-200 mt-1">
+            {{featured.author}}
+          </p>
+
+        </div>
+
+      </div>
+
+      <!-- Play -->
+
+      <button
+        class="absolute right-5 bottom-5 w-16 h-16 rounded-full bg-orange-500 flex items-center justify-center shadow-2xl">
+
+        <ion-icon
+          name="play"
+          class="text-white text-3xl ml-1">
+        </ion-icon>
+
+      </button>
+
+    </div>
+
+    <!-- Derniers témoignages -->
+
+    <h3 class="font-bold text-xl text-gray-700 mt-8 mb-4">
+      Derniers témoignages
+    </h3>
+
+    <div
+      *ngFor="let item of testimonies"
+      class="flex items-center bg-white rounded-2xl p-3 shadow-lg mb-4">
+
+      <img
+        [src]="item.image"
+        class="w-16 h-16 rounded-xl object-cover">
+
+      <div class="ml-4 flex-1">
+
+        <h4 class="font-semibold text-sm text-gray-800">
+          {{item.title}}
+        </h4>
+
+        <p class="text-gray-500 font-thin text-sm">
+          {{item.author}}
+        </p>
+
+        <div class="flex items-center mt-2">
+
+          <ion-icon
+            name="time-outline"
+            class="text-orange-500 mr-1">
+          </ion-icon>
+
+          <span class="text-xs text-gray-500">
+            {{item.duration}}
+          </span>
+
+        </div>
+
+      </div>
+
+      <button
+        class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center">
+
+        <ion-icon
+          name="play"
+          class="text-white text-xl ml-0.5">
+        </ion-icon>
+
+      </button>
+
+    </div>
+
+  </div>
+
+</ion-content>

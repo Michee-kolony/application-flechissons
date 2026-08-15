@@ -1,0 +1,255 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="container !bg-white !shadow-sm">
+    <div class="flex py-3 items-center gap-3">
+      <ion-back-button
+        defaultHref="/tabs/tab1"
+        text=""
+        class="text-orange-500">
+      </ion-back-button>
+
+      <div>
+        <h1 class="text-lg font-bold text-orange-500">
+          {{ isPredication() ? 'Predication' : isAnnonce() ? 'Annonce' : 'Article' }}
+        </h1>
+        <p class="text-xs text-gray-500">
+          {{ article?.theme || 'Flechissons' }}
+        </p>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="false" class="!bg-gray-50" id="main-content">
+  
+  <!-- SKELETONS ANIMES -->
+  <div *ngIf="isLoading" class="p-4 space-y-4">
+    <div class="w-full bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 animate-pulse" style="aspect-ratio: 16/9;">
+      <div class="w-full h-full flex items-center justify-center">
+        <i class="fas fa-video text-4xl text-gray-300"></i>
+      </div>
+    </div>
+    <div class="space-y-3">
+      <div class="h-8 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded-lg animate-pulse w-3/4"></div>
+      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded-lg animate-pulse w-full"></div>
+      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded-lg animate-pulse w-5/6"></div>
+      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded-lg animate-pulse w-2/3"></div>
+    </div>
+  </div>
+
+  <!-- ERREUR -->
+  <div *ngIf="!isLoading && errorMessage" class="flex items-center justify-center min-h-[60vh]">
+    <div class="text-center p-8">
+      <i class="fas fa-exclamation-circle text-6xl text-red-500"></i>
+      <h2 class="text-xl font-bold text-gray-800 mt-4">Erreur</h2>
+      <p class="text-gray-500 mt-2">{{ errorMessage }}</p>
+      <ion-button (click)="goBack()" class="mt-4" color="orange">
+        Retourner
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- CONTENU -->
+  <div *ngIf="!isLoading && article && !errorMessage" class="pb-24">
+
+    <div class="sticky top-0 z-10 bg-gray-50">
+      
+      <!-- VIDEO -->
+      <div *ngIf="isPredication() && article.youtube" class="w-full overflow-hidden bg-black">
+        <video
+          #videoPlayer
+          [src]="article.youtube"
+          autoplay
+          muted
+          controls
+          playsinline
+          preload="metadata"
+          class="block w-full aspect-video object-contain">
+          Votre navigateur ne supporte pas la lecture de videos.
+        </video>
+      </div>
+
+      <!-- IMAGES -->
+      <div *ngIf="!isPredication()" class="relative w-full bg-gradient-to-br from-gray-50 to-gray-100" style="aspect-ratio: 16/9;">
+        <img
+          *ngIf="hasImages()"
+          [src]="getImageUrl()"
+          [alt]="article.titre"
+          (error)="onImageError($event)"
+          class="w-full h-full object-contain">
+
+        <div *ngIf="!hasImages()" class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-gray-100">
+          <div class="text-center">
+            <i class="fas fa-image text-6xl text-gray-300"></i>
+            <p class="text-gray-400 mt-2">Aucune image</p>
+          </div>
+        </div>
+
+        <button
+          *ngIf="getImageCount() > 1"
+          (click)="prevImage()"
+          class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 transition flex items-center justify-center">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <button
+          *ngIf="getImageCount() > 1"
+          (click)="nextImage()"
+          class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 text-white hover:bg-black/70 transition flex items-center justify-center">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <div *ngIf="getImageCount() > 1" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+          <button
+            *ngFor="let img of article.images; let i = index"
+            (click)="selectImage(i)"
+            class="w-3 h-3 rounded-full transition"
+            [class.bg-white]="i === currentImageIndex"
+            [class.bg-white/50]="i !== currentImageIndex">
+          </button>
+        </div>
+
+        <span *ngIf="getImageCount() > 1" class="absolute top-4 right-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs font-medium backdrop-blur-sm">
+          <i class="fas fa-images"></i>
+          {{ currentImageIndex + 1 }} / {{ getImageCount() }}
+        </span>
+
+        <span class="absolute top-4 left-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-white text-sm font-semibold shadow-lg" [class]="getTypeColor()">
+          <i class="fas" [class]="getTypeIcon()"></i>
+          {{ getTypeLabel() }}
+        </span>
+      </div>
+
+      <!-- TITRE -->
+      <div class="px-4 py-3 bg-white border-b border-gray-100 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900 leading-tight">{{ article.titre }}</h2>
+        <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400">
+          <span class="inline-flex items-center gap-1">
+            <i class="fas fa-clock"></i>
+            {{ getTimeAgo(article.createdAt) }}
+          </span>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-white text-xs font-medium" [class]="getTypeColor()">
+            {{ getTypeLabel() }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-4 pt-3 space-y-4">
+      <div>
+        <p class="text-sm text-gray-600 leading-relaxed">{{ article.description }}</p>
+      </div>
+
+      <div *ngIf="article.theme" class="p-3 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg">
+        <p class="text-sm font-medium text-orange-700">
+          <i class="fas fa-tag mr-2"></i>
+          Theme : {{ article.theme }}
+        </p>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="bg-white shadow-lg rounded-xl p-3 flex justify-around items-center">
+        <button (click)="toggleLike()" class="flex flex-col items-center gap-0.5 transition-transform hover:scale-110">
+          <i class="text-xl" [class]="isLiked ? 'fas fa-heart text-orange-500' : 'far fa-heart text-gray-500'"></i>
+          <span class="text-xs font-semibold text-gray-700">{{ likeCount }}</span>
+        </button>
+
+        <button (click)="focusComment()" class="flex flex-col items-center gap-0.5 transition-transform hover:scale-110">
+          <i class="text-xl far fa-comment text-orange-500"></i>
+          <span class="text-xs font-semibold text-gray-700">{{ commentaires.length }}</span>
+        </button>
+
+        <button (click)="partagerArticle()" class="flex flex-col items-center gap-0.5 transition-transform hover:scale-110">
+          <i class="text-xl fas fa-share-alt text-orange-500"></i>
+          <span class="text-xs font-semibold text-gray-700">Partager</span>
+        </button>
+      </div>
+
+      <!-- COMMENTAIRES -->
+      <div class="space-y-3 pb-4">
+        <h3 class="font-bold text-base text-gray-900">
+          <i class="fas fa-comments mr-2 text-orange-500"></i>
+          Commentaires ({{ commentaires.length }})
+        </h3>
+
+        <div *ngFor="let commentaire of commentaires" class="bg-white p-3 shadow-lg rounded-xl flex gap-3 transition-all hover:shadow-xl">
+          <!-- Avatar avec photo ou initiale -->
+          <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-orange-200 overflow-hidden"
+               [class.bg-white]="commentaire.photo && commentaire.photo !== 'assets/avatar-default.png'"
+               [class.bg-orange-500]="!commentaire.photo || commentaire.photo === 'assets/avatar-default.png'">
+            
+            <!-- Cas 1: L'utilisateur a une photo -->
+            <img 
+              *ngIf="commentaire.photo && commentaire.photo !== 'assets/avatar-default.png'" 
+              [src]="commentaire.photo" 
+              class="w-full h-full object-cover"
+              (error)="commentaire.photo = 'assets/avatar-default.png'">
+            
+            <!-- Cas 2: L'utilisateur n'a pas de photo → afficher l'initiale -->
+            <span *ngIf="!commentaire.photo || commentaire.photo === 'assets/avatar-default.png'" 
+                  class="text-white text-sm font-bold uppercase">
+              {{ getInitiale(commentaire.nom, commentaire.prenom) }}
+            </span>
+          </div>
+
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-sm text-gray-900">
+                {{ getNomComplet(commentaire.prenom, commentaire.nom) }}
+              </h4>
+              <span class="text-xs text-gray-400">{{ commentaire.date }}</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-0.5">{{ commentaire.contenu }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="commentaires.length === 0" class="text-center py-6 bg-white rounded-xl shadow-lg">
+          <i class="fas fa-comment-slash text-3xl text-gray-300"></i>
+          <p class="text-gray-400 text-sm mt-2">Aucun commentaire pour le moment</p>
+          <p class="text-gray-400 text-xs">Soyez le premier a commenter !</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<!-- INPUT COMMENTAIRE -->
+<div class="comment-input-container py-3">
+  <div class="comment-input-wrapper">
+    <div class="flex items-center gap-2.5">
+      <!-- Avatar de l'utilisateur connecté avec photo ou initiale -->
+      <div class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-orange-500 flex-shrink-0 overflow-hidden"
+           [class.bg-white]="userPhoto && userPhoto !== 'assets/avatar-default.png'"
+           [class.bg-orange-500]="!userPhoto || userPhoto === 'assets/avatar-default.png'">
+        
+        <!-- Cas 1: L'utilisateur a une photo -->
+        <img 
+          *ngIf="userPhoto && userPhoto !== 'assets/avatar-default.png'" 
+          [src]="userPhoto" 
+          class="w-full h-full object-cover"
+          (error)="userPhoto = 'assets/avatar-default.png'">
+        
+        <!-- Cas 2: L'utilisateur n'a pas de photo → afficher l'initiale -->
+        <span *ngIf="!userPhoto || userPhoto === 'assets/avatar-default.png'" 
+              class="text-white text-sm font-bold uppercase">
+          {{ getUserInitiale() }}
+        </span>
+      </div>
+      
+      <div class="flex-1 bg-gray-100 rounded-full px-4 py-2 transition-all focus-within:ring-2 focus-within:ring-orange-500/50">
+        <input
+          #commentInput
+          [(ngModel)]="nouveauCommentaire"
+          placeholder="Ecrire un commentaire..."
+          class="bg-transparent outline-none w-full text-black text-sm"
+          (keyup.enter)="ajouterCommentaire()">
+      </div>
+      
+      <button 
+        (click)="ajouterCommentaire()" 
+        class="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full text-white flex items-center justify-center hover:from-orange-600 hover:to-orange-700 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-lg shadow-orange-200 flex-shrink-0"
+        [disabled]="!nouveauCommentaire.trim()">
+        <i class="fas fa-paper-plane text-sm"></i>
+      </button>
+    </div>
+  </div> 
+</div>

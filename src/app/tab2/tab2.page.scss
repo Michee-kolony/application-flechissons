@@ -1,0 +1,18 @@
+ion-content {
+  --background: #ffffff;
+}
+
+ion-header {
+  box-shadow: none;
+}
+
+ion-toolbar {
+  --background: white;
+  --border-color: transparent;
+  --min-height: 80px;
+  backdrop-filter: blur(12px);
+}
+
+ h1 {
+      font-size: 1.1rem !important;
+    }

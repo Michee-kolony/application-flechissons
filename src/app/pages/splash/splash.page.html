@@ -1,0 +1,38 @@
+<ion-content [fullscreen]="true" class="splash-content">
+
+  <div class="splash-container">
+
+    <!-- LOGO / FORME CENTRALE -->
+    <div class="logo-wrapper">
+
+      <div class="glow"></div>
+
+      <div class="morph-shape">
+        <div class="inner-shape"></div>
+      </div>
+
+    </div>
+
+    <!-- NOM DE L'APPLICATION -->
+    <div class="app-name">
+      <span>Fléchissons</span><br/> nos génoux
+    </div>
+
+    <!-- MESSAGE DYNAMIQUE -->
+    <div class="loading-area">
+
+      <p class="loading-text">
+        {{ loadingMessages[currentMessage] }}
+      </p>
+
+      <div class="dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

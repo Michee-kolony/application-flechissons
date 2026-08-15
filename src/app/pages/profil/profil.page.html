@@ -1,0 +1,131 @@
+<!-- profil.page.html -->
+<ion-header class="ion-no-border">
+  <ion-toolbar class="container">
+    <div class="flex items-center py-2 justify-between w-full">
+      <!-- TITRE -->
+      <div>
+        <h1 class="text-xl font-bold text-orange-500">Profil</h1>
+        <p class="text-sm text-gray-500">Bienvenue dans votre espace profil</p>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding" style="--padding-top: 0px !important;">
+  <div class="container mt-4">
+
+    <!-- ================================================= -->
+    <!-- SECTION HÉROS RECTANGULAIRE -->
+    <!-- ================================================= -->
+    <div class="relative bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-5 text-white shadow-lg overflow-hidden">
+
+      <!-- Décorations minimalistes -->
+      <div class="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-white/10"></div>
+      <div class="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-white/5"></div>
+
+      <div class="relative z-10">
+        <!-- Ligne 1 : Photo + Nom + Email -->
+        <div class="flex items-center gap-4">
+          <!-- Photo / Initiale -->
+          <div class="w-16 h-16 rounded-full flex items-center justify-center shadow-lg overflow-hidden flex-shrink-0"
+               [class.bg-white]="hasPhoto"
+               [class.bg-orange-500]="!hasPhoto">
+            
+            <!-- Cas 1: L'utilisateur a une photo -->
+            <img *ngIf="hasPhoto" 
+                 [src]="user?.photo" 
+                 [alt]="fullName" 
+                 class="w-full h-full object-cover" 
+                 referrerpolicy="no-referrer"
+                 (error)="onPhotoError()">
+            
+            <!-- Cas 2: L'utilisateur n'a pas de photo → afficher l'initiale -->
+            <span *ngIf="!hasPhoto" 
+                  class="text-2xl font-bold text-white">
+              {{ userInitial }}
+            </span>
+          </div>
+
+          <!-- Infos -->
+          <div class="min-w-0 flex-1">
+            <h2 class="text-lg font-bold truncate">{{ fullName }}</h2>
+            <p class="text-orange-100 text-xs truncate">{{ user?.email || 'Email non renseigné' }}</p>
+          </div>
+        </div>
+
+        <!-- Ligne 2 : Badge statut + Bouton modifier -->
+        <div class="flex items-center justify-between mt-3 flex-wrap gap-2">
+          <!-- Badge statut -->
+          <div *ngIf="user?.profilComplete" class="inline-flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1">
+            <ion-icon name="checkmark-circle" class="text-sm"></ion-icon>
+            <span class="text-xs font-medium">Profil complet</span>
+          </div>
+          <div *ngIf="user && !user.profilComplete" class="inline-flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1">
+            <ion-icon name="information-circle-outline" class="text-sm"></ion-icon>
+            <span class="text-xs font-medium">À compléter</span>
+          </div>
+
+          <!-- Bouton modifier -->
+          <button type="button" class="bg-white text-orange-600 px-4 py-1.5 rounded-lg text-xs font-semibold shadow-sm hover:bg-orange-50 transition-colors">
+            Modifier
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- ================================================= -->
+    <!-- MENU CARTES HORIZONTALES -->
+    <!-- ================================================= -->
+    <div class="mt-4 space-y-3">
+
+      <!-- Carte 1 : Faire un don -->
+      <div [routerLink]="['/checkout']" class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow">
+        <div>
+          <h3 class="font-semibold text-gray-800 text-base">Faire un don</h3>
+          <p class="text-gray-400 text-xs mt-0.5">Soutenez notre cause</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+          <ion-icon name="heart-outline" class="text-orange-500 text-2xl"></ion-icon>
+        </div>
+      </div>
+
+      <!-- Carte 2 : FAQ -->
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow">
+        <div>
+          <h3 class="font-semibold text-gray-800 text-base">FAQ</h3>
+          <p class="text-gray-400 text-xs mt-0.5">Questions fréquentes</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+          <ion-icon name="help-circle-outline" class="text-orange-500 text-2xl"></ion-icon>
+        </div>
+      </div>
+
+      <!-- Carte 3 : Vidéos likées -->
+      <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow">
+        <div>
+          <h3 class="font-semibold text-gray-800 text-base">Vidéos likées</h3>
+          <p class="text-gray-400 text-xs mt-0.5">Vos favoris</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+          <ion-icon name="play-circle-outline" class="text-orange-500 text-2xl"></ion-icon>
+        </div>
+      </div>
+
+      <!-- Carte 4 : Déconnexion -->
+      <button type="button" (click)="logout()" [disabled]="isLoading" class="w-full bg-white rounded-xl p-4 shadow-sm border border-red-100 flex items-center justify-between hover:shadow-md transition-shadow">
+        <div class="text-left">
+          <h3 class="font-semibold text-red-500 text-base">
+            <span *ngIf="!isLoading">Déconnexion</span>
+            <span *ngIf="isLoading">Déconnexion...</span>
+          </h3>
+          <p class="text-gray-400 text-xs mt-0.5">Quitter votre session</p>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+          <ion-spinner *ngIf="isLoading" name="crescent" class="text-red-500 text-2xl"></ion-spinner>
+          <ion-icon *ngIf="!isLoading" name="log-out-outline" class="text-red-500 text-2xl"></ion-icon>
+        </div>
+      </button>
+
+    </div>
+
+  </div>
+</ion-content>

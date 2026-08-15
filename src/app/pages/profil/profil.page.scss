@@ -1,0 +1,44 @@
+/* tab1.page.scss - CSS corrigé avec espace réduit */
+ion-toolbar {
+  padding-top: var(--ion-safe-area-top, 8px) !important;
+  --padding-top: var(--ion-safe-area-top, 8px) !important;
+  min-height: 60px;
+  --background: white;
+  
+  @media (max-width: 480px) {
+    min-height: 55px;
+    padding-top: var(--ion-safe-area-top, 5px) !important;
+    --padding-top: var(--ion-safe-area-top, 5px) !important;
+  }
+}
+
+h1 {
+  font-size: 1.1rem !important;
+}
+
+ion-content {
+  --padding-top: 0px !important;
+  --background: white;
+  
+  @media (max-width: 480px) {
+    --padding-top: 0px !important;
+  }
+}
+
+/* Ajustement pour le conteneur */
+.container {
+  padding-top: 0px;
+}
+
+/* Ajustement des marges pour les cartes */
+.mt-4 {
+  margin-top: 0.75rem !important;
+}
+
+/* Réduction de l'espace entre le header et le contenu */
+.ion-padding {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 0px;
+  --padding-bottom: 16px;
+}

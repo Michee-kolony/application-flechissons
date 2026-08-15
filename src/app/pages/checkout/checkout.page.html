@@ -1,0 +1,222 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="px-4 py-2">
+    <div class="flex items-center gap-3">
+      <ion-back-button defaultHref="/tabs/profil" text="" class="text-orange-500">
+      </ion-back-button>
+      <div>
+        <h1 class="text-2xl font-bold text-orange-500">Faire un don</h1>
+        <p class="text-sm text-gray-500">Soutenez l'œuvre de Dieu avec votre contribution.</p>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="container p-4">
+
+    <!-- Carte -->
+    <div class="rounded-3xl bg-gradient-to-br from-orange-500 to-orange-700 text-white p-6 shadow-lg">
+      <ion-icon name="heart" class="text-4xl animate-pulse"></ion-icon>
+      <h2 class="text-xl font-bold mt-3">Chaque don fait la différence</h2>
+      <p class="text-orange-100 text-sm mt-2">Merci de soutenir la mission de Fléchissons.</p>
+    </div>
+
+    <!-- Choix montant -->
+    <div class="mt-7">
+      <h3 class="font-bold text-lg text-gray-800">Choisir un montant</h3>
+      <div class="grid grid-cols-3 gap-3 mt-4">
+        <button
+          *ngFor="let montant of montants"
+          (click)="choisirMontant(montant)"
+          class="h-14 rounded-xl border font-bold transition-all duration-300 transform hover:scale-105"
+          [ngClass]="montantSelectionne===montant ? 'bg-orange-500 text-white border-orange-500 shadow-lg' : 'bg-white text-gray-700 border-gray-200 hover:border-orange-300'">
+          {{ montant }} FC
+        </button>
+      </div>
+    </div>
+
+    <!-- Montant personnalisé -->
+    <div class="mt-5">
+      <label class="text-sm font-semibold text-gray-700">Ou saisir un autre montant</label>
+      <div class="mt-2 flex items-center bg-white border border-gray-200 rounded-xl px-4 h-14 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition">
+        <input
+          #montantInput
+          [(ngModel)]="montantPersonnalise"
+          type="number"
+          placeholder="Ex : 1500"
+          (input)="onMontantPersonnaliseChange(montantInput.value)"
+          class="flex-1 outline-none bg-white text-black text-lg">
+        <span class="font-bold text-orange-500">FC</span>
+      </div>
+    </div>
+
+    <!-- Paiement -->
+    <div class="mt-8">
+      <h3 class="font-bold text-lg text-gray-800">Moyen de paiement</h3>
+      <div class="grid grid-cols-2 gap-4 mt-4">
+        
+        <!-- M-Pesa -->
+        <button
+          (click)="choisirPaiement('mpesa')"
+          class="rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
+          [ngClass]="moyenSelectionne==='mpesa' ? 'border-orange-500 ring-2 ring-orange-100 shadow-lg' : 'border-gray-100'">
+          <div class="flex justify-center">
+            <img 
+              src="../../../assets/mpesa.png" 
+              alt="M-Pesa"
+              class="h-12 w-auto object-contain">
+          </div>
+          <p class="font-semibold mt-3 text-sm text-center" [ngClass]="moyenSelectionne==='mpesa' ? 'text-orange-500' : 'text-gray-700'">
+            M-Pesa
+            <span *ngIf="moyenSelectionne==='mpesa'" class="block text-xs text-orange-400">✓ Sélectionné</span>
+          </p>
+        </button>
+
+        <!-- Orange Money -->
+        <button
+          (click)="choisirPaiement('orange')"
+          class="rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
+          [ngClass]="moyenSelectionne==='orange' ? 'border-orange-500 ring-2 ring-orange-100 shadow-lg' : 'border-gray-100'">
+          <div class="flex justify-center">
+            <img 
+              src="../../../assets/orangemoney.png" 
+              alt="Orange Money"
+              class="h-12 w-auto object-contain">
+          </div>
+          <p class="font-semibold mt-3 text-sm text-center" [ngClass]="moyenSelectionne==='orange' ? 'text-orange-500' : 'text-gray-700'">
+            Orange Money
+            <span *ngIf="moyenSelectionne==='orange'" class="block text-xs text-orange-400">✓ Sélectionné</span>
+          </p>
+        </button>
+
+        <!-- Airtel Money -->
+        <button
+          (click)="choisirPaiement('airtel')"
+          class="rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
+          [ngClass]="moyenSelectionne==='airtel' ? 'border-orange-500 ring-2 ring-orange-100 shadow-lg' : 'border-gray-100'">
+          <div class="flex justify-center">
+            <img 
+              src="../../../assets/airtelmoney.png" 
+              alt="Airtel Money"
+              class="h-12 w-auto object-contain">
+          </div>
+          <p class="font-semibold mt-3 text-sm text-center" [ngClass]="moyenSelectionne==='airtel' ? 'text-orange-500' : 'text-gray-700'">
+            Airtel Money
+            <span *ngIf="moyenSelectionne==='airtel'" class="block text-xs text-orange-400">✓ Sélectionné</span>
+          </p>
+        </button>
+
+        <!-- Mastercard -->
+        <button
+          (click)="choisirPaiement('mastercard')"
+          class="rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
+          [ngClass]="moyenSelectionne==='mastercard' ? 'border-orange-500 ring-2 ring-orange-100 shadow-lg' : 'border-gray-100'">
+          <div class="flex justify-center">
+            <img 
+              src="../../../assets/mastercard.png" 
+              alt="Mastercard"
+              class="h-12 w-auto object-contain">
+          </div>
+          <p class="font-semibold mt-3 text-sm text-center" [ngClass]="moyenSelectionne==='mastercard' ? 'text-orange-500' : 'text-gray-700'">
+            Mastercard
+            <span *ngIf="moyenSelectionne==='mastercard'" class="block text-xs text-orange-400">✓ Sélectionné</span>
+          </p>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Informations de paiement -->
+    <div class="mt-6 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+      <div class="flex items-center gap-2 mb-3">
+        <ion-icon [name]="getIconePaiement()" class="text-2xl text-orange-500"></ion-icon>
+        <h4 class="font-semibold text-gray-800">
+          Informations {{ getNomMoyenPaiement() }}
+        </h4>
+      </div>
+
+      <!-- Champ adapté au moyen de paiement -->
+      <div *ngIf="moyenSelectionne !== 'mastercard'" class="mt-2">
+        <label class="text-sm font-semibold text-gray-700">
+          Numéro de téléphone {{ getNomMoyenPaiement() }}
+        </label>
+        <div class="mt-2 flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 h-14 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition">
+          <span class="text-gray-500 font-semibold mr-2">+243</span>
+          <input
+            [(ngModel)]="numeroTelephone"
+            type="tel"
+            placeholder="Ex: 812345678"
+            class="flex-1 outline-none bg-transparent text-black text-lg"
+            maxlength="9">
+        </div>
+        <p class="text-xs text-gray-400 mt-1">Entrez votre numéro sans l'indicateur +243</p>
+      </div>
+
+      <!-- Champ pour Mastercard -->
+      <div *ngIf="moyenSelectionne === 'mastercard'" class="mt-2 space-y-3">
+        <div>
+          <label class="text-sm font-semibold text-gray-700">Numéro de carte</label>
+          <div class="mt-1 flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 h-14 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition">
+            <ion-icon name="card-outline" class="text-gray-400 mr-2"></ion-icon>
+            <input
+              [(ngModel)]="numeroCarte"
+              type="text"
+              placeholder="1234 5678 9012 3456"
+              class="flex-1 outline-none bg-transparent text-black text-lg"
+              maxlength="19"
+              (input)="formaterNumeroCarte($event)">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm font-semibold text-gray-700">Date d'expiration</label>
+            <div class="mt-1 flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 h-14 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition">
+              <input
+                [(ngModel)]="dateExpiration"
+                type="text"
+                placeholder="MM/AA"
+                class="flex-1 outline-none bg-transparent text-black text-lg"
+                maxlength="5"
+                (input)="formaterDateExpiration($event)">
+            </div>
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-gray-700">CVV</label>
+            <div class="mt-1 flex items-center bg-gray-50 border border-gray-200 rounded-xl px-4 h-14 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 transition">
+              <input
+                [(ngModel)]="cvv"
+                type="password"
+                placeholder="***"
+                class="flex-1 outline-none bg-transparent text-black text-lg"
+                maxlength="4">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Résumé du don -->
+    <div class="mt-6 bg-orange-50 rounded-2xl p-4 border border-orange-100">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="text-sm text-gray-600">Montant du don</p>
+          <p class="text-2xl font-bold text-orange-500">{{ montantSelectionne | number }} FC</p>
+        </div>
+        <div class="text-right">
+          <p class="text-sm text-gray-600">Moyen de paiement</p>
+          <p class="font-semibold text-gray-800">{{ getNomMoyenPaiement() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton -->
+    <button 
+      (click)="validerDon()"
+      class="mt-8 w-full bg-orange-500 text-white rounded-2xl py-4 font-bold text-lg shadow-lg transition-all duration-300 hover:bg-orange-600 hover:shadow-xl transform hover:scale-[1.02]">
+      <ion-icon name="lock-closed" class="mr-2"></ion-icon>
+      Confirmer le don
+    </button>
+
+  </div>
+</ion-content>

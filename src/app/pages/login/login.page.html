@@ -1,0 +1,418 @@
+<ion-content
+  [fullscreen]="true"
+  class="login-content"
+>
+
+  <!-- ===================================================== -->
+  <!-- IMAGE DE FOND -->
+  <!-- ===================================================== -->
+
+  <div class="background-image">
+
+    <img
+      src="../../../assets/pasteur.jpeg"
+      alt="Background"
+      class="bg-img"
+    >
+
+    <div class="overlay-gradient"></div>
+
+    <div class="pattern-circles"></div>
+
+    <div class="pattern-dots"></div>
+
+    <div class="pattern-sparkles"></div>
+
+  </div>
+
+
+  <!-- ===================================================== -->
+  <!-- VAGUES -->
+  <!-- ===================================================== -->
+
+  <div class="waves-container">
+
+    <svg
+      class="waves"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 1440 320"
+      preserveAspectRatio="none"
+    >
+
+      <path
+        class="wave wave1"
+        d="M0,192L30,181.3C60,171,120,149,180,149.3C240,149,300,171,360,186.7C420,203,480,213,540,197.3C600,181,660,139,720,133.3C780,128,840,160,900,181.3C960,203,1020,213,1080,202.7C1140,192,1200,160,1260,149.3C1320,139,1380,149,1410,154.7L1440,160L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320L0,320Z"
+      ></path>
+
+      <path
+        class="wave wave2"
+        d="M0,256L30,245.3C60,235,120,213,180,213.3C240,213,300,235,360,245.3C420,256,480,256,540,234.7C600,213,660,171,720,176C780,181,840,235,900,245.3C960,256,1020,224,1080,213.3C1140,203,1200,213,1260,218.7C1320,224,1380,224,1410,224L1440,224L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320L0,320Z"
+      ></path>
+
+      <path
+        class="wave wave3"
+        d="M0,288L30,277.3C60,267,120,245,180,245.3C240,245,300,267,360,277.3C420,288,480,288,540,266.7C600,245,660,203,720,197.3C780,192,840,224,900,234.7C960,245,1020,235,1080,234.7C1140,235,1200,245,1260,250.7C1320,256,1380,256,1410,256L1440,256L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,240,180,320C120,320,60,320,30,320L0,320Z"
+      ></path>
+
+    </svg>
+
+  </div>
+
+
+  <!-- ===================================================== -->
+  <!-- PARTICULES -->
+  <!-- ===================================================== -->
+
+  <div class="particles">
+
+    <div
+      class="particle"
+      style="top: 5%; left: 3%; animation-delay: 0s; width: 8px; height: 8px;"
+    ></div>
+
+    <div
+      class="particle"
+      style="top: 15%; right: 5%; animation-delay: 1.2s; width: 12px; height: 12px;"
+    ></div>
+
+    <div
+      class="particle"
+      style="top: 25%; left: 8%; animation-delay: 2.5s; width: 6px; height: 6px;"
+    ></div>
+
+    <div
+      class="particle"
+      style="top: 40%; right: 3%; animation-delay: 0.8s; width: 10px; height: 10px;"
+    ></div>
+
+    <div
+      class="particle"
+      style="top: 55%; left: 5%; animation-delay: 1.8s; width: 7px; height: 7px;"
+    ></div>
+
+    <div
+      class="particle"
+      style="bottom: 30%; right: 6%; animation-delay: 0.3s; width: 9px; height: 9px;"
+    ></div>
+
+    <div
+      class="particle"
+      style="bottom: 15%; left: 4%; animation-delay: 2.1s; width: 11px; height: 11px;"
+    ></div>
+
+    <div
+      class="particle"
+      style="bottom: 5%; right: 8%; animation-delay: 1.5s; width: 5px; height: 5px;"
+    ></div>
+
+  </div>
+
+
+  <!-- ===================================================== -->
+  <!-- TOAST SUCCESS -->
+  <!-- ===================================================== -->
+
+  <div
+    *ngIf="showSuccessToast"
+    class="app-toast app-toast-success"
+    [class.show]="showSuccessToast"
+    role="alert"
+  >
+
+    <div class="toast-icon">
+
+      <ion-icon
+        name="checkmark-circle"
+      ></ion-icon>
+
+    </div>
+
+    <div class="toast-content">
+
+      <div class="toast-title">
+        Succès
+      </div>
+
+      <div class="toast-message">
+        {{ successMessage }}
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="toast-close"
+      (click)="closeSuccessToast()"
+      aria-label="Fermer"
+    >
+
+      <ion-icon
+        name="close-outline"
+      ></ion-icon>
+
+    </button>
+
+  </div>
+
+
+  <!-- ===================================================== -->
+  <!-- TOAST ERROR -->
+  <!-- ===================================================== -->
+
+  <div
+    *ngIf="showErrorToast"
+    class="app-toast app-toast-error"
+    [class.show]="showErrorToast"
+    role="alert"
+  >
+
+    <div class="toast-icon">
+
+      <ion-icon
+        name="alert-circle"
+      ></ion-icon>
+
+    </div>
+
+    <div class="toast-content">
+
+      <div class="toast-title">
+        Erreur
+      </div>
+
+      <div class="toast-message">
+        {{ errorMessage }}
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="toast-close"
+      (click)="closeErrorToast()"
+      aria-label="Fermer"
+    >
+
+      <ion-icon
+        name="close-outline"
+      ></ion-icon>
+
+    </button>
+
+  </div>
+
+
+  <!-- ===================================================== -->
+  <!-- CONTENEUR PRINCIPAL -->
+  <!-- ===================================================== -->
+
+  <div
+    class="login-container"
+  >
+
+    <!-- ================================================= -->
+    <!-- HEADER -->
+    <!-- ================================================= -->
+
+    <div class="login-header">
+
+      <h2>
+        Connexion
+      </h2>
+
+      <p>
+        Connectez-vous pour accéder à votre compte
+      </p>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- FORMULAIRE -->
+    <!-- ================================================= -->
+
+    <div class="login-form">
+
+
+      <!-- ================================================= -->
+      <!-- EMAIL -->
+      <!-- ================================================= -->
+
+      <div class="input-wrapper">
+
+        <ion-icon
+          name="mail-outline"
+          class="input-icon"
+        ></ion-icon>
+
+        <ion-item
+          lines="none"
+          class="custom-input"
+        >
+
+          <ion-input
+            placeholder="Email"
+            [(ngModel)]="loginData.email"
+            type="email"
+            autocomplete="email"
+            [disabled]="isLoading"
+          ></ion-input>
+
+        </ion-item>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- MOT DE PASSE -->
+      <!-- ================================================= -->
+
+      <div class="input-wrapper">
+
+        <ion-icon
+          name="lock-closed-outline"
+          class="input-icon"
+        ></ion-icon>
+
+        <ion-item
+          lines="none"
+          class="custom-input"
+        >
+
+          <ion-input
+            placeholder="Mot de passe"
+            [(ngModel)]="loginData.password"
+            type="password"
+            autocomplete="current-password"
+            [disabled]="isLoading"
+          ></ion-input>
+
+        </ion-item>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- CONNEXION -->
+      <!-- ================================================= -->
+
+      <ion-button
+        expand="block"
+        class="btn-login"
+        (click)="login()"
+        [disabled]="isLoading"
+      >
+
+        <ion-spinner
+          *ngIf="isLoading"
+          name="crescent"
+        ></ion-spinner>
+
+        <span *ngIf="!isLoading">
+          Se connecter
+        </span>
+
+        <span
+          *ngIf="isLoading"
+          class="loading-text"
+        >
+          Connexion...
+        </span>
+
+      </ion-button>
+
+
+      <!-- ================================================= -->
+      <!-- SÉPARATEUR -->
+      <!-- ================================================= -->
+
+      <div class="separator">
+
+        <span></span>
+
+        <p>
+          ou continuer avec
+        </p>
+
+        <span></span>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- GOOGLE -->
+      <!-- ================================================= -->
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="btn-google"
+        (click)="googleLogin()"
+        [disabled]="isLoading"
+      >
+
+        <div class="google-content">
+
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 48 48"
+            class="google-logo"
+          >
+
+            <path
+              fill="#FFC107"
+              d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
+            />
+
+            <path
+              fill="#FF3D00"
+              d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
+            />
+
+            <path
+              fill="#4CAF50"
+              d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
+            />
+
+            <path
+              fill="#1976D2"
+              d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
+            />
+
+          </svg>
+
+          <span>
+            Continuer avec Google
+          </span>
+
+        </div>
+
+      </ion-button>
+
+
+      <!-- ================================================= -->
+      <!-- INSCRIPTION -->
+      <!-- ================================================= -->
+
+      <div class="signup-link">
+
+        <span class="signup-line"></span>
+
+        <span class="signup-text">
+          Pas encore de compte ?
+        </span>
+
+        <a
+          routerLink="/signup"
+          class="signup-button"
+        >
+          S'inscrire
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>

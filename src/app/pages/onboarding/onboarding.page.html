@@ -1,0 +1,192 @@
+<ion-content [fullscreen]="true">
+
+  <section id="onboarding-slider" class="splide">
+
+    <div class="splide__track">
+
+      <ul class="splide__list">
+
+
+        <!-- =====================================================
+             SLIDE 1
+        ====================================================== -->
+
+        <li class="splide__slide">
+
+          <div class="slide">
+
+            <img
+              src="../../../assets/logo.png"
+              class="background-image logo-background"
+              alt="Logo"
+            >
+
+            <div class="overlay"></div>
+
+
+            <div class="content">
+
+              <!-- LOGO -->
+              <img
+                src="../../../assets/logo.png"
+                class="app-logo"
+                alt="Logo de l'application"
+              >
+
+
+              <!-- TITRE -->
+              <h1>
+                Bienvenue dans notre communauté
+              </h1>
+
+
+              <!-- DESCRIPTION -->
+              <p>
+                Une église qui vous accompagne
+                dans votre marche spirituelle.
+              </p>
+
+
+              <!-- PASSER -->
+              <button
+                type="button"
+                class="skip-btn"
+                (click)="finishOnboarding()"
+              >
+                Passer
+              </button>
+
+            </div>
+
+          </div>
+
+        </li>
+
+
+
+        <!-- =====================================================
+             SLIDE 2
+        ====================================================== -->
+
+        <li class="splide__slide">
+
+          <div class="slide">
+
+            <img
+              src="../../../assets/pasteur.jpeg"
+              class="background-image"
+              alt="Pasteur"
+            >
+
+            <div class="overlay"></div>
+
+
+            <div class="content">
+
+              <!-- ICÔNE -->
+              <ion-icon
+                name="mic-outline"
+                class="big-icon"
+              ></ion-icon>
+
+
+              <!-- TITRE -->
+              <h1>
+                Des prédications inspirantes
+              </h1>
+
+
+              <!-- DESCRIPTION -->
+              <p>
+                Écoutez les enseignements
+                de nos pasteurs partout où vous êtes.
+              </p>
+
+
+              <!-- PASSER -->
+              <button
+                type="button"
+                class="skip-btn"
+                (click)="finishOnboarding()"
+              >
+                Passer
+              </button>
+
+            </div>
+
+          </div>
+
+        </li>
+
+
+
+        <!-- =====================================================
+             SLIDE 3
+        ====================================================== -->
+
+        <li class="splide__slide">
+
+          <div class="slide">
+
+            <img
+              src="../../../assets/onboarding.jpeg"
+              class="background-image"
+              alt="Onboarding"
+            >
+
+            <div class="overlay"></div>
+
+
+            <div class="content">
+
+              <!-- ICÔNE -->
+              <ion-icon
+                name="book-outline"
+                class="big-icon"
+              ></ion-icon>
+
+
+              <!-- TITRE -->
+              <h1>
+                Grandissons ensemble
+              </h1>
+
+
+              <!-- DESCRIPTION -->
+              <p>
+                Découvrez chaque jour
+                la Parole de Dieu.
+              </p>
+
+
+              <!-- COMMENCER -->
+              <button
+                type="button"
+                class="start-btn"
+                (click)="finishOnboarding()"
+              >
+
+                <span>
+                  Commencer
+                </span>
+
+                <ion-icon
+                  name="arrow-forward-outline"
+                ></ion-icon>
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </li>
+
+
+      </ul>
+
+    </div>
+
+  </section>
+
+</ion-content>
