@@ -68,3 +68,24 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+node_modules/
+www/
+.angular/
+.ionic/
+dist/
+.env
+.env.*
+!.env.example
+android/.gradle/
+android/build/
+android/app/build/
+android/app/release/
+ios/App/Pods/
+ios/App/build/
+ios/App/DerivedData/
+ios/App/*.xcworkspace/xcuserdata/
+ios/App/*.xcodeproj/xcuserdata/
+ios/App/*.xcuserstate
+ios/App/GoogleService-Info.plist
+android/app/google-services.json 
+ios/App/App/GoogleService-Info.plist 
