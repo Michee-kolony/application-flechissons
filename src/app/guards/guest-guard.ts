@@ -1,8 +1,7 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { firebaseAuth } from '../core/firebase/firebase.config';
 
 export const guestGuard: CanActivateFn = () => {
 
@@ -14,78 +13,11 @@ export const guestGuard: CanActivateFn = () => {
 
   console.log('🔥 GUEST GUARD : Router OK');
 
-  // =====================================================
-  // FIREBASE CONFIG
-  // =====================================================
-
-  const firebaseConfig = {
-    apiKey: 'AIzaSyBMPr5hheUaMvQeEG45llTyiNVczhbErPY',
-    authDomain: 'kelasi-app.firebaseapp.com',
-    projectId: 'kelasi-app',
-    storageBucket: 'kelasi-app.firebasestorage.app',
-    messagingSenderId: '345155809498',
-    appId: '1:345155809498:web:81707390dd617802dd35e3'
-  };
-
   console.log('🔥 GUEST GUARD : Firebase config OK');
+  console.log('🔥 GUEST GUARD : Firebase App OK');
+  console.log('🔥 GUEST GUARD : Firebase Auth OK');
 
-  // =====================================================
-  // INITIALISER FIREBASE
-  // =====================================================
-
-  let firebaseApp;
-
-  try {
-
-    console.log(
-      '🔥 GUEST GUARD : Firebase apps existantes =',
-      getApps().length
-    );
-
-    firebaseApp =
-      getApps().length > 0
-        ? getApps()[0]
-        : initializeApp(firebaseConfig);
-
-    console.log(
-      '🔥 GUEST GUARD : Firebase App OK'
-    );
-
-  } catch (error) {
-
-    console.error(
-      '❌ GUEST GUARD : Erreur initializeApp',
-      error
-    );
-
-    // En cas d'erreur Firebase,
-    // on laisse l'utilisateur accéder à Login/Register.
-    return true;
-  }
-
-  // =====================================================
-  // FIREBASE AUTH
-  // =====================================================
-
-  let auth;
-
-  try {
-
-    auth = getAuth(firebaseApp);
-
-    console.log(
-      '🔥 GUEST GUARD : Firebase Auth OK'
-    );
-
-  } catch (error) {
-
-    console.error(
-      '❌ GUEST GUARD : Erreur getAuth',
-      error
-    );
-
-    return true;
-  }
+  const auth = firebaseAuth;
 
   // =====================================================
   // VÉRIFICATION DIRECTE

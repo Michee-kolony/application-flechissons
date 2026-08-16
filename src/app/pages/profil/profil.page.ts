@@ -3,17 +3,11 @@ import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 
 import {
-  FirebaseApp,
-  initializeApp,
-  getApp,
-  getApps
-} from 'firebase/app';
-
-import {
-  getAuth,
   Auth,
   signOut
 } from 'firebase/auth';
+
+import { firebaseAuth } from '../../core/firebase/firebase.config';
 
 
 interface User {
@@ -54,46 +48,7 @@ export class ProfilPage implements OnInit {
   // FIREBASE
   // =====================================================
 
-  private readonly firebaseConfig = {
-
-    apiKey:
-      'AIzaSyBMPr5hheUaMvQeEG45llTyiNVczhbErPY',
-
-    authDomain:
-      'kelasi-app.firebaseapp.com',
-
-    projectId:
-      'kelasi-app',
-
-    storageBucket:
-      'kelasi-app.firebasestorage.app',
-
-    messagingSenderId:
-      '345155809498',
-
-    appId:
-      '1:345155809498:web:81707390dd617802dd35e3'
-
-  };
-
-
-  private firebaseApp: FirebaseApp =
-    this.getFirebaseApp();
-
-
-  private auth: Auth =
-    getAuth(
-      this.firebaseApp
-    );
-
-
-  private getFirebaseApp(): FirebaseApp {
-    const apps = getApps();
-    if (apps.length > 0) {
-      return getApp();
-    }
-    return initializeApp(this.firebaseConfig);
-  }
+  private auth: Auth = firebaseAuth;
 
 
   // =====================================================

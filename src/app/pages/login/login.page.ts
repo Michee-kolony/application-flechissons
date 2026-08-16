@@ -15,23 +15,9 @@ import {
   GoogleSignIn
 } from '@capawesome/capacitor-google-sign-in';
 
-import {
-  FirebaseApp,
-  initializeApp,
-  getApp,
-  getApps
-} from 'firebase/app';
+import { Auth, GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
 
-import {
-  getAuth,
-  Auth,
-  GoogleAuthProvider,
-  signInWithCredential,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut
-} from 'firebase/auth';
+import { firebaseAuth } from '../../core/firebase/firebase.config';
 
 
 @Component({
@@ -88,41 +74,10 @@ export class LoginPage implements OnInit {
 
 
   // =====================================================
-  // FIREBASE CONFIGURATION
-  // =====================================================
-
-  private readonly firebaseConfig = {
-
-    apiKey:
-      'AIzaSyBMPr5hheUaMvQeEG45llTyiNVczhbErPY',
-
-    authDomain:
-      'kelasi-app.firebaseapp.com',
-
-    projectId:
-      'kelasi-app',
-
-    storageBucket:
-      'kelasi-app.firebasestorage.app',
-
-    messagingSenderId:
-      '345155809498',
-
-    appId:
-      '1:345155809498:web:81707390dd617802dd35e3'
-
-  };
-
-
-  // =====================================================
   // FIREBASE
   // =====================================================
 
-  private firebaseApp: FirebaseApp =
-    this.getFirebaseApp();
-
-  private auth: Auth =
-    getAuth(this.firebaseApp);
+  private auth: Auth = firebaseAuth;
 
 
   // =====================================================
@@ -142,57 +97,6 @@ export class LoginPage implements OnInit {
     private router: Router,
     private http: HttpClient
   ) {}
-
-
-  // =====================================================
-  // FIREBASE APP
-  // Évite initializeApp plusieurs fois
-  // =====================================================
-
-  private getFirebaseApp(): FirebaseApp {
-
-    console.log(
-      '🔥 Vérification Firebase Apps existantes...'
-    );
-
-    const apps =
-      getApps();
-
-    console.log(
-      '🔥 Firebase Apps existantes :',
-      apps.length
-    );
-
-    if (apps.length > 0) {
-
-      console.log(
-        '🔥 Firebase App existante utilisée.'
-      );
-
-      return getApp();
-
-    }
-
-    console.log(
-      '🔥 Aucune Firebase App trouvée.'
-    );
-
-    console.log(
-      '🔥 Création Firebase App...'
-    );
-
-    const app =
-      initializeApp(
-        this.firebaseConfig
-      );
-
-    console.log(
-      '✅ Firebase App créée.'
-    );
-
-    return app;
-
-  }
 
 
   // =====================================================
@@ -219,11 +123,6 @@ export class LoginPage implements OnInit {
       console.log(
         '🌐 Capacitor.isNativePlatform() :',
         Capacitor.isNativePlatform()
-      );
-
-      console.log(
-        '🔥 Firebase App :',
-        this.firebaseApp
       );
 
       console.log(
@@ -1078,7 +977,7 @@ export class LoginPage implements OnInit {
       );
       console.log(
         '🌐 Firebase projectId :',
-        this.auth.app.options.projectId || this.firebaseConfig.projectId
+        this.auth.app.options.projectId || 'kelasi-app'
       );
       console.log(
         '👤 Firebase currentUser avant :',
