@@ -1,5 +1,19 @@
-import { FirebaseApp, getApp, getApps, initializeApp } from 'firebase/app';
-import { Auth, getAuth } from 'firebase/auth';
+import {
+  FirebaseApp,
+  getApp,
+  getApps,
+  initializeApp
+} from 'firebase/app';
+
+import {
+  Auth,
+  getAuth
+} from 'firebase/auth';
+
+
+// =====================================================
+// FIREBASE CONFIG
+// =====================================================
 
 export const firebaseConfig = {
   apiKey: 'AIzaSyBMPr5hheUaMvQeEG45llTyiNVczhbErPY',
@@ -10,19 +24,39 @@ export const firebaseConfig = {
   appId: '1:345155809498:web:81707390dd617802dd35e3'
 };
 
-export function getFirebaseApp(): FirebaseApp {
-  const apps = getApps();
 
-  if (apps.length > 0) {
+// =====================================================
+// FIREBASE APP UNIQUE
+// =====================================================
+
+export function getFirebaseApp(): FirebaseApp {
+
+  if (getApps().length > 0) {
     return getApp();
   }
 
   return initializeApp(firebaseConfig);
 }
 
+
+// =====================================================
+// FIREBASE AUTH UNIQUE
+// =====================================================
+
 export function getFirebaseAuth(): Auth {
-  return getAuth(getFirebaseApp());
+
+  const app = getFirebaseApp();
+
+  return getAuth(app);
 }
 
-export const firebaseApp = getFirebaseApp();
-export const firebaseAuth = getFirebaseAuth();
+
+// =====================================================
+// INSTANCES CENTRALES
+// =====================================================
+
+export const firebaseApp =
+  getFirebaseApp();
+
+export const firebaseAuth =
+  getFirebaseAuth();
