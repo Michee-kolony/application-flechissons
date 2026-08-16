@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { guestGuard } from './guards/guest-guard';
 import { onboardingGuard } from './guards/onboarding-guard';
 
 const routes: Routes = [
@@ -35,12 +34,10 @@ const routes: Routes = [
   },
   {
     path: 'login',
-    canActivate:[guestGuard],
     loadChildren: () => import('./pages/login/login.module').then( m => m.LoginPageModule)
   },
   {
     path: 'signup',
-    canActivate:[guestGuard],
     loadChildren: () => import('./pages/signup/signup.module').then( m => m.SignupPageModule)
   },
   {

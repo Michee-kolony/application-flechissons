@@ -1,19 +1,16 @@
-/* =========================================================
-   LOGIN
-   ========================================================= */
+/* =====================================================
+   CONTENT
+===================================================== */
 
 .login-content {
-  --background: transparent;
-
+  --background: #000;
   position: relative;
-  height: 100%;
-  overflow: hidden;
 }
 
 
-/* =========================================================
+/* =====================================================
    BACKGROUND
-   ========================================================= */
+===================================================== */
 
 .background-image {
   position: fixed;
@@ -23,14 +20,17 @@
 }
 
 .bg-img {
-  position: absolute;
-  inset: 0;
-
   width: 100%;
   height: 100%;
-
   object-fit: cover;
+  transform: scale(1.04);
+  filter: saturate(1.05);
 }
+
+
+/* =====================================================
+   GRADIENT ORANGE
+===================================================== */
 
 .overlay-gradient {
   position: absolute;
@@ -38,1140 +38,652 @@
 
   background:
     linear-gradient(
-      135deg,
-      rgba(249, 115, 22, 0.86) 0%,
-      rgba(251, 146, 60, 0.78) 40%,
-      rgba(234, 88, 12, 0.88) 100%
+      180deg,
+      rgba(0, 0, 0, .72) 0%,
+      rgba(0, 0, 0, .42) 35%,
+      rgba(0, 0, 0, .76) 100%
     );
 
-  z-index: 1;
+  backdrop-filter: blur(1px);
 }
 
 
-/* =========================================================
-   PATTERNS
-   ========================================================= */
+/* =====================================================
+   PATTERN
+===================================================== */
 
 .pattern-circles {
   position: absolute;
-  inset: 0;
+  width: 280px;
+  height: 280px;
+  top: -120px;
+  right: -100px;
 
-  background-image:
-    radial-gradient(
-      circle at 10% 20%,
-      rgba(255,255,255,0.08) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 90% 80%,
-      rgba(255,255,255,0.1) 0%,
-      transparent 40%
-    ),
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(255,255,255,0.05) 0%,
-      transparent 70%
-    );
+  border: 1px solid rgba(249, 115, 22, .25);
+  border-radius: 50%;
 
-  pointer-events: none;
-
-  z-index: 2;
+  box-shadow:
+    0 0 0 35px rgba(249, 115, 22, .04),
+    0 0 0 70px rgba(249, 115, 22, .025);
 }
 
 .pattern-dots {
   position: absolute;
   inset: 0;
 
-  background-image:
-    radial-gradient(
-      rgba(255,255,255,0.08) 1px,
-      transparent 1px
-    );
-
-  background-size: 30px 30px;
-
-  pointer-events: none;
-
-  animation: dotsMove 60s linear infinite;
-
-  z-index: 2;
-}
-
-@keyframes dotsMove {
-
-  0% {
-    transform: translate(0, 0);
-  }
-
-  100% {
-    transform: translate(30px, 30px);
-  }
-
-}
-
-
-.pattern-sparkles {
-  position: absolute;
-  inset: 0;
+  opacity: .25;
 
   background-image:
     radial-gradient(
-      circle at 15% 25%,
-      rgba(255,255,255,0.25) 1px,
-      transparent 1px
-    ),
-    radial-gradient(
-      circle at 85% 15%,
-      rgba(255,255,255,0.2) 2px,
-      transparent 2px
-    ),
-    radial-gradient(
-      circle at 45% 75%,
-      rgba(255,255,255,0.15) 1.5px,
-      transparent 1.5px
-    ),
-    radial-gradient(
-      circle at 75% 45%,
-      rgba(255,255,255,0.18) 1px,
+      rgba(255,255,255,.35) 1px,
       transparent 1px
     );
 
-  background-size: 200px 200px;
+  background-size: 22px 22px;
 
-  pointer-events: none;
-
-  animation: sparklePulse 4s ease-in-out infinite;
-
-  z-index: 2;
-}
-
-@keyframes sparklePulse {
-
-  0%,
-  100% {
-    opacity: 0.6;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
+  mask-image:
+    linear-gradient(
+      to bottom,
+      black,
+      transparent 65%
+    );
 }
 
 
-/* =========================================================
-   VAGUES
-   ========================================================= */
-
-.waves-container {
-  position: fixed;
-
-  bottom: 0;
-  left: 0;
-
-  width: 100%;
-
-  z-index: 3;
-
-  pointer-events: none;
-}
-
-.waves {
-  display: block;
-
-  width: 100%;
-  height: 150px;
-}
-
-.wave {
-  fill: white;
-}
-
-.wave1 {
-  opacity: 0.25;
-
-  animation:
-    waveFloat 8s ease-in-out infinite;
-}
-
-.wave2 {
-  opacity: 0.4;
-
-  animation:
-    waveFloat 10s ease-in-out infinite reverse;
-
-  animation-delay: -2s;
-}
-
-.wave3 {
-  opacity: 0.6;
-
-  animation:
-    waveFloat 6s ease-in-out infinite;
-
-  animation-delay: -4s;
-}
-
-@keyframes waveFloat {
-
-  0%,
-  100% {
-    transform:
-      translateX(0)
-      translateY(0);
-  }
-
-  50% {
-    transform:
-      translateX(20px)
-      translateY(-8px);
-  }
-
-}
-
-
-/* =========================================================
-   PARTICULES
-   ========================================================= */
+/* =====================================================
+   PARTICLES
+===================================================== */
 
 .particles {
   position: fixed;
   inset: 0;
-
+  z-index: 1;
   pointer-events: none;
-
-  z-index: 4;
 }
 
 .particle {
   position: absolute;
 
+  width: 7px;
+  height: 7px;
+
   border-radius: 50%;
 
-  background: rgba(255,255,255,0.2);
+  background: #f97316;
 
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  box-shadow:
+    0 0 12px rgba(249,115,22,.8);
 
-  border: 1px solid rgba(255,255,255,0.15);
+  opacity: .7;
 
-  animation:
-    floatParticle 10s ease-in-out infinite;
+  animation: floatParticle 4s ease-in-out infinite;
 }
 
 @keyframes floatParticle {
 
   0%,
   100% {
-    transform:
-      translate(0,0)
-      scale(1);
-
-    opacity: 0.3;
-  }
-
-  25% {
-    transform:
-      translate(30px,-40px)
-      scale(1.2);
-
-    opacity: 0.7;
+    transform: translateY(0) scale(1);
+    opacity: .35;
   }
 
   50% {
-    transform:
-      translate(-20px,-60px)
-      scale(0.8);
-
-    opacity: 0.5;
+    transform: translateY(-18px) scale(1.25);
+    opacity: .9;
   }
-
-  75% {
-    transform:
-      translate(25px,-30px)
-      scale(1.1);
-
-    opacity: 0.8;
-  }
-
 }
 
 
-/* =========================================================
-   TOASTS
-   ========================================================= */
-
-/*
-   IMPORTANT :
-
-   On ne dépend PLUS de Tailwind pour les toasts.
-
-   Le toast est positionné directement avec CSS.
-*/
-
-.app-toast {
-
-  position: fixed;
-
-  /*
-   Très important pour Ionic / Android / iOS.
-  */
-  top: calc(
-    env(safe-area-inset-top, 0px) + 18px
-  );
-
-  left: 50%;
-
-  width: calc(100% - 32px);
-
-  max-width: 360px;
-
-  min-height: 58px;
-
-  padding: 10px 12px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  border-radius: 16px;
-
-  /*
-   Très important :
-   au-dessus de tous les éléments Ionic.
-  */
-  z-index: 999999;
-
-  /*
-   Initialement caché.
-  */
-  opacity: 0;
-
-  visibility: hidden;
-
-  pointer-events: none;
-
-  transform:
-    translate3d(-50%, -25px, 0)
-    scale(0.96);
-
-  transition:
-    opacity 0.3s ease,
-    transform 0.35s cubic-bezier(
-      0.16,
-      1,
-      0.3,
-      1
-    ),
-    visibility 0.3s ease;
-
-  /*
-   Glass effect.
-  */
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-
-  /*
-   Empêche le toast de dépasser.
-  */
-  box-sizing: border-box;
-}
-
-
-/*
-   TOAST VISIBLE
-*/
-
-.app-toast.show {
-
-  opacity: 1;
-
-  visibility: visible;
-
-  pointer-events: auto;
-
-  transform:
-    translate3d(-50%, 0, 0)
-    scale(1);
-}
-
-
-/* =========================================================
-   TOAST SUCCESS
-   ========================================================= */
-
-.app-toast-success {
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(16,185,129,0.97),
-      rgba(5,150,105,0.97)
-    );
-
-  border:
-    1px solid rgba(255,255,255,0.25);
-
-  box-shadow:
-    0 12px 35px rgba(5,150,105,0.35);
-}
-
-
-/* =========================================================
-   TOAST ERROR
-   ========================================================= */
-
-.app-toast-error {
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(239,68,68,0.97),
-      rgba(220,38,38,0.97)
-    );
-
-  border:
-    1px solid rgba(255,255,255,0.25);
-
-  box-shadow:
-    0 12px 35px rgba(220,38,38,0.35);
-}
-
-
-/* =========================================================
-   TOAST ICON
-   ========================================================= */
-
-.toast-icon {
-
-  width: 34px;
-  height: 34px;
-
-  min-width: 34px;
-
-  border-radius: 50%;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  background:
-    rgba(255,255,255,0.18);
-
-  color: white;
-
-  box-shadow:
-    inset 0 0 0 1px
-    rgba(255,255,255,0.12);
-}
-
-.toast-icon ion-icon {
-
-  font-size: 21px;
-}
-
-
-/* =========================================================
-   TOAST CONTENT
-   ========================================================= */
-
-.toast-content {
-
-  flex: 1;
-
-  min-width: 0;
-
-  overflow: hidden;
-}
-
-.toast-title {
-
-  color: white;
-
-  font-size: 13px;
-
-  line-height: 18px;
-
-  font-weight: 700;
-
-  margin-bottom: 1px;
-}
-
-.toast-message {
-
-  color:
-    rgba(255,255,255,0.92);
-
-  font-size: 12px;
-
-  line-height: 17px;
-
-  font-weight: 400;
-
-  /*
-   Maximum 2 lignes.
-  */
-  display: -webkit-box;
-
-  -webkit-line-clamp: 2;
-
-  -webkit-box-orient: vertical;
-
-  overflow: hidden;
-
-  word-break: break-word;
-}
-
-
-/* =========================================================
-   BOUTON FERMETURE
-   ========================================================= */
-
-.toast-close {
-
-  width: 28px;
-  height: 28px;
-
-  min-width: 28px;
-
-  border: 0;
-
-  padding: 0;
-
-  margin: 0;
-
-  border-radius: 50%;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  background:
-    rgba(255,255,255,0.12);
-
-  color:
-    rgba(255,255,255,0.85);
-
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-}
-
-.toast-close ion-icon {
-
-  font-size: 18px;
-}
-
-.toast-close:active {
-
-  transform: scale(0.88);
-
-  background:
-    rgba(255,255,255,0.22);
-}
-
-
-/* =========================================================
-   CONTENEUR LOGIN
-   ========================================================= */
+/* =====================================================
+   MAIN CONTAINER
+===================================================== */
 
 .login-container {
-
   position: relative;
-
-  z-index: 10;
-
-  width: 100%;
-
-  max-width: 420px;
+  z-index: 5;
 
   min-height: 100%;
-
-  margin: 0 auto;
+  width: 100%;
 
   padding:
-    calc(env(safe-area-inset-top, 0px) + 25px)
-    24px
-    calc(env(safe-area-inset-bottom, 0px) + 30px);
+    45px
+    22px
+    35px;
 
   display: flex;
-
   flex-direction: column;
-
   justify-content: center;
 
-  box-sizing: border-box;
-
-  animation:
-    fadeInUp 0.7s ease;
+  max-width: 520px;
+  margin: auto;
 }
 
 
-/* =========================================================
+/* =====================================================
+   BRAND
+===================================================== */
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 35px;
+
+  animation: fadeDown .7s ease both;
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 15px;
+
+  background: linear-gradient(
+    135deg,
+    #f97316,
+    #ea580c
+  );
+
+  color: white;
+
+  font-size: 25px;
+
+  box-shadow:
+    0 10px 30px rgba(249,115,22,.3);
+}
+
+.brand h1 {
+  margin: 0;
+
+  color: white;
+
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -.4px;
+}
+
+.brand span {
+  color: rgba(255,255,255,.62);
+
+  font-size: 12px;
+}
+
+
+/* =====================================================
    HEADER
-   ========================================================= */
+===================================================== */
 
 .login-header {
-
-  text-align: center;
-
+  animation: fadeUp .7s ease .1s both;
   margin-bottom: 25px;
 }
 
-.login-header h2 {
+.welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 
+  padding: 6px 11px;
+
+  border-radius: 999px;
+
+  background: rgba(249,115,22,.14);
+  border: 1px solid rgba(249,115,22,.25);
+
+  color: #fb923c;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  margin-bottom: 12px;
+}
+
+.login-header h2 {
   margin: 0;
 
   color: white;
 
-  font-size: 30px;
+  font-size: 32px;
+  font-weight: 800;
 
-  line-height: 36px;
+  letter-spacing: -1px;
+}
 
-  font-weight: 700;
-
-  text-shadow:
-    0 3px 12px
-    rgba(0,0,0,0.18);
+.login-header h2 span {
+  font-size: 27px;
 }
 
 .login-header p {
+  margin-top: 8px;
 
-  margin:
-    5px 0 0;
+  color: rgba(255,255,255,.65);
 
-  color:
-    rgba(255,255,255,0.82);
-
-  font-size: 14px;
-
-  line-height: 20px;
-
-  text-shadow:
-    0 1px 8px
-    rgba(0,0,0,0.12);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 
-/* =========================================================
+/* =====================================================
    FORM
-   ========================================================= */
+===================================================== */
 
 .login-form {
-
-  width: 100%;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 14px;
+  animation: fadeUp .7s ease .2s both;
 }
 
 
-/* =========================================================
+/* =====================================================
    INPUT
-   ========================================================= */
+===================================================== */
 
 .input-wrapper {
-
   position: relative;
-
-  width: 100%;
-
-  min-height: 54px;
-
-  display: flex;
-
-  align-items: center;
-
-  background:
-    rgba(255,255,255,0.15);
-
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-
-  border:
-    2px solid
-    rgba(255,255,255,0.15);
-
-  border-radius: 16px;
-
-  transition:
-    all 0.3s ease;
-}
-
-.input-wrapper:focus-within {
-
-  border-color:
-    rgba(255,255,255,0.45);
-
-  background:
-    rgba(255,255,255,0.23);
-
-  box-shadow:
-    0 0 0 4px
-    rgba(255,255,255,0.08);
+  margin-bottom: 13px;
 }
 
 .input-icon {
+  position: absolute;
 
-  font-size: 20px;
+  left: 16px;
+  top: 50%;
 
-  color:
-    rgba(255,255,255,0.8);
+  transform: translateY(-50%);
 
-  margin-left: 16px;
+  z-index: 10;
 
-  flex-shrink: 0;
+  color: #f97316;
+
+  font-size: 19px;
 }
 
 .custom-input {
+  --background: rgba(255,255,255,.96);
 
-  flex: 1;
+  --border-radius: 15px;
 
-  --background: transparent !important;
+  --padding-start: 48px;
+  --padding-end: 15px;
 
-  --padding-start: 10px;
+  height: 56px;
 
-  --padding-end: 16px;
+  border-radius: 15px;
 
-  --inner-padding-end: 0;
+  box-shadow:
+    0 8px 25px rgba(0,0,0,.12);
 
-  --min-height: 50px;
+  --highlight-color-focused: #f97316;
 }
 
 .custom-input ion-input {
+  --color: #1f2937;
+  --placeholder-color: #9ca3af;
 
-  --color: white !important;
+  font-size: 14px;
+}
 
-  --placeholder-color:
-    rgba(255,255,255,0.6) !important;
+.password-toggle {
+  color: #9ca3af;
 
-  --placeholder-opacity: 1;
+  font-size: 20px;
 
-  font-size: 15px;
+  cursor: pointer;
+
+  transition: .2s;
+}
+
+.password-toggle:hover {
+  color: #f97316;
 }
 
 
-/* =========================================================
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
+
+.forgot-password {
+  text-align: right;
+
+  margin:
+    3px
+    3px
+    18px;
+}
+
+.forgot-password a {
+  color: #fb923c;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+
+/* =====================================================
    LOGIN BUTTON
-   ========================================================= */
+===================================================== */
 
 .btn-login {
+  --background: linear-gradient(
+    135deg,
+    #f97316,
+    #ea580c
+  );
 
-  margin: 2px 0 0;
+  --border-radius: 15px;
 
-  --background: white;
+  height: 56px;
 
-  --background-activated:
-    #f0f0f0;
+  margin: 0;
 
-  --background-hover:
-    #f8f8f8;
+  font-size: 14px;
+  font-weight: 800;
 
-  --color: #F97316;
+  letter-spacing: .1px;
 
-  --border-radius: 16px;
-
-  --box-shadow:
-    0 5px 20px
-    rgba(0,0,0,0.13);
-
-  --padding-top: 17px;
-
-  --padding-bottom: 17px;
-
-  font-size: 16px;
-
-  font-weight: 700;
-
-  text-transform: none;
-
-  letter-spacing: 0.3px;
+  box-shadow:
+    0 12px 28px rgba(249,115,22,.28);
 
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform .2s ease,
+    box-shadow .2s ease;
 }
 
 .btn-login:active {
+  transform: scale(.98);
 
-  transform: scale(0.98);
+  box-shadow:
+    0 7px 18px rgba(249,115,22,.22);
 }
 
-.btn-login ion-spinner {
-
-  color: #F97316;
-
-  width: 20px;
-  height: 20px;
-}
-
-.loading-text {
-
+.btn-login ion-icon {
   margin-left: 8px;
+  font-size: 18px;
 }
 
 
-/* =========================================================
+/* =====================================================
+   SPINNER
+===================================================== */
+
+.login-spinner {
+  width: 19px;
+  height: 19px;
+
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: white;
+
+  border-radius: 50%;
+
+  animation: spin .7s linear infinite;
+
+  margin-right: 9px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =====================================================
    SEPARATOR
-   ========================================================= */
+===================================================== */
 
 .separator {
-
   display: flex;
-
   align-items: center;
 
   gap: 12px;
 
-  margin: 5px 0;
+  margin: 22px 0;
 }
 
 .separator span {
-
+  height: 1px;
   flex: 1;
 
-  height: 1px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(255,255,255,0.25)
-    );
-}
-
-.separator span:last-child {
-
-  background:
-    linear-gradient(
-      90deg,
-      rgba(255,255,255,0.25),
-      transparent
-    );
+  background: rgba(255,255,255,.18);
 }
 
 .separator p {
+  margin: 0;
+
+  color: rgba(255,255,255,.48);
+
+  font-size: 11px;
+}
+
+
+/* =====================================================
+   GOOGLE
+===================================================== */
+
+.btn-google {
+  --background: rgba(255,255,255,.96);
+  --color: #1f2937;
+
+  --border-radius: 15px;
+
+  height: 54px;
 
   margin: 0;
 
-  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
 
-  color:
-    rgba(255,255,255,0.62);
+  box-shadow:
+    0 8px 25px rgba(0,0,0,.12);
+}
+
+.google-icon {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+
+  margin-right: 8px;
+
+  border-radius: 50%;
+
+  background: white;
+
+  color: #4285f4;
+
+  font-size: 15px;
+  font-weight: 900;
+}
+
+
+/* =====================================================
+   SIGNUP
+===================================================== */
+
+.signup-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 25px;
 
   font-size: 12px;
 
-  font-weight: 500;
+  color: rgba(255,255,255,.58);
 }
 
+.signup-link a {
+  color: #fb923c;
 
-/* =========================================================
-   GOOGLE
-   ========================================================= */
-
-.btn-google {
-
-  --border-color:
-    rgba(255,255,255,0.4);
-
-  --color: white;
-
-  --border-radius: 16px;
-
-  --padding-top: 16px;
-
-  --padding-bottom: 16px;
-
-  --background:
-    rgba(255,255,255,0.05);
-
-  --background-hover:
-    rgba(255,255,255,0.1);
-
-  margin: 0;
-
-  font-size: 15px;
-
-  font-weight: 600;
-
-  text-transform: none;
-
-  letter-spacing: 0.2px;
-}
-
-.google-content {
-
-  width: 100%;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 10px;
-}
-
-.google-logo {
-
-  width: 22px;
-
-  height: 22px;
-
-  flex-shrink: 0;
-}
-
-
-/* =========================================================
-   INSCRIPTION
-   ========================================================= */
-
-.signup-link {
-
-  position: relative;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 7px;
-
-  margin-top: 5px;
-
-  padding-top: 17px;
-}
-
-.signup-line {
-
-  position: absolute;
-
-  top: 0;
-
-  left: 20%;
-
-  right: 20%;
-
-  height: 1px;
-
-  background:
-    linear-gradient(
-      90deg,
-      transparent,
-      rgba(255,255,255,0.2),
-      transparent
-    );
-}
-
-.signup-text {
-
-  color:
-    rgba(255,255,255,0.7);
-
-  font-size: 13px;
-
-  font-weight: 500;
-}
-
-.signup-button {
-
-  color: white;
+  font-weight: 800;
 
   text-decoration: none;
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  padding:
-    6px 13px;
-
-  border-radius: 20px;
-
-  background:
-    rgba(255,255,255,0.15);
-
-  border:
-    1px solid
-    rgba(255,255,255,0.2);
-
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  transition:
-    all 0.2s ease;
-}
-
-.signup-button:active {
-
-  transform: scale(0.95);
 }
 
 
-/* =========================================================
-   ANIMATION
-   ========================================================= */
+/* =====================================================
+   ANIMATIONS
+===================================================== */
 
-@keyframes fadeInUp {
+@keyframes fadeUp {
 
   from {
-
     opacity: 0;
-
-    transform:
-      translateY(25px);
+    transform: translateY(18px);
   }
 
   to {
-
     opacity: 1;
-
-    transform:
-      translateY(0);
+    transform: translateY(0);
   }
+
+}
+
+@keyframes fadeDown {
+
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
 }
 
 
-/* =========================================================
-   PETITS ÉCRANS
-   ========================================================= */
+/* =====================================================
+   TOAST TAILWIND
+===================================================== */
 
-@media (max-width: 420px) {
+@keyframes toastIn {
 
-  .login-container {
-
-    padding-left: 17px;
-
-    padding-right: 17px;
+  from {
+    opacity: 0;
+    transform:
+      translate(-50%, -18px)
+      scale(.96);
   }
 
-  .login-header {
+  to {
+    opacity: 1;
+    transform:
+      translate(-50%, 0)
+      scale(1);
+  }
 
+}
+
+.animate-toast-in {
+  animation:
+    toastIn .3s cubic-bezier(.22,1,.36,1);
+}
+
+
+/* =====================================================
+   SMALL SCREEN
+===================================================== */
+
+@media (max-height: 700px) {
+
+  .login-container {
+    padding-top: 25px;
+    padding-bottom: 20px;
+  }
+
+  .brand {
     margin-bottom: 20px;
   }
 
+  .login-header {
+    margin-bottom: 17px;
+  }
+
   .login-header h2 {
-
-    font-size: 26px;
-
-    line-height: 32px;
+    font-size: 27px;
   }
 
-  .login-header p {
-
-    font-size: 13px;
-  }
-
-  .input-wrapper {
-
-    min-height: 52px;
-  }
-
-  .btn-login {
-
-    --padding-top: 16px;
-
-    --padding-bottom: 16px;
-
-    font-size: 15px;
-  }
-
-  .btn-google {
-
-    --padding-top: 15px;
-
-    --padding-bottom: 15px;
-
-    font-size: 14px;
-  }
-
-  .waves {
-
-    height: 100px;
-  }
-
-  /*
-     Toast encore légèrement plus petit
-     sur téléphone.
-  */
-
-  .app-toast {
-
-    width: calc(100% - 24px);
-
-    max-width: 350px;
-
-    min-height: 56px;
-
-    padding: 9px 10px;
-
-    border-radius: 15px;
-
-    gap: 9px;
-  }
-
-  .toast-icon {
-
-    width: 32px;
-
-    height: 32px;
-
-    min-width: 32px;
-  }
-
-  .toast-icon ion-icon {
-
-    font-size: 19px;
-  }
-
-  .toast-title {
-
-    font-size: 12px;
-  }
-
-  .toast-message {
-
-    font-size: 11.5px;
-
-    line-height: 16px;
-  }
-
-  .toast-close {
-
-    width: 27px;
-
-    height: 27px;
-
-    min-width: 27px;
-  }
 }
 
 
-/* =========================================================
-   ACCESSIBILITÉ
-   ========================================================= */
+/* =====================================================
+   LOGO
+===================================================== */
 
-@media (prefers-reduced-motion: reduce) {
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  .app-toast,
-  .login-container,
-  .particle,
-  .pattern-dots,
-  .pattern-sparkles,
-  .wave {
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
 
-    animation: none !important;
+.brand-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
-    transition: none !important;
-  }
+.brand-text h1 {
+  margin: 0;
+}
+
+.brand-text span {
+  display: block;
+}
+
+/* =====================================================
+   BACKGROUND
+===================================================== */
+
+.background-image {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+/* =====================================================
+   OVERLAY NOIR
+===================================================== */
+
+.background-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+  z-index: 1;
 }

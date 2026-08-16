@@ -42,3 +42,84 @@ ion-content {
   --padding-top: 0px;
   --padding-bottom: 16px;
 }
+
+
+.user-card-container {
+  margin-top: 16px;
+  padding-bottom: 16px;
+  
+  .user-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f0f0f0;
+
+      .card-icon {
+        font-size: 24px;
+        color: #f97316;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+
+        .label {
+          font-size: 13px;
+          color: #6b7280;
+          font-weight: 500;
+        }
+
+        .value {
+          font-size: 13px;
+          color: #1a1a1a;
+          font-weight: 500;
+          text-align: right;
+          word-break: break-all;
+
+          &.complete {
+            color: #10b981;
+          }
+
+          &.incomplete {
+            color: #f59e0b;
+          }
+
+          &.id-value {
+            font-size: 11px;
+            color: #6b7280;
+            font-family: monospace;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Styles pour le spinner de chargement
+ion-spinner {
+  --color: #ef4444;
+}

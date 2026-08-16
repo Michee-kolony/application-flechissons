@@ -1,9 +1,14 @@
-ion-content {
-  --background: #ffffff;
+// tab1.page.scss - Ajoutez ce CSS pour les corrections
+ion-toolbar {
+  --background: white;
 }
 
-ion-header {
-  box-shadow: none;
+ h1 {
+      font-size: 1.1rem !important;
+    }
+
+ion-content {
+  --background: white;
 }
 
 ion-toolbar {

@@ -1,29 +1,39 @@
-import { Component, OnInit } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
-import {
-  HttpClient,
-  HttpHeaders
-} from '@angular/common/http';
+interface RegisterResponse {
+  success: boolean;
+  message: string;
 
-import { firstValueFrom } from 'rxjs';
+  // Le backend peut toujours renvoyer le token.
+  // Le frontend ne le stocke PAS.
+  token?: string;
 
-import { Capacitor } from '@capacitor/core';
+  user?: {
+    id: string;
+    nom: string;
+    email: string;
+    prenom: string;
+    photo: string | null;
+    sexe: string;
+    dateNaissance: string | null;
+    telephone: string;
+    ville: string;
 
-import { GoogleSignIn } from '@capawesome/capacitor-google-sign-in';
+    preferences: {
+      categories: string[];
+      notifications: boolean;
+      langue: string;
+    };
 
-import {
-  Auth,
-  GoogleAuthProvider,
-  signInWithCredential,
-  signInWithPopup,
-  createUserWithEmailAndPassword,
-  updateProfile
-} from 'firebase/auth';
-
-import { firebaseAuth } from '../../core/firebase/firebase.config';
-
+    profilComplete: boolean;
+    role: string;
+    derniereConnexion: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
 
 @Component({
   selector: 'app-signup',
@@ -31,7 +41,14 @@ import { firebaseAuth } from '../../core/firebase/firebase.config';
   styleUrls: ['./signup.page.scss'],
   standalone: false
 })
-export class SignupPage implements OnInit {
+export class SignupPage {
+
+  // =====================================================
+  // API
+  // =====================================================
+
+  private apiUrl = 'https://backend-flechissons.onrender.com/user';
+
 
   // =====================================================
   // ÉTAPE
@@ -43,70 +60,12 @@ export class SignupPage implements OnInit {
 
 
   // =====================================================
-  // API
+  // MOT DE PASSE
   // =====================================================
 
-  private readonly API_URL =
-    'https://backend-flechissons.onrender.com';
+  showPassword = false;
 
-
-  // =====================================================
-  // FIREBASE
-  // =====================================================
-
-  private auth: Auth = firebaseAuth;
-
-
-  // =====================================================
-  // GOOGLE
-  // =====================================================
-
-  private readonly GOOGLE_WEB_CLIENT_ID =
-    '345155809498-er553jjq50a2aatesm9atgibnk9po22q.apps.googleusercontent.com';
-
-
-  // =====================================================
-  // OPTIONS
-  // =====================================================
-
-  predicationOptions = [
-
-    'Enseignement',
-    'Évangélisation',
-    'Prophétie',
-    'Discernement'
-
-  ];
-
-
-  exhortationOptions = [
-
-    'Encouragement',
-    'Consolation',
-    'Direction',
-    'Réprimande'
-
-  ];
-
-
-  prayerOptions = [
-
-    'Prière de combat',
-    'Prière de bénédiction',
-    "Prière d'intercession",
-    'Prière de délivrance'
-
-  ];
-
-
-  otherOptions = [
-
-    'Adoration',
-    'Étude biblique',
-    'Jeunesse',
-    'Famille'
-
-  ];
+  showConfirmPassword = false;
 
 
   // =====================================================
@@ -116,24 +75,27 @@ export class SignupPage implements OnInit {
   userData = {
 
     fullName: '',
-    phone: '',
-    address: '',
-    birthDate: '',
 
     email: '',
+
     password: '',
-    confirmPassword: '',
 
-    preferences: {
-
-      predication: [] as string[],
-      exhortation: [] as string[],
-      prayer: [] as string[],
-      other: [] as string[]
-
-    }
+    confirmPassword: ''
 
   };
+
+
+  // =====================================================
+  // TOAST
+  // =====================================================
+
+  showToast = false;
+
+  toastType: 'success' | 'error' = 'success';
+
+  toastMessage = '';
+
+  private toastTimeout: any;
 
 
   // =====================================================
@@ -141,207 +103,87 @@ export class SignupPage implements OnInit {
   // =====================================================
 
   constructor(
-
-    private toastController: ToastController,
-
-    private router: Router,
-
-    private http: HttpClient
-
+    private http: HttpClient,
+    private router: Router
   ) {}
 
 
   // =====================================================
-  // INITIALISATION
+  // PASSWORD VISIBILITY
   // =====================================================
 
-  async ngOnInit() {
+  togglePasswordVisibility(): void {
 
-    const platform =
-      Capacitor.getPlatform();
+    this.showPassword =
+      !this.showPassword;
 
-    console.log(
-      '📱 Plateforme :',
-      platform
-    );
+  }
 
 
-    if (
-      platform === 'android' ||
-      platform === 'ios'
-    ) {
+  toggleConfirmPasswordVisibility(): void {
 
-      await this.initializeGoogle();
-
-    }
+    this.showConfirmPassword =
+      !this.showConfirmPassword;
 
   }
 
 
   // =====================================================
-  // TOAST CENTRALISÉ
+  // TOAST
   // =====================================================
 
-  private async showToast(
+  showSuccessToast(message: string): void {
+
+    this.displayToast(
+      message,
+      'success'
+    );
+
+  }
+
+
+  showErrorToast(message: string): void {
+
+    this.displayToast(
+      message,
+      'error'
+    );
+
+  }
+
+
+  private displayToast(
     message: string,
-    type:
-      | 'success'
-      | 'danger' = 'danger',
-    duration = 3000
-  ) {
+    type: 'success' | 'error'
+  ): void {
 
-    try {
-
-      const toast =
-        await this.toastController.create({
-
-          message: message,
-
-          duration: duration,
-
-          position: 'top',
-
-          cssClass:
-            type === 'danger'
-              ? 'signup-toast-danger'
-              : 'signup-toast-success',
-
-          buttons: [
-
-            {
-              text: 'OK',
-              role: 'cancel'
-            }
-
-          ]
-
-        });
-
-
-      await toast.present();
-
-
-      console.log(
-        'Toast affiché :',
-        message
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        '❌ Impossible d’afficher le toast :',
-        error
-      );
-
-    }
-
-  }
-
-
-  // =====================================================
-  // GOOGLE NATIF
-  // =====================================================
-
-  private async initializeGoogle() {
-
-    try {
-
-      await GoogleSignIn.initialize({
-
-        clientId:
-          this.GOOGLE_WEB_CLIENT_ID,
-
-        scopes: [
-
-          'openid',
-          'email',
-          'profile'
-
-        ]
-
-      });
-
-
-      console.log(
-        '✅ Google Sign-In initialisé'
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        '❌ Erreur Google init :',
-        error
-      );
-
-    }
-
-  }
-
-
-  // =====================================================
-  // PRÉFÉRENCES
-  // =====================================================
-
-  isSelected(
-    category: string,
-    item: string
-  ): boolean {
-
-    const prefs =
-      this.userData.preferences as any;
-
-
-    return (
-      prefs[category]?.includes(item) ||
-      false
+    clearTimeout(
+      this.toastTimeout
     );
 
-  }
+    this.toastMessage =
+      message;
 
+    this.toastType =
+      type;
 
-  togglePreference(
-    category: string,
-    item: string
-  ) {
+    this.showToast =
+      true;
 
-    const prefs =
-      this.userData.preferences as any;
+    this.toastTimeout =
+      setTimeout(() => {
 
+        this.closeToast();
 
-    const index =
-      prefs[category].indexOf(item);
-
-
-    if (index > -1) {
-
-      prefs[category].splice(
-        index,
-        1
-      );
-
-    } else {
-
-      prefs[category].push(item);
-
-    }
+      }, 3500);
 
   }
 
 
-  getTotalPreferences(): number {
+  closeToast(): void {
 
-    return Object.values(
-      this.userData.preferences
-    ).reduce(
-
-      (total, arr) =>
-        total + arr.length,
-
-      0
-
-    );
+    this.showToast =
+      false;
 
   }
 
@@ -350,20 +192,22 @@ export class SignupPage implements OnInit {
   // ÉTAPE SUIVANTE
   // =====================================================
 
-  async nextStep() {
-
-    // ---------------------------------------------------
-    // ÉTAPE 1
-    // ---------------------------------------------------
+  nextStep(): void {
 
     if (this.currentStep === 1) {
 
-      if (
-        !this.userData.fullName.trim()
-      ) {
+      const fullName =
+        this.userData.fullName.trim();
 
-        await this.showToast(
-          'Veuillez entrer votre nom complet.'
+
+      // -----------------------------------------------
+      // NOM VIDE
+      // -----------------------------------------------
+
+      if (!fullName) {
+
+        this.showErrorToast(
+          'Veuillez saisir votre nom complet.'
         );
 
         return;
@@ -371,12 +215,14 @@ export class SignupPage implements OnInit {
       }
 
 
-      if (
-        !this.userData.phone.trim()
-      ) {
+      // -----------------------------------------------
+      // NOM TROP COURT
+      // -----------------------------------------------
 
-        await this.showToast(
-          'Veuillez entrer votre numéro de téléphone.'
+      if (fullName.length < 2) {
+
+        this.showErrorToast(
+          'Votre nom doit contenir au moins 2 caractères.'
         );
 
         return;
@@ -384,62 +230,12 @@ export class SignupPage implements OnInit {
       }
 
 
-      if (
-        !this.userData.address.trim()
-      ) {
+      // -----------------------------------------------
+      // PASSER À L'ÉTAPE 2
+      // -----------------------------------------------
 
-        await this.showToast(
-          'Veuillez entrer votre ville ou votre adresse.'
-        );
+      this.currentStep = 2;
 
-        return;
-
-      }
-
-
-      if (
-        !this.userData.birthDate
-      ) {
-
-        await this.showToast(
-          'Veuillez entrer votre date de naissance.'
-        );
-
-        return;
-
-      }
-
-    }
-
-
-    // ---------------------------------------------------
-    // ÉTAPE 2
-    // ---------------------------------------------------
-
-    if (this.currentStep === 2) {
-
-      if (
-        this.getTotalPreferences() === 0
-      ) {
-
-        await this.showToast(
-          'Veuillez sélectionner au moins une préférence spirituelle.'
-        );
-
-        return;
-
-      }
-
-    }
-
-
-    // ---------------------------------------------------
-    // PASSAGE À L'ÉTAPE SUIVANTE
-    // ---------------------------------------------------
-
-    if (this.currentStep < 3) {
-
-      this.currentStep++;
 
       window.scrollTo({
 
@@ -458,11 +254,15 @@ export class SignupPage implements OnInit {
   // ÉTAPE PRÉCÉDENTE
   // =====================================================
 
-  prevStep() {
+  prevStep(): void {
 
-    if (this.currentStep > 1) {
+    if (
+      this.currentStep > 1 &&
+      !this.isLoading
+    ) {
 
       this.currentStep--;
+
 
       window.scrollTo({
 
@@ -478,47 +278,79 @@ export class SignupPage implements OnInit {
 
 
   // =====================================================
-  // INSCRIPTION EMAIL / MOT DE PASSE
+  // INSCRIPTION
   // =====================================================
 
-  async submitForm() {
+  submitForm(): void {
+
+    // -----------------------------------------------
+    // ÉVITER DOUBLE CLIC
+    // -----------------------------------------------
 
     if (this.isLoading) {
-      return;
-    }
-
-
-    // ---------------------------------------------------
-    // EMAIL
-    // ---------------------------------------------------
-
-    if (
-      !this.userData.email.trim()
-    ) {
-
-      await this.showToast(
-        'Veuillez entrer votre adresse email.'
-      );
 
       return;
 
     }
 
+
+    // =================================================
+    // NORMALISATION
+    // =================================================
+
+    const fullName =
+      this.userData.fullName.trim();
 
     const email =
       this.userData.email
         .trim()
         .toLowerCase();
 
+    const password =
+      this.userData.password;
 
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const confirmPassword =
+      this.userData.confirmPassword;
 
 
-    if (!emailRegex.test(email)) {
+    // =================================================
+    // NOM
+    // =================================================
 
-      await this.showToast(
-        'Veuillez entrer une adresse email valide.'
+    if (!fullName) {
+
+      this.showErrorToast(
+        'Veuillez saisir votre nom complet.'
+      );
+
+      this.currentStep = 1;
+
+      return;
+
+    }
+
+
+    if (fullName.length < 2) {
+
+      this.showErrorToast(
+        'Votre nom doit contenir au moins 2 caractères.'
+      );
+
+      this.currentStep = 1;
+
+      return;
+
+    }
+
+
+    // =================================================
+    // EMAIL
+    // =================================================
+
+    if (!email) {
+
+      this.showErrorToast(
+        'Veuillez saisir votre adresse e-mail.'
       );
 
       return;
@@ -526,16 +358,10 @@ export class SignupPage implements OnInit {
     }
 
 
-    // ---------------------------------------------------
-    // MOT DE PASSE
-    // ---------------------------------------------------
+    if (!this.isValidEmail(email)) {
 
-    if (
-      !this.userData.password
-    ) {
-
-      await this.showToast(
-        'Veuillez créer un mot de passe.'
+      this.showErrorToast(
+        'Veuillez saisir une adresse e-mail valide.'
       );
 
       return;
@@ -543,11 +369,24 @@ export class SignupPage implements OnInit {
     }
 
 
-    if (
-      this.userData.password.length < 6
-    ) {
+    // =================================================
+    // PASSWORD
+    // =================================================
 
-      await this.showToast(
+    if (!password) {
+
+      this.showErrorToast(
+        'Veuillez choisir un mot de passe.'
+      );
+
+      return;
+
+    }
+
+
+    if (password.length < 6) {
+
+      this.showErrorToast(
         'Le mot de passe doit contenir au moins 6 caractères.'
       );
 
@@ -556,16 +395,27 @@ export class SignupPage implements OnInit {
     }
 
 
-    // ---------------------------------------------------
-    // CONFIRMATION
-    // ---------------------------------------------------
+    // =================================================
+    // CONFIRM PASSWORD
+    // =================================================
+
+    if (!confirmPassword) {
+
+      this.showErrorToast(
+        'Veuillez confirmer votre mot de passe.'
+      );
+
+      return;
+
+    }
+
 
     if (
-      this.userData.password !==
-      this.userData.confirmPassword
+      password !==
+      confirmPassword
     ) {
 
-      await this.showToast(
+      this.showErrorToast(
         'Les mots de passe ne correspondent pas.'
       );
 
@@ -574,523 +424,231 @@ export class SignupPage implements OnInit {
     }
 
 
-    // ---------------------------------------------------
-    // PRÉFÉRENCES
-    // ---------------------------------------------------
+    // =================================================
+    // LOADING
+    // =================================================
 
-    if (
-      this.getTotalPreferences() === 0
-    ) {
-
-      await this.showToast(
-        'Veuillez sélectionner au moins une préférence spirituelle.'
-      );
-
-      return;
-
-    }
+    this.isLoading = true;
 
 
-    try {
+    // =================================================
+    // API REGISTER
+    // =================================================
 
-      this.isLoading = true;
+    this.http.post<RegisterResponse>(
 
+      `${this.apiUrl}/register`,
 
-      console.log(
-        '🔐 Création du compte Firebase...'
-      );
+      {
+        nom: fullName,
+        email: email,
+        password: password
+      }
 
+    ).subscribe({
 
-      // -------------------------------------------------
-      // FIREBASE
-      // -------------------------------------------------
+      // =================================================
+      // SUCCÈS
+      // =================================================
 
-      const credential =
-        await createUserWithEmailAndPassword(
+      next: (response) => {
 
-          this.auth,
-
-          email,
-
-          this.userData.password
-
+        console.log(
+          '✅ REGISTER RESPONSE :',
+          response
         );
 
 
-      console.log(
-        '✅ Compte Firebase créé :',
-        credential.user.uid
-      );
+        // -----------------------------------------------
+        // VÉRIFIER RÉPONSE
+        // -----------------------------------------------
 
+        if (!response.success) {
 
-      // -------------------------------------------------
-      // NOM
-      // -------------------------------------------------
+          this.isLoading = false;
 
-      await updateProfile(
+          this.showErrorToast(
 
-        credential.user,
-
-        {
-
-          displayName:
-            this.userData.fullName
-
-        }
-
-      );
-
-
-      // -------------------------------------------------
-      // TOKEN FIREBASE
-      // -------------------------------------------------
-
-      const firebaseToken =
-        await credential.user.getIdToken(true);
-
-
-      // -------------------------------------------------
-      // BACKEND
-      // -------------------------------------------------
-
-      await this.authenticateBackend(
-        firebaseToken
-      );
-
-
-    } catch (error: any) {
-
-      console.error(
-        '❌ Erreur inscription :',
-        error
-      );
-
-
-      let message =
-        'Impossible de créer votre compte.';
-
-
-      switch (error?.code) {
-
-        case 'auth/email-already-in-use':
-
-          message =
-            'Cette adresse email est déjà utilisée.';
-
-          break;
-
-
-        case 'auth/invalid-email':
-
-          message =
-            'Adresse email invalide.';
-
-          break;
-
-
-        case 'auth/weak-password':
-
-          message =
-            'Le mot de passe est trop faible.';
-
-          break;
-
-
-        case 'auth/network-request-failed':
-
-          message =
-            'Problème de connexion Internet.';
-
-          break;
-
-
-        case 'auth/operation-not-allowed':
-
-          message =
-            'L’inscription par email n’est pas activée dans Firebase.';
-
-          break;
-
-      }
-
-
-      await this.showToast(
-        message,
-        'danger',
-        4000
-      );
-
-
-    } finally {
-
-      this.isLoading = false;
-
-    }
-
-  }
-
-
-  // =====================================================
-  // INSCRIPTION GOOGLE
-  // =====================================================
-
-  async registerWithGoogle() {
-
-    if (this.isLoading) {
-      return;
-    }
-
-
-    try {
-
-      this.isLoading = true;
-
-
-      const platform =
-        Capacitor.getPlatform();
-
-
-      console.log(
-        '🔵 Inscription Google :',
-        platform
-      );
-
-
-      // =================================================
-      // WEB
-      // =================================================
-
-      if (platform === 'web') {
-
-        const provider =
-          new GoogleAuthProvider();
-
-
-        provider.addScope('profile');
-
-        provider.addScope('email');
-
-
-        const result =
-          await signInWithPopup(
-
-            this.auth,
-
-            provider
+            response.message ||
+            'Impossible de créer votre compte.'
 
           );
 
-
-        console.log(
-          '✅ Google Web connecté :',
-          result.user.email
-        );
-
-
-        const firebaseToken =
-          await result.user.getIdToken(true);
-
-
-        await this.authenticateBackend(
-          firebaseToken
-        );
-
-
-        return;
-
-      }
-
-
-      // =================================================
-      // ANDROID / IOS
-      // =================================================
-
-      if (
-        platform === 'android' ||
-        platform === 'ios'
-      ) {
-
-        const result =
-          await GoogleSignIn.signIn();
-
-
-        console.log(
-          '📦 Google natif :',
-          result
-        );
-
-
-        if (!result.idToken) {
-
-          throw new Error(
-            'Google n’a pas retourné de ID Token.'
-          );
+          return;
 
         }
 
 
-        const credential =
-          GoogleAuthProvider.credential(
-            result.idToken
-          );
+        // =================================================
+        // IMPORTANT :
+        // AUCUN localStorage
+        // =================================================
 
+        // ❌ PAS DE :
+        // localStorage.setItem('token', ...)
 
-        const firebaseResult =
-          await signInWithCredential(
+        // ❌ PAS DE :
+        // localStorage.setItem('user', ...)
 
-            this.auth,
-
-            credential
-
-          );
+        // ❌ PAS DE :
+        // localStorage.setItem('userId', ...)
 
 
         console.log(
-          '🔥 Firebase Google connecté :',
-          firebaseResult.user.email
+          '🚫 Aucun token ni utilisateur enregistré localement.'
         );
 
 
-        const firebaseToken =
-          await firebaseResult.user.getIdToken(true);
+        // =================================================
+        // FIN LOADING
+        // =================================================
+
+        this.isLoading = false;
 
 
-        await this.authenticateBackend(
-          firebaseToken
+        // =================================================
+        // TOAST
+        // =================================================
+
+        this.showSuccessToast(
+
+          response.message ||
+          'Votre compte a été créé avec succès !'
+
         );
 
 
-        return;
+        // =================================================
+        // REDIRECTION LOGIN
+        // =================================================
 
-      }
+        setTimeout(() => {
 
-
-      throw new Error(
-        'Plateforme non supportée.'
-      );
-
-
-    } catch (error: any) {
-
-      console.error(
-        '❌ Erreur inscription Google :',
-        error
-      );
-
-
-      let message =
-        'Impossible de créer votre compte avec Google.';
-
-
-      if (
-        error?.code ===
-        'auth/popup-closed-by-user'
-      ) {
-
-        message =
-          'Connexion Google annulée.';
-
-      }
-
-      else if (
-        error?.code ===
-        'auth/popup-blocked'
-      ) {
-
-        message =
-          'Le navigateur a bloqué la fenêtre Google.';
-
-      }
-
-      else if (
-        error?.code ===
-        'auth/unauthorized-domain'
-      ) {
-
-        message =
-          'Ce domaine n’est pas autorisé dans Firebase Authentication.';
-
-      }
-
-      else if (
-        error?.code ===
-        'auth/account-exists-with-different-credential'
-      ) {
-
-        message =
-          'Un compte existe déjà avec cette adresse email.';
-
-      }
-
-      else if (
-        error?.message
-      ) {
-
-        message =
-          error.message;
-
-      }
-
-
-      await this.showToast(
-        message,
-        'danger',
-        5000
-      );
-
-
-    } finally {
-
-      this.isLoading = false;
-
-    }
-
-  }
-
-
-  // =====================================================
-  // FIREBASE → BACKEND
-  // =====================================================
-
-  private async authenticateBackend(
-    firebaseToken: string
-  ) {
-
-    try {
-
-      const headers =
-        new HttpHeaders({
-
-          Authorization:
-            `Bearer ${firebaseToken}`
-
-        });
-
-
-      const response: any =
-        await firstValueFrom(
-
-          this.http.post(
-
-            `${this.API_URL}/user/firebase`,
-
-            {},
-
+          this.router.navigate(
+            ['/login'],
             {
-              headers
+              state: {
+                email: email,
+                registered: true
+              }
             }
+          );
 
-          )
+        }, 1000);
 
+      },
+
+
+      // =================================================
+      // ERREUR
+      // =================================================
+
+      error: (error) => {
+
+        console.error(
+          '❌ REGISTER ERROR :',
+          error
         );
 
 
-      console.log(
-        '✅ Backend :',
-        response
-      );
+        this.isLoading = false;
 
 
-      if (!response?.success) {
+        // =================================================
+        // MESSAGE PAR DÉFAUT
+        // =================================================
 
-        throw new Error(
-          response?.message ||
-          'Authentification backend échouée.'
+        let message =
+          'Une erreur est survenue. Veuillez réessayer.';
+
+
+        // =================================================
+        // MESSAGE BACKEND
+        // =================================================
+
+        if (
+          error?.error?.message
+        ) {
+
+          message =
+            error.error.message;
+
+        }
+
+
+        // =================================================
+        // 409 CONFLICT
+        // =================================================
+
+        if (
+          error?.status === 409
+        ) {
+
+          message =
+            error?.error?.message ||
+            'Cette adresse e-mail est déjà utilisée.';
+
+        }
+
+
+        // =================================================
+        // 400 BAD REQUEST
+        // =================================================
+
+        if (
+          error?.status === 400
+        ) {
+
+          message =
+            error?.error?.message ||
+            'Veuillez vérifier les informations saisies.';
+
+        }
+
+
+        // =================================================
+        // SERVEUR INACCESSIBLE
+        // =================================================
+
+        if (
+          error?.status === 0
+        ) {
+
+          message =
+            'Impossible de contacter le serveur. Vérifiez votre connexion.';
+
+        }
+
+
+        // =================================================
+        // AFFICHER ERREUR
+        // =================================================
+
+        this.showErrorToast(
+          message
         );
 
       }
 
+    });
 
-      // -------------------------------------------------
-      // STOCKER UTILISATEUR
-      // -------------------------------------------------
-
-      if (response.user) {
-
-        localStorage.setItem(
-
-          'user',
-
-          JSON.stringify(
-            response.user
-          )
-
-        );
-
-      }
+  }
 
 
-      // -------------------------------------------------
-      // TOAST SUCCÈS
-      // -------------------------------------------------
+  // =====================================================
+  // VALIDATION EMAIL
+  // =====================================================
 
-      await this.showToast(
+  private isValidEmail(
+    email: string
+  ): boolean {
 
-        `Bienvenue ${response.user?.prenom || this.userData.fullName} ! Votre compte a été créé avec succès.`,
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        'success',
-
-        3500
-
-      );
-
-
-      // -------------------------------------------------
-      // NAVIGATION
-      // -------------------------------------------------
-
-      await new Promise(
-        resolve =>
-          setTimeout(resolve, 500)
-      );
-
-
-      await this.router.navigate([
-        '/tabs/tab1'
-      ]);
-
-
-    } catch (error: any) {
-
-      console.error(
-        '❌ Erreur backend :',
-        error
-      );
-
-
-      let message =
-        'Le compte Firebase a été créé, mais la connexion au serveur a échoué.';
-
-
-      if (
-        error?.error?.message
-      ) {
-
-        message =
-          error.error.message;
-
-      }
-
-      else if (
-        error?.message
-      ) {
-
-        message =
-          error.message;
-
-      }
-
-
-      await this.showToast(
-        message,
-        'danger',
-        5000
-      );
-
-
-      throw error;
-
-    }
+    return emailRegex.test(
+      email
+    );
 
   }
 

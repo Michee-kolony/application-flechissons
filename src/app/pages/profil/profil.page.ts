@@ -1,26 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
-
-import {
-  Auth,
-  signOut
-} from 'firebase/auth';
-
-import { firebaseAuth } from '../../core/firebase/firebase.config';
-
+import { NavController } from '@ionic/angular';
 
 interface User {
   id?: string;
-  firebaseUid?: string;
   prenom?: string;
   nom?: string;
   email?: string;
   photo?: string;
   profilComplete?: boolean;
+  role?: string;
+  sexe?: string;
+  telephone?: string;
+  ville?: string;
+  dateNaissance?: string;
+  createdAt?: string;
+  updatedAt?: string;
   derniereConnexion?: string;
+  preferences?: {
+    categories: string[];
+    notifications: boolean;
+    langue: string;
+  };
 }
-
 
 @Component({
   selector: 'app-profil',
@@ -34,8 +36,7 @@ export class ProfilPage implements OnInit {
   // UTILISATEUR
   // =====================================================
 
-  user: User | null = null;
-
+  user: User = {};
 
   // =====================================================
   // ÉTAT
@@ -43,326 +44,139 @@ export class ProfilPage implements OnInit {
 
   isLoading = false;
 
-
-  // =====================================================
-  // FIREBASE
-  // =====================================================
-
-  private auth: Auth = firebaseAuth;
-
-
   // =====================================================
   // CONSTRUCTEUR
   // =====================================================
 
   constructor(
     private router: Router,
-    private alertController: AlertController
+    private navCtrl: NavController
   ) {}
 
-
   // =====================================================
-  // INITIALISATION
+  // INIT
   // =====================================================
 
   ngOnInit() {
-
-    this.loadUser();
-
+    this.loadUserData();
   }
 
-
   // =====================================================
-  // CHARGER UTILISATEUR
+  // CHARGER LES DONNÉES DE L'UTILISATEUR
   // =====================================================
 
-  private loadUser() {
-
+  loadUserData() {
     try {
-
-      const storedUser =
-        localStorage.getItem('user');
-
-
-      if (!storedUser) {
-
-        console.warn(
-          '⚠️ Aucun utilisateur trouvé dans localStorage.'
-        );
-
-        this.router.navigate(
-          ['/login'],
-          {
-            replaceUrl: true
-          }
-        );
-
-        return;
-
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        this.user = JSON.parse(userData);
+        console.log('✅ Utilisateur chargé:', this.user);
+      } else {
+        console.warn('⚠️ Aucun utilisateur trouvé dans le localStorage');
+        this.user = {};
+        // Rediriger vers login si pas d'utilisateur
+        this.redirectToLogin();
       }
-
-
-      this.user =
-        JSON.parse(storedUser);
-
-
-      console.log(
-        '👤 Utilisateur chargé :',
-        this.user
-      );
-
-
     } catch (error) {
-
-      console.error(
-        '❌ Erreur chargement utilisateur :',
-        error
-      );
-
-
-      localStorage.removeItem('user');
-
-
-      this.router.navigate(
-        ['/login'],
-        {
-          replaceUrl: true
-        }
-      );
-
+      console.error('❌ Erreur lors du chargement de l\'utilisateur:', error);
+      this.user = {};
+      this.redirectToLogin();
     }
-
   }
 
+  // =====================================================
+  // REDIRIGER VERS LOGIN
+  // =====================================================
+
+  redirectToLogin() {
+    this.navCtrl.navigateRoot('/login');
+  }
 
   // =====================================================
   // NOM COMPLET
   // =====================================================
 
   get fullName(): string {
-
-    if (!this.user) {
-
-      return 'Utilisateur';
-
-    }
-
-
-    const prenom =
-      this.user.prenom?.trim() || '';
-
-
-    const nom =
-      this.user.nom?.trim() || '';
-
-
-    const fullName =
-      `${prenom} ${nom}`.trim();
-
-
+    const prenom = this.user.prenom?.trim() || '';
+    const nom = this.user.nom?.trim() || '';
+    const fullName = `${prenom} ${nom}`.trim();
     return fullName || 'Utilisateur';
-
   }
-
 
   // =====================================================
   // INITIAL
   // =====================================================
 
   get userInitial(): string {
-
-    if (this.user?.prenom) {
-
-      return this.user.prenom
-        .trim()
-        .charAt(0)
-        .toUpperCase();
-
+    // On prend la première lettre du prénom ou du nom
+    if (this.user.prenom && this.user.prenom.trim()) {
+      return this.user.prenom.trim().charAt(0).toUpperCase();
     }
-
-
-    if (this.user?.nom) {
-
-      return this.user.nom
-        .trim()
-        .charAt(0)
-        .toUpperCase();
-
+    if (this.user.nom && this.user.nom.trim()) {
+      return this.user.nom.trim().charAt(0).toUpperCase();
     }
-
-
+    // Si l'email est disponible, on prend la première lettre
+    if (this.user.email && this.user.email.trim()) {
+      return this.user.email.trim().charAt(0).toUpperCase();
+    }
     return 'U';
-
   }
-
 
   // =====================================================
   // PHOTO
   // =====================================================
 
   get hasPhoto(): boolean {
-
-    return !!(
-      this.user?.photo &&
-      this.user.photo.trim()
-    );
-
+    return !!(this.user.photo && this.user.photo.trim() && this.user.photo.trim() !== '');
   }
 
+  // =====================================================
+  // GESTIONNAIRE D'ERREUR PHOTO
+  // =====================================================
 
-  /**
-   * Gestionnaire d'erreur de chargement de la photo
-   */
   onPhotoError(): void {
-    // En cas d'erreur de chargement de la photo, on la vide
-    // pour afficher l'initiale à la place
-    if (this.user) {
-      this.user.photo = '';
-    }
-    // La propriété hasPhoto sera automatiquement mise à jour
-    // car elle est basée sur user.photo
+    console.warn('⚠️ Erreur de chargement de la photo, suppression de la photo');
+    this.user.photo = '';
   }
-
 
   // =====================================================
   // DÉCONNEXION
   // =====================================================
 
-  async logout() {
-
-    if (this.isLoading) {
-
-      return;
-
-    }
-
-
-    const alert =
-      await this.alertController.create({
-
-        header: 'Déconnexion',
-
-        message:
-          'Voulez-vous vraiment vous déconnecter ?',
-
-        buttons: [
-
-          {
-            text: 'Annuler',
-            role: 'cancel'
-          },
-
-          {
-            text: 'Déconnexion',
-            role: 'destructive',
-
-            handler: async () => {
-
-              await this.performLogout();
-
-            }
-
-          }
-
-        ],
-
-        cssClass:
-          'custom-alert'
-
-      });
-
-
-    await alert.present();
-
-  }
-
-
-  // =====================================================
-  // EFFECTUER DÉCONNEXION
-  // =====================================================
-
-  private async performLogout() {
-
-    try {
-
-      this.isLoading = true;
-
-
-      console.log(
-        '🚪 Déconnexion en cours...'
-      );
-
-
-      // -------------------------------------------------
-      // DÉCONNEXION FIREBASE
-      // -------------------------------------------------
-
-      await signOut(
-        this.auth
-      );
-
-
-      console.log(
-        '🔥 Firebase déconnecté.'
-      );
-
-
-      // -------------------------------------------------
-      // SUPPRESSION SESSION LOCALE
-      // -------------------------------------------------
-
-      localStorage.removeItem(
-        'user'
-      );
-
-
-      console.log(
-        '🗑️ Utilisateur supprimé du localStorage.'
-      );
-
-
-      // -------------------------------------------------
-      // REDIRECTION LOGIN
-      // -------------------------------------------------
-
-      await this.router.navigate(
-        ['/login'],
-        {
-          replaceUrl: true
-        }
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        '❌ Erreur lors de la déconnexion :',
-        error
-      );
-
-
-      // Même si Firebase rencontre une erreur,
-      // on supprime la session locale.
-
-      localStorage.removeItem(
-        'user'
-      );
-
-
-      await this.router.navigate(
-        ['/login'],
-        {
-          replaceUrl: true
-        }
-      );
-
-
-    } finally {
-
+  logout() {
+    this.isLoading = true;
+    console.log('🔄 Déconnexion en cours...');
+    
+    // Simuler un délai de déconnexion
+    setTimeout(() => {
+      // Supprimer les données du localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
       this.isLoading = false;
-
-    }
-
+      console.log('✅ Déconnecté avec succès');
+      
+      // Rediriger vers la page de login
+      this.redirectToLogin();
+      
+    }, 1500);
   }
 
+  // =====================================================
+  // MODIFIER LE PROFIL
+  // =====================================================
+
+  editProfile() {
+    console.log('✏️ Modifier le profil');
+    // Rediriger vers la page d'édition du profil
+    // this.router.navigate(['/edit-profile']);
+  }
+
+  // =====================================================
+  // RAFRAÎCHIR LES DONNÉES
+  // =====================================================
+
+  refreshData() {
+    this.loadUserData();
+  }
 }
