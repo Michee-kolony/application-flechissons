@@ -10,7 +10,7 @@ export const onboardingGuard: CanActivateFn = (route, state) => {
 
   if (onboardingDone) {
 
-    return router.createUrlTree(['/login']);
+    return router.createUrlTree(['/tabs/tab1']);
 
   }
 

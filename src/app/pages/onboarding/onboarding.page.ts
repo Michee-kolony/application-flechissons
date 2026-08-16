@@ -83,7 +83,7 @@ export class OnboardingPage
 
 
     // Redirection vers la connexion
-    this.router.navigateByUrl('/login');
+    this.router.navigateByUrl('/tabs/tab1');
 
   }
 
