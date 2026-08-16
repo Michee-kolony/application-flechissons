@@ -16,8 +16,10 @@ import {
 } from '@capawesome/capacitor-google-sign-in';
 
 import {
+  FirebaseApp,
   initializeApp,
-  FirebaseApp
+  getApp,
+  getApps
 } from 'firebase/app';
 
 import {
@@ -117,14 +119,10 @@ export class LoginPage implements OnInit {
   // =====================================================
 
   private firebaseApp: FirebaseApp =
-    initializeApp(
-      this.firebaseConfig
-    );
+    this.getFirebaseApp();
 
   private auth: Auth =
-    getAuth(
-      this.firebaseApp
-    );
+    getAuth(this.firebaseApp);
 
 
   // =====================================================
@@ -144,6 +142,57 @@ export class LoginPage implements OnInit {
     private router: Router,
     private http: HttpClient
   ) {}
+
+
+  // =====================================================
+  // FIREBASE APP
+  // Évite initializeApp plusieurs fois
+  // =====================================================
+
+  private getFirebaseApp(): FirebaseApp {
+
+    console.log(
+      '🔥 Vérification Firebase Apps existantes...'
+    );
+
+    const apps =
+      getApps();
+
+    console.log(
+      '🔥 Firebase Apps existantes :',
+      apps.length
+    );
+
+    if (apps.length > 0) {
+
+      console.log(
+        '🔥 Firebase App existante utilisée.'
+      );
+
+      return getApp();
+
+    }
+
+    console.log(
+      '🔥 Aucune Firebase App trouvée.'
+    );
+
+    console.log(
+      '🔥 Création Firebase App...'
+    );
+
+    const app =
+      initializeApp(
+        this.firebaseConfig
+      );
+
+    console.log(
+      '✅ Firebase App créée.'
+    );
+
+    return app;
+
+  }
 
 
   // =====================================================
@@ -234,7 +283,7 @@ export class LoginPage implements OnInit {
       );
 
       console.error(
-        '💥 ERREUR CRITIQUE ngOnInit JSON :',
+        '💥 JSON :',
         this.safeJson(error)
       );
 
@@ -308,11 +357,11 @@ export class LoginPage implements OnInit {
             if (!firebaseUser) {
 
               console.log(
-                '👤 Aucune session Firebase active.'
+                '👤 AUCUN UTILISATEUR CONNECTÉ'
               );
 
               console.log(
-                '➡️ Login disponible.'
+                '✅ Login/Register autorisé.'
               );
 
               unsubscribe();
@@ -340,11 +389,6 @@ export class LoginPage implements OnInit {
               firebaseUser.uid
             );
 
-            console.log(
-              '🔐 Provider ID :',
-              firebaseUser.providerData
-            );
-
 
             try {
 
@@ -370,16 +414,6 @@ export class LoginPage implements OnInit {
                 !!firebaseToken
               );
 
-              console.log(
-                '🔑 Longueur token :',
-                firebaseToken?.length
-              );
-
-
-              console.log(
-                '📡 Restauration session backend...'
-              );
-
 
               await this.authenticateBackend(
                 firebaseToken,
@@ -395,7 +429,7 @@ export class LoginPage implements OnInit {
               );
 
               console.error(
-                '❌ JSON ERREUR :',
+                '❌ JSON :',
                 this.safeJson(error)
               );
 
@@ -412,7 +446,7 @@ export class LoginPage implements OnInit {
     } catch (error) {
 
       console.error(
-        '💥 ERREUR CRÉATION onAuthStateChanged :',
+        '💥 ERREUR création onAuthStateChanged :',
         error
       );
 
@@ -476,7 +510,7 @@ export class LoginPage implements OnInit {
       );
 
       console.error(
-        '❌ GOOGLE INITIALIZE JSON :',
+        '❌ JSON :',
         this.safeJson(error)
       );
 
@@ -488,7 +522,7 @@ export class LoginPage implements OnInit {
 
 
   // =====================================================
-  // CONNEXION EMAIL / MOT DE PASSE
+  // LOGIN EMAIL / PASSWORD
   // =====================================================
 
   async login() {
@@ -510,18 +544,10 @@ export class LoginPage implements OnInit {
     }
 
 
-    // ---------------------------------------------------
-    // VALIDATION CHAMPS
-    // ---------------------------------------------------
-
     if (
       !this.loginData.email ||
       !this.loginData.password
     ) {
-
-      console.log(
-        '⚠️ Champs email/password incomplets.'
-      );
 
       this.showToastError(
         'Veuillez remplir tous les champs.'
@@ -535,7 +561,6 @@ export class LoginPage implements OnInit {
     const email =
       this.loginData.email.trim();
 
-
     const password =
       this.loginData.password;
 
@@ -545,11 +570,6 @@ export class LoginPage implements OnInit {
 
 
     if (!emailRegex.test(email)) {
-
-      console.log(
-        '⚠️ Email invalide :',
-        email
-      );
 
       this.showToastError(
         'Veuillez entrer une adresse email valide.'
@@ -566,32 +586,12 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '📧 Email utilisé :',
+        '📧 Email :',
         email
       );
 
       console.log(
-        '🔐 Mot de passe présent :',
-        !!password
-      );
-
-      console.log(
-        '🔥 Firebase Auth avant connexion :',
-        this.auth
-      );
-
-      console.log(
-        '👤 currentUser avant connexion :',
-        this.auth.currentUser
-      );
-
-
-      // ---------------------------------------------------
-      // FIREBASE EMAIL LOGIN
-      // ---------------------------------------------------
-
-      console.log(
-        '📡 Appel signInWithEmailAndPassword()...'
+        '📡 Appel Firebase Email Login...'
       );
 
 
@@ -608,45 +608,7 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '========================================'
-      );
-
-      console.log(
         '✅ FIREBASE EMAIL LOGIN RÉUSSI'
-      );
-
-      console.log(
-        '========================================'
-      );
-
-
-      console.log(
-        '👤 Firebase User :',
-        credential.user
-      );
-
-      console.log(
-        '📧 Email :',
-        credential.user.email
-      );
-
-      console.log(
-        '🆔 UID :',
-        credential.user.uid
-      );
-
-      console.log(
-        '📱 Provider :',
-        credential.user.providerData
-      );
-
-
-      // ---------------------------------------------------
-      // TOKEN
-      // ---------------------------------------------------
-
-      console.log(
-        '🔑 Récupération Firebase ID Token...'
       );
 
 
@@ -660,25 +622,6 @@ export class LoginPage implements OnInit {
         '✅ Firebase ID Token récupéré.'
       );
 
-      console.log(
-        '🔑 Token présent :',
-        !!firebaseToken
-      );
-
-      console.log(
-        '🔑 Token longueur :',
-        firebaseToken?.length
-      );
-
-
-      // ---------------------------------------------------
-      // BACKEND
-      // ---------------------------------------------------
-
-      console.log(
-        '📡 Envoi du token Firebase au backend...'
-      );
-
 
       await this.authenticateBackend(
         firebaseToken,
@@ -686,45 +629,25 @@ export class LoginPage implements OnInit {
       );
 
 
-      console.log(
-        '✅ LOGIN COMPLET TERMINÉ.'
-      );
-
-
     } catch (error: any) {
 
-      console.error('');
-      console.error('========================================');
-      console.error('❌ ERREUR LOGIN EMAIL');
-      console.error('========================================');
-
       console.error(
-        '❌ Error complet :',
+        '❌ ERREUR LOGIN EMAIL :',
         error
       );
 
       console.error(
-        '❌ Error code :',
+        '❌ Code :',
         error?.code
       );
 
       console.error(
-        '❌ Error message :',
+        '❌ Message :',
         error?.message
       );
 
       console.error(
-        '❌ Error name :',
-        error?.name
-      );
-
-      console.error(
-        '❌ Error stack :',
-        error?.stack
-      );
-
-      console.error(
-        '❌ Error JSON :',
+        '❌ JSON :',
         this.safeJson(error)
       );
 
@@ -736,6 +659,7 @@ export class LoginPage implements OnInit {
       switch (error?.code) {
 
         case 'auth/invalid-credential':
+        case 'auth/wrong-password':
 
           message =
             'Email ou mot de passe incorrect.';
@@ -747,14 +671,6 @@ export class LoginPage implements OnInit {
 
           message =
             'Aucun compte ne correspond à cet email.';
-
-          break;
-
-
-        case 'auth/wrong-password':
-
-          message =
-            'Mot de passe incorrect.';
 
           break;
 
@@ -799,14 +715,6 @@ export class LoginPage implements OnInit {
           break;
 
 
-        case 'auth/internal-error':
-
-          message =
-            'Erreur interne Firebase. Consultez les logs Xcode.';
-
-          break;
-
-
         default:
 
           if (error?.message) {
@@ -819,12 +727,6 @@ export class LoginPage implements OnInit {
           break;
 
       }
-
-
-      console.error(
-        '📢 Message utilisateur final :',
-        message
-      );
 
 
       this.showToastError(
@@ -841,15 +743,7 @@ export class LoginPage implements OnInit {
       );
 
       console.log(
-        '========================================'
-      );
-
-      console.log(
         '🔐 LOGIN EMAIL/PASSWORD END'
-      );
-
-      console.log(
-        '========================================'
       );
 
     }
@@ -872,7 +766,7 @@ export class LoginPage implements OnInit {
     if (this.isLoading) {
 
       console.log(
-        '⚠️ Une authentification est déjà en cours.'
+        '⚠️ Authentification déjà en cours.'
       );
 
       return;
@@ -898,7 +792,7 @@ export class LoginPage implements OnInit {
       if (platform === 'web') {
 
         console.log(
-          '🌐 Utilisation Google Firebase Web.'
+          '🌐 Google Web Login.'
         );
 
         await this.googleLoginWeb();
@@ -909,12 +803,12 @@ export class LoginPage implements OnInit {
 
 
       if (
-        platform === 'android' ||
-        platform === 'ios'
+        platform === 'ios' ||
+        platform === 'android'
       ) {
 
         console.log(
-          '📱 Utilisation Google Sign-In natif.'
+          '📱 Google Native Login.'
         );
 
         await this.googleLoginNative();
@@ -931,21 +825,8 @@ export class LoginPage implements OnInit {
 
     } catch (error: any) {
 
-      console.error('');
       console.error(
-        '========================================'
-      );
-
-      console.error(
-        '❌ ERREUR GOOGLE LOGIN'
-      );
-
-      console.error(
-        '========================================'
-      );
-
-      console.error(
-        '❌ Error :',
+        '❌ ERREUR GOOGLE LOGIN :',
         error
       );
 
@@ -960,7 +841,7 @@ export class LoginPage implements OnInit {
       );
 
       console.error(
-        '❌ Error JSON :',
+        '❌ JSON :',
         this.safeJson(error)
       );
 
@@ -979,7 +860,6 @@ export class LoginPage implements OnInit {
 
       }
 
-
       else if (
         error?.code ===
         'auth/popup-blocked'
@@ -990,7 +870,6 @@ export class LoginPage implements OnInit {
 
       }
 
-
       else if (
         error?.code ===
         'auth/unauthorized-domain'
@@ -1000,17 +879,6 @@ export class LoginPage implements OnInit {
           'Ce domaine n’est pas autorisé dans Firebase Authentication.';
 
       }
-
-
-      else if (
-        error?.error?.message
-      ) {
-
-        message =
-          error.error.message;
-
-      }
-
 
       else if (
         error?.message
@@ -1036,15 +904,7 @@ export class LoginPage implements OnInit {
       );
 
       console.log(
-        '========================================'
-      );
-
-      console.log(
         '🔵 GOOGLE LOGIN END'
-      );
-
-      console.log(
-        '========================================'
       );
 
     }
@@ -1093,26 +953,6 @@ export class LoginPage implements OnInit {
       '✅ Google Web connecté.'
     );
 
-    console.log(
-      '👤 User :',
-      result.user
-    );
-
-    console.log(
-      '📧 Email :',
-      result.user.email
-    );
-
-    console.log(
-      '🆔 UID :',
-      result.user.uid
-    );
-
-
-    console.log(
-      '🔑 Récupération Firebase Token...'
-    );
-
 
     const firebaseToken =
       await result.user.getIdToken(
@@ -1122,11 +962,6 @@ export class LoginPage implements OnInit {
 
     console.log(
       '✅ Firebase ID Token récupéré.'
-    );
-
-    console.log(
-      '🔑 Token longueur :',
-      firebaseToken?.length
     );
 
 
@@ -1139,26 +974,22 @@ export class LoginPage implements OnInit {
 
 
   // =====================================================
-  // GOOGLE ANDROID / IOS
+  // GOOGLE NATIVE IOS / ANDROID
   // =====================================================
 
   private async googleLoginNative() {
 
     console.log('');
-    console.log(
-      '========================================'
-    );
-
-    console.log(
-      '📱 GOOGLE NATIVE LOGIN'
-    );
-
-    console.log(
-      '========================================'
-    );
+    console.log('========================================');
+    console.log('📱 GOOGLE NATIVE LOGIN');
+    console.log('========================================');
 
 
     try {
+
+      // ---------------------------------------------------
+      // GOOGLE NATIVE
+      // ---------------------------------------------------
 
       console.log(
         '📱 Appel GoogleSignIn.signIn()...'
@@ -1170,8 +1001,7 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '📦 Résultat Google natif :',
-        result
+        '📦 Résultat Google natif reçu.'
       );
 
 
@@ -1180,12 +1010,13 @@ export class LoginPage implements OnInit {
         !!result?.idToken
       );
 
+      console.log(
+        '🔑 Access Token présent :',
+        !!result?.accessToken
+      );
+
 
       if (!result?.idToken) {
-
-        console.error(
-          '❌ Google n’a fourni aucun ID Token.'
-        );
 
         throw new Error(
           'Google n’a pas retourné de ID Token.'
@@ -1210,7 +1041,8 @@ export class LoginPage implements OnInit {
 
       const credential =
         GoogleAuthProvider.credential(
-          result.idToken
+          result.idToken,
+          result.accessToken
         );
 
 
@@ -1218,49 +1050,116 @@ export class LoginPage implements OnInit {
         '✅ Firebase Google Credential créée.'
       );
 
+      console.log(
+        '🔐 Provider ID :',
+        credential.providerId
+      );
+
+      console.log(
+        '🔐 ID Token présent dans credential :',
+        !!credential.idToken
+      );
+
 
       // ---------------------------------------------------
-      // FIREBASE SIGN IN
+      // FIREBASE AUTH
       // ---------------------------------------------------
 
       console.log(
         '🔥 Connexion du credential à Firebase...'
       );
+      console.log(
+        '🕒 Début signInWithCredential :',
+        new Date().toISOString()
+      );
+      console.log(
+        '🌐 Firebase Auth appName :',
+        this.auth.app.name
+      );
+      console.log(
+        '🌐 Firebase projectId :',
+        this.auth.app.options.projectId || this.firebaseConfig.projectId
+      );
+      console.log(
+        '👤 Firebase currentUser avant :',
+        this.auth.currentUser
+          ? {
+              uid: this.auth.currentUser.uid,
+              email: this.auth.currentUser.email
+            }
+          : null
+      );
 
 
-      const firebaseResult =
-        await signInWithCredential(
+      console.log(
+        '⏳ Démarrage signInWithCredential...'
+      );
+
+
+      const firebasePromise =
+        signInWithCredential(
           this.auth,
           credential
         );
 
 
       console.log(
-        '========================================'
+        '⏳ Promise signInWithCredential créée.'
+      );
+
+
+      // ---------------------------------------------------
+      // TIMEOUT 15 SECONDES
+      // ---------------------------------------------------
+
+      const timeoutPromise =
+        new Promise<never>(
+          (_, reject) => {
+
+            setTimeout(
+              () => {
+
+                reject(
+                  new Error(
+                    'TIMEOUT: Firebase signInWithCredential n’a pas répondu après 15 secondes.'
+                  )
+                );
+
+              },
+              15000
+            );
+
+          }
+        );
+
+
+      const firebaseResult =
+        await Promise.race([
+          firebasePromise,
+          timeoutPromise
+        ]);
+
+
+      // ---------------------------------------------------
+      // FIREBASE CONNECTÉ
+      // ---------------------------------------------------
+
+      console.log(
+        '🔥 signInWithCredential a répondu.'
+      );
+      console.log(
+        '✅ Résultat Firebase signInWithCredential :',
+        firebaseResult?.user
+          ? {
+              uid: firebaseResult.user.uid,
+              email: firebaseResult.user.email,
+              providerId: firebaseResult.user.providerData?.[0]?.providerId
+            }
+          : firebaseResult
       );
 
       console.log(
         '🔥 GOOGLE FIREBASE LOGIN RÉUSSI'
-      );
-
-      console.log(
-        '========================================'
-      );
-
-
-      console.log(
-        '👤 Firebase User :',
-        firebaseResult.user
-      );
-
-      console.log(
-        '📧 Email :',
-        firebaseResult.user.email
-      );
-
-      console.log(
-        '🆔 UID :',
-        firebaseResult.user.uid
       );
 
 
@@ -1281,6 +1180,11 @@ export class LoginPage implements OnInit {
 
       console.log(
         '✅ Firebase ID Token récupéré.'
+      );
+
+      console.log(
+        '🔑 Token présent :',
+        !!firebaseToken
       );
 
       console.log(
@@ -1310,9 +1214,24 @@ export class LoginPage implements OnInit {
         '❌ ERREUR GOOGLE NATIVE COMPLÈTE :',
         error
       );
-
       console.error(
-        '❌ ERREUR GOOGLE NATIVE JSON :',
+        '❌ Firebase signInWithCredential erreur exacte :',
+        error
+      );
+      console.error(
+        '❌ Firebase error code exact :',
+        (error as any)?.code
+      );
+      console.error(
+        '❌ Firebase error message exact :',
+        (error as any)?.message
+      );
+      console.error(
+        '❌ Error name :',
+        (error as any)?.name
+      );
+      console.error(
+        '❌ Error JSON :',
         this.safeJson(error)
       );
 
@@ -1408,15 +1327,7 @@ export class LoginPage implements OnInit {
 
 
       console.log(
-        '========================================'
-      );
-
-      console.log(
         '✅ BACKEND RESPONSE'
-      );
-
-      console.log(
-        '========================================'
       );
 
       console.log(
@@ -1425,13 +1336,7 @@ export class LoginPage implements OnInit {
       );
 
 
-      if (
-        !response?.success
-      ) {
-
-        console.error(
-          '❌ Backend retourne success=false.'
-        );
+      if (!response?.success) {
 
         throw new Error(
 
@@ -1449,24 +1354,15 @@ export class LoginPage implements OnInit {
 
       if (response.user) {
 
-        console.log(
-          '💾 Sauvegarde utilisateur localStorage...'
-        );
-
-
         localStorage.setItem(
-
           'user',
-
           JSON.stringify(
             response.user
           )
-
         );
 
-
         console.log(
-          '✅ Utilisateur sauvegardé.'
+          '✅ Utilisateur sauvegardé localement.'
         );
 
       }
@@ -1482,21 +1378,10 @@ export class LoginPage implements OnInit {
           '♻️ Session restaurée automatiquement.'
         );
 
-        console.log(
-          '➡️ Navigation vers /tabs/tab1...'
-        );
 
-
-        const navigationResult =
-          await this.router.navigate([
-            '/tabs/tab1'
-          ]);
-
-
-        console.log(
-          '🧭 Navigation result :',
-          navigationResult
-        );
+        await this.router.navigate([
+          '/tabs/tab1'
+        ]);
 
 
         return;
@@ -1514,16 +1399,8 @@ export class LoginPage implements OnInit {
         'à vous';
 
 
-      console.log(
-        '👋 Utilisateur :',
-        prenom
-      );
-
-
       this.showToastSuccess(
-
         `Bienvenue ${prenom} ! Connexion réussie.`
-
       );
 
 
@@ -1537,33 +1414,15 @@ export class LoginPage implements OnInit {
 
           try {
 
-            console.log(
-              '➡️ Navigation vers /tabs/tab1...'
-            );
-
-
-            const navigationResult =
-              await this.router.navigate([
-                '/tabs/tab1'
-              ]);
-
-
-            console.log(
-              '🧭 Navigation result :',
-              navigationResult
-            );
-
+            await this.router.navigate([
+              '/tabs/tab1'
+            ]);
 
           } catch (navigationError) {
 
             console.error(
               '❌ ERREUR NAVIGATION :',
               navigationError
-            );
-
-            console.error(
-              '❌ NAVIGATION JSON :',
-              this.safeJson(navigationError)
             );
 
           }
@@ -1595,33 +1454,18 @@ export class LoginPage implements OnInit {
       );
 
       console.error(
-        '❌ Error status :',
+        '❌ Status :',
         error?.status
       );
 
       console.error(
-        '❌ Error statusText :',
-        error?.statusText
-      );
-
-      console.error(
-        '❌ Error message :',
+        '❌ Message :',
         error?.message
       );
 
       console.error(
-        '❌ Error error :',
+        '❌ Backend error :',
         error?.error
-      );
-
-      console.error(
-        '❌ Error headers :',
-        error?.headers
-      );
-
-      console.error(
-        '❌ Error JSON :',
-        this.safeJson(error)
       );
 
 
@@ -1629,12 +1473,6 @@ export class LoginPage implements OnInit {
         error?.error?.message ||
         error?.message ||
         'Impossible de communiquer avec le serveur.';
-
-
-      console.error(
-        '📢 Message final :',
-        message
-      );
 
 
       this.showToastError(
@@ -1664,7 +1502,7 @@ export class LoginPage implements OnInit {
 
 
   // =====================================================
-  // DÉCONNEXION
+  // LOGOUT
   // =====================================================
 
   async logout() {
@@ -1688,11 +1526,6 @@ export class LoginPage implements OnInit {
       this.isLoading = true;
 
 
-      console.log(
-        '🔥 Déconnexion Firebase...'
-      );
-
-
       await signOut(
         this.auth
       );
@@ -1708,18 +1541,8 @@ export class LoginPage implements OnInit {
       );
 
 
-      console.log(
-        '🗑️ localStorage user supprimé.'
-      );
-
-
       this.showToastSuccess(
         'Déconnexion réussie.'
-      );
-
-
-      console.log(
-        '➡️ Navigation vers /login...'
       );
 
 
@@ -1736,11 +1559,6 @@ export class LoginPage implements OnInit {
       console.error(
         '❌ ERREUR LOGOUT :',
         error
-      );
-
-      console.error(
-        '❌ LOGOUT JSON :',
-        this.safeJson(error)
       );
 
 
@@ -1767,10 +1585,6 @@ export class LoginPage implements OnInit {
       this.isLoading = false;
 
       console.log(
-        '🔓 Logout isLoading = false'
-      );
-
-      console.log(
         '👋 LOGOUT END'
       );
 
@@ -1793,7 +1607,8 @@ export class LoginPage implements OnInit {
     );
 
 
-    this.showErrorToast = false;
+    this.showErrorToast =
+      false;
 
 
     if (
@@ -1803,8 +1618,6 @@ export class LoginPage implements OnInit {
       clearTimeout(
         this.successToastTimeout
       );
-
-      this.successToastTimeout = null;
 
     }
 
@@ -1844,7 +1657,8 @@ export class LoginPage implements OnInit {
     );
 
 
-    this.showSuccessToast = false;
+    this.showSuccessToast =
+      false;
 
 
     if (
@@ -1854,8 +1668,6 @@ export class LoginPage implements OnInit {
       clearTimeout(
         this.errorToastTimeout
       );
-
-      this.errorToastTimeout = null;
 
     }
 
@@ -1942,13 +1754,6 @@ export class LoginPage implements OnInit {
     message: string
   ) {
 
-    console.log(
-      '⚠️ ALERT :',
-      header,
-      message
-    );
-
-
     const alert =
       await this.alertController.create({
 
@@ -1987,7 +1792,11 @@ export class LoginPage implements OnInit {
 
     } catch {
 
-      return String(value);
+      return {
+        message:
+          value?.message ||
+          String(value)
+      };
 
     }
 

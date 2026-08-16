@@ -13,7 +13,12 @@ import { Capacitor } from '@capacitor/core';
 
 import { GoogleSignIn } from '@capawesome/capacitor-google-sign-in';
 
-import { initializeApp } from 'firebase/app';
+import {
+  FirebaseApp,
+  initializeApp,
+  getApp,
+  getApps
+} from 'firebase/app';
 
 import {
   getAuth,
@@ -78,12 +83,21 @@ export class SignupPage implements OnInit {
   };
 
 
-  private firebaseApp =
-    initializeApp(this.firebaseConfig);
+  private firebaseApp: FirebaseApp =
+    this.getFirebaseApp();
 
 
   private auth: Auth =
     getAuth(this.firebaseApp);
+
+
+  private getFirebaseApp(): FirebaseApp {
+    const apps = getApps();
+    if (apps.length > 0) {
+      return getApp();
+    }
+    return initializeApp(this.firebaseConfig);
+  }
 
 
   // =====================================================

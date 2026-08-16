@@ -2,7 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 
-import { initializeApp } from 'firebase/app';
+import {
+  FirebaseApp,
+  initializeApp,
+  getApp,
+  getApps
+} from 'firebase/app';
 
 import {
   getAuth,
@@ -72,16 +77,23 @@ export class ProfilPage implements OnInit {
   };
 
 
-  private firebaseApp =
-    initializeApp(
-      this.firebaseConfig
-    );
+  private firebaseApp: FirebaseApp =
+    this.getFirebaseApp();
 
 
   private auth: Auth =
     getAuth(
       this.firebaseApp
     );
+
+
+  private getFirebaseApp(): FirebaseApp {
+    const apps = getApps();
+    if (apps.length > 0) {
+      return getApp();
+    }
+    return initializeApp(this.firebaseConfig);
+  }
 
 
   // =====================================================
