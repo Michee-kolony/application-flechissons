@@ -5,13 +5,17 @@ ion-content {
 
 ion-toolbar {
   --background: white;
+  --min-height: 48px; // Réduit la hauteur minimale
   color: orange;
+  
+  .container {
+    padding: 0 16px;
+  }
 }
 
- h1 {
-      font-size: 1.1rem !important;
-    }
-
+h1 {
+  font-size: 1.1rem !important;
+}
 
 // =====================================================
 // CONTENEUR DU COMMENTAIRE FIXE EN BAS
@@ -25,13 +29,13 @@ ion-toolbar {
   z-index: 50;
   background: white;
   border-top: 1px solid #e5e7eb;
-  padding: 10px 16px;
-  padding-bottom: var(--ion-safe-area-bottom, 20px);
+  padding: 8px 16px; // Réduit le padding
+  padding-bottom: var(--ion-safe-area-bottom, 16px);
   box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
   
   @media (max-width: 480px) {
-    padding: 8px 12px;
-    padding-bottom: var(--ion-safe-area-bottom, 16px);
+    padding: 6px 12px;
+    padding-bottom: var(--ion-safe-area-bottom, 12px);
   }
 }
 
@@ -92,8 +96,8 @@ img {
   }
   
   .comment-input-container {
-    padding: 8px 12px;
-    padding-bottom: var(--ion-safe-area-bottom, 16px);
+    padding: 6px 12px;
+    padding-bottom: var(--ion-safe-area-bottom, 12px);
   }
   
   .comment-input-container .w-10 {
@@ -121,10 +125,10 @@ img {
 
 // Correction pour éviter que le contenu soit caché par le commentaire
 ion-content {
-  --padding-bottom: 80px !important;
+  --padding-bottom: 70px !important;
   
   @media (max-width: 480px) {
-    --padding-bottom: 70px !important;
+    --padding-bottom: 60px !important;
   }
 }
 

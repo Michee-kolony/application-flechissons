@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="container !bg-white !shadow-sm">
-    <div class="flex py-3 items-center gap-3">
+  <ion-toolbar class="container !bg-white">
+    <div class="flex py-2 items-center gap-3">
       <ion-back-button
         defaultHref="/tabs/tab1"
         text=""
@@ -9,10 +9,10 @@
 
       <div>
         <h1 class="text-lg font-bold text-orange-500">
-          {{ isPredication() ? 'Predication' : isAnnonce() ? 'Annonce' : 'Article' }}
+          {{ isPredication() ? 'Prédication' : isAnnonce() ? 'Annonce' : 'Article' }}
         </h1>
         <p class="text-xs text-gray-500">
-          {{ article?.theme || 'Flechissons' }}
+          {{ article?.theme || 'Fléchissons' }}
         </p>
       </div>
     </div>
@@ -142,7 +142,7 @@
       <div *ngIf="article.theme" class="p-3 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg">
         <p class="text-sm font-medium text-orange-700">
           <i class="fas fa-tag mr-2"></i>
-          Theme : {{ article.theme }}
+          Thème : {{ article.theme }}
         </p>
       </div>
 
@@ -205,7 +205,7 @@
         <div *ngIf="commentaires.length === 0" class="text-center py-6 bg-white rounded-xl shadow-lg">
           <i class="fas fa-comment-slash text-3xl text-gray-300"></i>
           <p class="text-gray-400 text-sm mt-2">Aucun commentaire pour le moment</p>
-          <p class="text-gray-400 text-xs">Soyez le premier a commenter !</p>
+          <p class="text-gray-400 text-xs">Soyez le premier à commenter !</p>
         </div>
       </div>
     </div>
@@ -239,7 +239,7 @@
         <input
           #commentInput
           [(ngModel)]="nouveauCommentaire"
-          placeholder="Ecrire un commentaire..."
+          placeholder="Écrire un commentaire..."
           class="bg-transparent outline-none w-full text-black text-sm"
           (keyup.enter)="ajouterCommentaire()">
       </div>
