@@ -1,5 +1,7 @@
 
 
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
@@ -20,6 +22,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --ion-font-family: 'Roboto', sans-serif;
+}
+
+html,
+body,
+ion-app,
+ion-content,
+ion-button,
+ion-input,
+ion-textarea,
+ion-select {
+  font-family: 'Roboto', sans-serif;
+}
 
 
 /* KINOVA — Scrollbars invisibles */
@@ -42,4 +59,3 @@ ion-content::part(scroll) {
 ion-content::part(scroll)::-webkit-scrollbar {
   display: none;
 }
-

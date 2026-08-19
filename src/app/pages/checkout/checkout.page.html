@@ -1,21 +1,26 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="px-4 py-2">
-    <div class="flex items-center gap-3">
-      <ion-back-button defaultHref="/tabs/profil" text="" class="text-orange-500">
+  <ion-toolbar class="container">
+    <div class="flex items-center py-2 justify-between w-full">
+      <ion-back-button
+        slot="start"
+        defaultHref="/tabs/profil"
+        text=""
+        class="text-orange-500">
       </ion-back-button>
-      <div>
-        <h1 class="text-2xl font-bold text-orange-500">Faire un don</h1>
-        <p class="text-sm text-gray-500">Soutenez l'œuvre de Dieu avec votre contribution.</p>
+      <div class="checkout-title">
+        <p>DON SÉCURISÉ</p>
+        <h1>Finaliser votre don</h1>
       </div>
+      <ion-icon name="shield-checkmark-outline" class="checkout-header-icon"></ion-icon>
     </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div class="container p-4">
+  <div class="checkout-content container p-4">
 
     <!-- Carte -->
-    <div class="rounded-3xl bg-gradient-to-br from-orange-500 to-orange-700 text-white p-6 shadow-lg">
+    <div class="donation-hero rounded-3xl bg-gradient-to-br from-orange-500 to-orange-700 text-white p-6 shadow-lg">
       <ion-icon name="heart" class="text-4xl animate-pulse"></ion-icon>
       <h2 class="text-xl font-bold mt-3">Chaque don fait la différence</h2>
       <p class="text-orange-100 text-sm mt-2">Merci de soutenir la mission de Fléchissons.</p>
@@ -30,7 +35,7 @@
           (click)="choisirMontant(montant)"
           class="h-14 rounded-xl border font-bold transition-all duration-300 transform hover:scale-105"
           [ngClass]="montantSelectionne===montant ? 'bg-orange-500 text-white border-orange-500 shadow-lg' : 'bg-white text-gray-700 border-gray-200 hover:border-orange-300'">
-          {{ montant }} FC
+          {{ montant | currency:'USD':'symbol':'1.0-0' }}
         </button>
       </div>
     </div>
@@ -43,10 +48,10 @@
           #montantInput
           [(ngModel)]="montantPersonnalise"
           type="number"
-          placeholder="Ex : 1500"
+          placeholder="Ex : 25"
           (input)="onMontantPersonnaliseChange(montantInput.value)"
           class="flex-1 outline-none bg-white text-black text-lg">
-        <span class="font-bold text-orange-500">FC</span>
+        <span class="font-bold text-orange-500">USD</span>
       </div>
     </div>
 
@@ -58,7 +63,7 @@
         <!-- M-Pesa -->
         <button
           (click)="choisirPaiement('mpesa')"
-          class="rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
+          class="payment-option rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
           [ngClass]="moyenSelectionne==='mpesa' ? 'border-orange-500 ring-2 ring-orange-100 shadow-lg' : 'border-gray-100'">
           <div class="flex justify-center">
             <img 
@@ -75,7 +80,7 @@
         <!-- Orange Money -->
         <button
           (click)="choisirPaiement('orange')"
-          class="rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
+          class="payment-option rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
           [ngClass]="moyenSelectionne==='orange' ? 'border-orange-500 ring-2 ring-orange-100 shadow-lg' : 'border-gray-100'">
           <div class="flex justify-center">
             <img 
@@ -92,7 +97,7 @@
         <!-- Airtel Money -->
         <button
           (click)="choisirPaiement('airtel')"
-          class="rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
+          class="payment-option rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
           [ngClass]="moyenSelectionne==='airtel' ? 'border-orange-500 ring-2 ring-orange-100 shadow-lg' : 'border-gray-100'">
           <div class="flex justify-center">
             <img 
@@ -109,7 +114,7 @@
         <!-- Mastercard -->
         <button
           (click)="choisirPaiement('mastercard')"
-          class="rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
+          class="payment-option rounded-2xl bg-white border p-4 transition-all duration-300 transform hover:scale-105"
           [ngClass]="moyenSelectionne==='mastercard' ? 'border-orange-500 ring-2 ring-orange-100 shadow-lg' : 'border-gray-100'">
           <div class="flex justify-center">
             <img 
@@ -127,7 +132,7 @@
     </div>
 
     <!-- Informations de paiement -->
-    <div class="mt-6 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+    <div class="payment-details mt-6 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
       <div class="flex items-center gap-2 mb-3">
         <ion-icon [name]="getIconePaiement()" class="text-2xl text-orange-500"></ion-icon>
         <h4 class="font-semibold text-gray-800">
@@ -197,11 +202,11 @@
     </div>
 
     <!-- Résumé du don -->
-    <div class="mt-6 bg-orange-50 rounded-2xl p-4 border border-orange-100">
+    <div class="donation-summary mt-6 bg-orange-50 rounded-2xl p-4 border border-orange-100">
       <div class="flex justify-between items-center">
         <div>
           <p class="text-sm text-gray-600">Montant du don</p>
-          <p class="text-2xl font-bold text-orange-500">{{ montantSelectionne | number }} FC</p>
+          <p class="text-2xl font-bold text-orange-500">{{ montantSelectionne | currency:'USD':'symbol':'1.2-2' }}</p>
         </div>
         <div class="text-right">
           <p class="text-sm text-gray-600">Moyen de paiement</p>
@@ -210,13 +215,19 @@
       </div>
     </div>
 
-    <!-- Bouton -->
-    <button 
-      (click)="validerDon()"
-      class="mt-8 w-full bg-orange-500 text-white rounded-2xl py-4 font-bold text-lg shadow-lg transition-all duration-300 hover:bg-orange-600 hover:shadow-xl transform hover:scale-[1.02]">
-      <ion-icon name="lock-closed" class="mr-2"></ion-icon>
-      Confirmer le don
-    </button>
-
   </div>
 </ion-content>
+
+<ion-footer class="checkout-footer ion-no-border">
+  <ion-toolbar>
+    <div class="container px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <button
+        (click)="validerDon()"
+        class="checkout-confirm-btn w-full bg-orange-500 text-white rounded-2xl py-4 font-bold text-lg shadow-lg transition-all duration-300 hover:bg-orange-600">
+        <ion-icon name="lock-closed" class="mr-2"></ion-icon>
+        Confirmer le don · {{ montantSelectionne | currency:'USD':'symbol':'1.2-2' }}
+      </button>
+      <p class="secure-note"><ion-icon name="shield-checkmark-outline"></ion-icon> Paiement sécurisé</p>
+    </div>
+  </ion-toolbar>
+</ion-footer>

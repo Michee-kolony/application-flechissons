@@ -1,0 +1,43 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="container">
+    <div class="privacy-toolbar">
+      <ion-back-button slot="start" defaultHref="/tabs/profil" text="" aria-label="Retour"></ion-back-button>
+      <div class="privacy-toolbar__title"><p>CONFIDENTIALITÉ</p><h1>Votre activité est protégée</h1></div>
+      <div class="privacy-toolbar__icon"><ion-icon name="shield-checkmark-outline"></ion-icon></div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <main class="privacy-page container">
+    <section class="privacy-hero">
+      <div class="privacy-hero__shape privacy-hero__shape--one"></div><div class="privacy-hero__shape privacy-hero__shape--two"></div>
+      <div class="privacy-hero__icon"><ion-icon name="lock-closed-outline"></ion-icon></div>
+      <p>NOTRE ENGAGEMENT</p><h2>Votre confiance est précieuse.</h2>
+      <span>Fléchissons traite vos informations, vos requêtes de prière et votre activité avec discrétion et responsabilité.</span>
+    </section>
+
+    <section class="privacy-section">
+      <div class="privacy-section__heading"><span class="heading-icon"><ion-icon name="heart-outline"></ion-icon></span><div><h3>Ce que nous protégeons</h3><p>Les informations utiles à votre expérience.</p></div></div>
+      <div class="privacy-card-list">
+        <article class="privacy-card"><ion-icon name="person-outline"></ion-icon><div><h4>Vos informations de compte</h4><p>Votre nom, e-mail, téléphone ou photo de profil ne sont collectés que lorsque cela est nécessaire ou que vous choisissez de les fournir.</p></div></article>
+        <article class="privacy-card"><ion-icon name="chatbubbles-outline"></ion-icon><div><h4>Vos requêtes de prière</h4><p>Elles sont traitées de façon confidentielle et ne sont pas rendues publiques sans votre consentement.</p></div></article>
+        <article class="privacy-card"><ion-icon name="pulse-outline"></ion-icon><div><h4>Votre utilisation de l'application</h4><p>Vos activités servent uniquement au bon fonctionnement, à la sécurité et à l'amélioration de Fléchissons.</p></div></article>
+      </div>
+    </section>
+
+    <section class="privacy-section">
+      <div class="privacy-section__heading"><span class="heading-icon"><ion-icon name="shield-checkmark-outline"></ion-icon></span><div><h3>Comment nous veillons sur elles</h3><p>Des mesures adaptées à la protection de vos données.</p></div></div>
+      <div class="privacy-safeguards">
+        <div><ion-icon name="lock-closed-outline"></ion-icon><span>Communications et accès protégés</span></div>
+        <div><ion-icon name="eye-off-outline"></ion-icon><span>Aucune vente de vos informations à des tiers</span></div>
+        <div><ion-icon name="time-outline"></ion-icon><span>Données conservées seulement le temps nécessaire</span></div>
+        <div><ion-icon name="notifications-outline"></ion-icon><span>Notifications uniquement si vous les autorisez</span></div>
+      </div>
+    </section>
+
+    <section class="privacy-note"><ion-icon name="information-circle-outline"></ion-icon><p>Lorsque vous publiez volontairement un contenu public, vérifiez qu'il ne contient pas d'informations que vous souhaitez garder privées.</p></section>
+    <section class="privacy-contact"><ion-icon name="help-buoy-outline"></ion-icon><div><h3>Une question sur vos données ?</h3><p>Contactez l'équipe Fléchissons depuis la page Contact de l'application.</p></div></section>
+    <p class="privacy-update">Politique de confidentialité — mise à jour le {{ lastUpdated }}</p>
+  </main>
+</ion-content>

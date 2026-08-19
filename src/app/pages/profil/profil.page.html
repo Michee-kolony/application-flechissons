@@ -11,7 +11,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding" style="--padding-top: 0px !important; --padding-start: 0px !important; --padding-end: 0px !important;">
-  <div class="px-4 py-4">
+  <div class="container py-4">
 
     <!-- ================================================= -->
     <!-- SECTION HÉROS RECTANGULAIRE PLEINE LARGEUR -->
@@ -69,60 +69,74 @@
       </div>
     </div>
 
-    <!-- ================================================= -->
-    <!-- MENU CARTES OPTIONS - DESIGN FIN ET ÉPURÉ -->
-    <!-- ================================================= -->
-    <div class="mt-6 space-y-2.5">
+       <!-- ================================================= -->
+<!-- MENU CARTES OPTIONS - DESIGN ULTRA ÉPURÉ -->
+<!-- ================================================= -->
+<div class="mt-6 space-y-2.5">
 
-      <!-- Carte 1 : Faire un don -->
-      <div [routerLink]="['/checkout']" class="bg-white rounded-xl px-5 py-3.5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:shadow-md transition-all hover:border-orange-200 active:scale-[0.98]">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-            <ion-icon name="heart-outline" class="text-orange-500 text-xl"></ion-icon>
-          </div>
-          <h3 class="font-semibold text-gray-800 text-sm">Faire un don</h3>
-        </div>
-        <ion-icon name="chevron-forward-outline" class="text-gray-400 text-sm"></ion-icon>
+  <!-- Carte 1 : Faire un don -->
+  <div [routerLink]="['/checkout']" 
+       class="group bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100/80 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-orange-200/80 transition-all duration-300 active:scale-[0.97]">
+    <div class="flex items-center gap-3.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300">
+        <ion-icon name="heart-outline" class="text-orange-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
       </div>
-
-      <!-- Carte 2 : FAQ -->
-      <div class="bg-white rounded-xl px-5 py-3.5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:shadow-md transition-all hover:border-orange-200 active:scale-[0.98]">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-            <ion-icon name="help-circle-outline" class="text-orange-500 text-xl"></ion-icon>
-          </div>
-          <h3 class="font-semibold text-gray-800 text-sm">FAQ</h3>
-        </div>
-        <ion-icon name="chevron-forward-outline" class="text-gray-400 text-sm"></ion-icon>
-      </div>
-
-      <!-- Carte 3 : Vidéos likées -->
-      <div class="bg-white rounded-xl px-5 py-3.5 shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:shadow-md transition-all hover:border-orange-200 active:scale-[0.98]">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-            <ion-icon name="play-circle-outline" class="text-orange-500 text-xl"></ion-icon>
-          </div>
-          <h3 class="font-semibold text-gray-800 text-sm">Vidéos likées</h3>
-        </div>
-        <ion-icon name="chevron-forward-outline" class="text-gray-400 text-sm"></ion-icon>
-      </div>
-
-      <!-- Carte 4 : Déconnexion -->
-      <button type="button" (click)="logout()" [disabled]="isLoading" class="w-full bg-white rounded-xl px-5 py-3.5 shadow-sm border border-red-100 flex items-center justify-between hover:shadow-md transition-all hover:border-red-300 active:scale-[0.98]">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-            <ion-spinner *ngIf="isLoading" name="crescent" class="text-red-500 text-xl"></ion-spinner>
-            <ion-icon *ngIf="!isLoading" name="log-out-outline" class="text-red-500 text-xl"></ion-icon>
-          </div>
-          <h3 class="font-semibold text-red-500 text-sm">
-            <span *ngIf="!isLoading">Déconnexion</span>
-            <span *ngIf="isLoading">Déconnexion...</span>
-          </h3>
-        </div>
-        <ion-icon *ngIf="!isLoading" name="chevron-forward-outline" class="text-red-300 text-sm"></ion-icon>
-      </button>
-
+      <h3 class="font-medium text-gray-800 text-sm tracking-tight">Faire un don</h3>
     </div>
-
+    <ion-icon name="chevron-forward-outline" class="text-gray-300 text-sm group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
   </div>
+
+  <!-- Carte 2 : FAQ -->
+  <div [routerLink]="['/faq']" class="group bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100/80 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-orange-200/80 transition-all duration-300 active:scale-[0.97]">
+    <div class="flex items-center gap-3.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300">
+        <ion-icon name="help-circle-outline" class="text-orange-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
+      </div>
+      <h3 class="font-medium text-gray-800 text-sm tracking-tight">FAQ</h3>
+    </div>
+    <ion-icon name="chevron-forward-outline" class="text-gray-300 text-sm group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
+  </div>
+
+   <!-- Carte 2 : FAQ -->
+  <div [routerLink]="['/bible']" class="group bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100/80 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-orange-200/80 transition-all duration-300 active:scale-[0.97]">
+    <div class="flex items-center gap-3.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300">
+        <ion-icon name="book-outline" class="text-orange-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
+      </div>
+      <h3 class="font-medium text-gray-800 text-sm tracking-tight">Lire la bile</h3>
+    </div>
+    <ion-icon name="chevron-forward-outline" class="text-gray-300 text-sm group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
+  </div>
+
+  
+  <!-- Carte confidentialité -->
+  <div [routerLink]="['/privacy']" class="group bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100/80 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-orange-200/80 transition-all duration-300 active:scale-[0.97]">
+    <div class="flex items-center gap-3.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300">
+        <ion-icon name="lock-closed-outline" class="text-orange-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
+      </div>
+      <h3 class="font-medium text-gray-800 text-sm tracking-tight">Votre activité est protegée</h3>
+    </div>
+    <ion-icon name="chevron-forward-outline" class="text-gray-300 text-sm group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
+  </div>
+
+  <!-- Carte 4 : Déconnexion -->
+  <button type="button" (click)="logout()" [disabled]="isLoading"
+          class="group w-full bg-white rounded-2xl px-4 py-3 shadow-sm border border-red-100/80 flex items-center justify-between hover:shadow-lg hover:border-red-200/80 transition-all duration-300 active:scale-[0.97] disabled:opacity-70 disabled:cursor-not-allowed">
+    <div class="flex items-center gap-3.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-50 to-red-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-red-100 group-hover:to-red-200/50 transition-all duration-300">
+        <ion-spinner *ngIf="isLoading" name="crescent" class="text-red-500 text-base"></ion-spinner>
+        <ion-icon *ngIf="!isLoading" name="log-out-outline" class="text-red-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
+      </div>
+      <h3 class="font-medium text-red-500 text-sm tracking-tight">
+        <span *ngIf="!isLoading">Déconnexion</span>
+        <span *ngIf="isLoading">Déconnexion...</span>
+      </h3>
+    </div>
+    <ion-icon *ngIf="!isLoading" name="chevron-forward-outline" class="text-red-200 text-sm group-hover:text-red-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
+  </button>
+
+</div>
+
+</div>
 </ion-content>

@@ -1,0 +1,159 @@
+:host {
+  --ink: #182521;
+  --muted: #71807a;
+  --paper: #f7f8f4;
+  --line: #dfe6df;
+  --accent: #f97316;
+  --accent-deep: #ea580c;
+}
+
+.bible-header ion-toolbar {
+  --background: var(--paper);
+  --color: var(--ink);
+  --min-height: 58px;
+  padding: 0 14px;
+}
+
+.bible-header ion-back-button,
+.bible-header ion-button {
+  --color: var(--ink);
+  --padding-start: 8px;
+  --padding-end: 8px;
+}
+
+.header-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.bible-content {
+  --background: var(--paper);
+}
+
+.scroll-top-fab {
+  --ion-safe-area-bottom: 16px;
+  margin: 0 12px 12px 0;
+}
+
+.scroll-top-fab ion-fab-button {
+  --background: #f97316;
+  --background-activated: #ea580c;
+  --background-hover: #ea580c;
+  --box-shadow: 0 8px 18px rgba(194, 65, 12, 0.28);
+  --color: #ffffff;
+  --border-radius: 14px;
+}
+
+.scroll-top-fab ion-icon {
+  font-size: 22px;
+}
+
+.page-shell {
+  width: min(100%, 900px);
+  margin: 0 auto;
+  padding: 14px 22px 72px;
+}
+
+.intro-block {
+  padding: 28px 2px 30px;
+  animation: reveal 0.55s ease both;
+}
+
+.eyebrow, .panel-kicker, .translation-label {
+  color: var(--accent-deep);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.eyebrow { display: flex; align-items: center; gap: 8px; }
+.eyebrow span { width: 22px; height: 2px; background: var(--accent); }
+
+.intro-block h1 {
+  color: var(--ink);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(38px, 7vw, 62px);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  margin: 17px 0 14px;
+}
+
+.intro-block h1 em { color: var(--accent); font-style: italic; }
+.intro-block p { color: var(--muted); font-size: 15px; line-height: 1.65; margin: 0; max-width: 470px; }
+
+.reader-panel {
+  background: var(--ink);
+  border-radius: 20px;
+  box-shadow: 0 18px 35px rgba(24, 37, 33, 0.14);
+  color: white;
+  padding: 22px;
+  animation: reveal 0.55s 0.08s ease both;
+}
+
+.panel-heading { align-items: center; display: flex; gap: 13px; margin-bottom: 21px; }
+.panel-icon { align-items: center; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; height: 40px; justify-content: center; width: 40px; }
+.panel-icon ion-icon { color: #fdba74; font-size: 20px; }
+.panel-kicker { color: #fdba74; display: block; margin-bottom: 4px; }
+.panel-heading h2 { font-size: 19px; font-weight: 650; margin: 0; }
+
+.field-grid { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) 150px; }
+.reader-field { --background: #293a34; --border-color: #3b4e46; --border-radius: 11px; --color: white; --highlight-color: #f97316; --highlight-color-focused: #f97316; --placeholder-color: #94a39c; --placeholder-opacity: 1; font-size: 14px; min-height: 54px; width: 100%; }
+.reader-field::part(label) { color: #b6c1bb; font-size: 11px; font-weight: 700; }
+.reader-field::part(text) { color: white; }
+.reader-field::part(icon) { color: #fdba74; opacity: 1; }
+.ionic-input { --padding-start: 13px; --padding-end: 13px; }
+
+.search-button { align-items: center; background: #f97316; border: 0; border-radius: 11px; color: white; cursor: pointer; display: flex; font-size: 14px; font-weight: 800; gap: 9px; justify-content: center; margin-top: 15px; min-height: 51px; transition: background 0.2s ease, transform 0.2s ease; width: 100%; }
+.search-button ion-icon { font-size: 18px; }
+.search-button:hover { background: #ea580c; }
+.search-button:active { transform: scale(0.985); }
+.search-button:disabled { cursor: wait; opacity: 0.65; }
+
+.message { align-items: flex-start; border-radius: 14px; display: flex; gap: 11px; margin-top: 18px; padding: 14px 16px; }
+.message-error { background: #fff0eb; border: 1px solid #f4c9bb; color: #9b3827; }
+.message ion-icon { font-size: 21px; margin-top: 1px; }
+.message strong { font-size: 14px; }
+.message p { font-size: 13px; line-height: 1.45; margin: 3px 0 0; }
+
+.reading-section { animation: reveal 0.45s ease both; padding-top: 48px; }
+.reading-heading { align-items: end; display: flex; justify-content: space-between; }
+.reading-heading h2 { color: var(--ink); font-family: Georgia, 'Times New Roman', serif; font-size: clamp(30px, 5vw, 44px); font-weight: 400; letter-spacing: -0.04em; margin: 8px 0 0; }
+.reading-heading h2 strong { color: var(--accent); font-weight: 400; }
+.verse-count { align-items: end; display: flex; flex-direction: column; color: var(--muted); }
+.verse-count strong { color: var(--ink); font-family: Georgia, 'Times New Roman', serif; font-size: 25px; font-weight: 400; }
+.verse-count span { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.reading-rule { border-top: 1px solid var(--line); margin: 24px 0 4px; position: relative; }
+.reading-rule span { background: var(--accent); display: block; height: 3px; left: 0; position: absolute; top: -2px; width: 56px; }
+.verse-row { align-items: flex-start; border-bottom: 1px solid var(--line); display: grid; gap: 18px; grid-template-columns: 28px minmax(0, 1fr); padding: 21px 8px 21px 0; }
+.verse-number { color: var(--accent); font-size: 12px; font-weight: 800; padding-top: 5px; text-align: right; }
+.verse-row p { color: #293a34; font-family: Georgia, 'Times New Roman', serif; font-size: 18px; line-height: 1.7; margin: 0; white-space: pre-line; }
+
+.loading-state, .empty-state, .welcome-state { align-items: center; color: var(--muted); display: flex; flex-direction: column; padding: 74px 20px 30px; text-align: center; }
+.loading-mark, .empty-icon { align-items: center; background: #e8eee8; border-radius: 50%; color: var(--accent); display: flex; height: 62px; justify-content: center; width: 62px; }
+.loading-mark ion-spinner { color: var(--accent); height: 25px; width: 25px; }
+.loading-state h2, .empty-state h2, .welcome-state h2 { color: var(--ink); font-family: Georgia, 'Times New Roman', serif; font-size: 24px; font-weight: 400; margin: 20px 0 7px; }
+.loading-state p, .empty-state p, .welcome-state p { font-size: 14px; line-height: 1.6; margin: 0; }
+.empty-icon ion-icon { font-size: 27px; }
+.welcome-state { padding-top: 80px; }
+.welcome-art { align-items: center; color: var(--accent); display: flex; font-family: Georgia, 'Times New Roman', serif; font-size: 18px; gap: 13px; }
+.welcome-art ion-icon { color: var(--ink); font-size: 35px; }
+
+@keyframes reveal { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 520px) {
+  .page-shell { padding-left: 16px; padding-right: 16px; }
+  .intro-block { padding-top: 22px; }
+  .reader-panel { border-radius: 16px; padding: 18px; }
+  .field-grid { grid-template-columns: 1fr; }
+  .chapter-field { max-width: 150px; }
+  .reading-section { padding-top: 36px; }
+  .verse-row { gap: 13px; }
+  .verse-row p { font-size: 17px; }
+}

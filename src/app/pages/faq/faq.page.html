@@ -1,0 +1,47 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="container">
+    <div class="faq-toolbar">
+      <ion-back-button slot="start" defaultHref="/tabs/profil" text="" aria-label="Retour"></ion-back-button>
+      <div class="faq-toolbar__title"><p>AIDE &amp; SUPPORT</p><h1>Questions fréquentes</h1></div>
+      <div class="faq-toolbar__icon"><ion-icon name="help-circle-outline"></ion-icon></div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <main class="faq-page container">
+    <section class="faq-hero">
+      <div class="faq-hero__spark faq-hero__spark--one"></div><div class="faq-hero__spark faq-hero__spark--two"></div>
+      <div class="faq-hero__icon"><ion-icon name="chatbubbles-outline"></ion-icon></div>
+      <p>BESOIN D'AIDE ?</p><h2>On vous accompagne.</h2>
+      <span>Retrouvez les réponses aux questions les plus courantes sur Fléchissons.</span>
+    </section>
+
+    <section class="faq-section">
+      <div class="faq-section__title"><ion-icon name="apps-outline"></ion-icon><div><h3>Utiliser Fléchissons</h3><p>Votre compte et les fonctionnalités de l'application.</p></div></div>
+      <ion-accordion-group class="faq-accordion-group" value="account">
+        <ion-accordion value="account"><ion-item slot="header"><ion-label>Comment modifier mon profil ?</ion-label></ion-item><div class="faq-answer" slot="content">Rendez-vous dans l'onglet Profil, puis appuyez sur « Modifier ». Vous pourrez mettre à jour les informations disponibles dans votre compte.</div></ion-accordion>
+        <ion-accordion value="content"><ion-item slot="header"><ion-label>Comment trouver une prédication ou un témoignage ?</ion-label></ion-item><div class="faq-answer" slot="content">Parcourez les onglets de l'application pour découvrir les publications, prédications, annonces et témoignages disponibles.</div></ion-accordion>
+        <ion-accordion value="notifications"><ion-item slot="header"><ion-label>Comment gérer les notifications ?</ion-label></ion-item><div class="faq-answer" slot="content">Vous pouvez autoriser ou désactiver les notifications directement dans les réglages de votre téléphone.</div></ion-accordion>
+      </ion-accordion-group>
+    </section>
+
+    <section class="faq-section">
+      <div class="faq-section__title"><ion-icon name="heart-outline"></ion-icon><div><h3>Prière et accompagnement</h3><p>Partagez vos intentions en toute confiance.</p></div></div>
+      <ion-accordion-group class="faq-accordion-group">
+        <ion-accordion value="prayer"><ion-item slot="header"><ion-label>Ma requête de prière est-elle confidentielle ?</ion-label></ion-item><div class="faq-answer" slot="content">Oui. Les requêtes de prière sont traitées avec discrétion et ne sont pas publiées sans votre consentement.</div></ion-accordion>
+        <ion-accordion value="contact"><ion-item slot="header"><ion-label>Comment contacter l'équipe ?</ion-label></ion-item><div class="faq-answer" slot="content">Ouvrez l'onglet Contact, choisissez le sujet de votre demande, puis envoyez votre message. L'équipe vous répondra dès que possible.</div></ion-accordion>
+      </ion-accordion-group>
+    </section>
+
+    <section class="faq-section">
+      <div class="faq-section__title"><ion-icon name="shield-checkmark-outline"></ion-icon><div><h3>Confidentialité et dons</h3><p>Vos données et votre soutien à la mission.</p></div></div>
+      <ion-accordion-group class="faq-accordion-group">
+        <ion-accordion value="privacy"><ion-item slot="header"><ion-label>Comment mes données sont-elles protégées ?</ion-label></ion-item><div class="faq-answer" slot="content">Nous utilisons vos informations uniquement pour faire fonctionner, sécuriser et améliorer l'application. Elles ne sont pas vendues à des tiers.</div></ion-accordion>
+        <ion-accordion value="donation"><ion-item slot="header"><ion-label>Comment faire un don ?</ion-label></ion-item><div class="faq-answer" slot="content">Depuis votre profil, appuyez sur « Faire un don », choisissez le montant et le moyen de paiement qui vous convient, puis suivez les étapes indiquées.</div></ion-accordion>
+      </ion-accordion-group>
+    </section>
+
+    <section class="faq-contact"><div class="faq-contact__icon"><ion-icon name="mail-outline"></ion-icon></div><div><h3>Vous n'avez pas trouvé votre réponse ?</h3><p>Notre équipe reste disponible pour vous aider.</p><a routerLink="/tabs/contact">Nous contacter <ion-icon name="arrow-forward-outline"></ion-icon></a></div></section>
+  </main>
+</ion-content>

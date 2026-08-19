@@ -96,7 +96,8 @@ article:nth-child(10) { animation-delay: 0.50s; }
 // =====================================================
 
 .search-container {
-  padding: 0 0 16px 0;
+  padding: 0;
+  margin: 0.5rem 0 0.25rem;
   position: relative;
   z-index: 10;
 }
@@ -108,6 +109,8 @@ article:nth-child(10) { animation-delay: 0.50s; }
 .search-box {
   display: flex;
   align-items: center;
+  min-height: 52px;
+  box-sizing: border-box;
   background: white;
   border-radius: 16px;
   padding: 4px 4px 4px 16px;

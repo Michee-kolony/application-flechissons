@@ -31,38 +31,34 @@
         </span>
       </button>
     </div>
+
+    <div class="search-container">
+      <div class="search-wrapper">
+        <div class="search-box">
+          <ion-icon name="search-outline" class="search-icon"></ion-icon>
+          <input
+            type="text"
+            [(ngModel)]="searchText"
+            (input)="rechercher()"
+            placeholder="Rechercher une prédication..."
+            class="search-input"
+            [class.has-text]="searchText">
+          <ion-icon
+            *ngIf="searchText"
+            (click)="clearSearch()"
+            name="close-circle"
+            class="clear-icon">
+          </ion-icon>
+          <button class="search-btn" (click)="rechercher()" aria-label="Lancer la recherche">
+            <ion-icon name="arrow-forward-outline"></ion-icon>
+          </button>
+        </div>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding" style="--background: #f9fafb;">
-
-  <!-- ===================================================== -->
-  <!-- BARRE DE RECHERCHE - DESIGN MODERNE                   -->
-  <!-- ===================================================== -->
-
-  <div class="search-container">
-    <div class="search-wrapper">
-      <div class="search-box">
-        <ion-icon name="search-outline" class="search-icon"></ion-icon>
-        <input
-          type="text"
-          [(ngModel)]="searchText"
-          (input)="rechercher()"
-          placeholder="Rechercher une prédication..."
-          class="search-input"
-          [class.has-text]="searchText">
-        <ion-icon
-          *ngIf="searchText"
-          (click)="clearSearch()"
-          name="close-circle"
-          class="clear-icon">
-        </ion-icon>
-        <button class="search-btn" (click)="rechercher()">
-          <ion-icon name="arrow-forward-outline"></ion-icon>
-        </button>
-      </div>
-    </div>
-  </div>
+<ion-content class="ion-padding">
 
   <!-- ===================================================== -->
   <!-- PULL-TO-REFRESH NATIF IONIC                           -->
@@ -162,10 +158,7 @@
       <!-- Texte -->
       <div class="article-body">
         <h4 class="article-title">{{ predication.titre }}</h4>
-        <p class="article-description">{{ predication.description }}</p>
-        <div *ngIf="predication.theme" class="theme-tag">
-          <span>Thème : {{ predication.theme }}</span>
-        </div>
+        <p class="article-description font-thin">{{ predication.description }}</p>
       </div>
 
       <!-- Image avec Play -->

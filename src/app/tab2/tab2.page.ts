@@ -8,6 +8,8 @@ import { Component } from '@angular/core';
 })
 export class Tab2Page {
 
+  searchTerm = '';
+
   featured = {
     title: "Dieu a changé ma vie",
     author: "Marie Nzambe",
@@ -52,5 +54,17 @@ export class Tab2Page {
     }
 
   ];
+
+  get filteredTestimonies() {
+    const query = this.searchTerm.trim().toLocaleLowerCase();
+
+    if (!query) {
+      return this.testimonies;
+    }
+
+    return this.testimonies.filter(({ title, author }) =>
+      `${title} ${author}`.toLocaleLowerCase().includes(query)
+    );
+  }
 
 }

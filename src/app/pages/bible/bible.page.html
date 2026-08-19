@@ -1,0 +1,114 @@
+<ion-header class="ion-no-border bible-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button class="text-orange-500" defaultHref="/tabs/profil" text=""></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="bible-content">
+  <main class="page-shell">
+    <section class="intro-block">
+      <div class="eyebrow"><span></span> Parole &amp; réflexion</div>
+      <h1>Votre moment<br><em>de lecture.</em></h1>
+      <p>Retrouvez un passage, prenez le temps de le lire et laissez les mots résonner.</p>
+    </section>
+
+    <section class="reader-panel" aria-label="Choisir un passage biblique">
+      <div class="panel-heading">
+        <div class="panel-icon"><ion-icon name="book-outline"></ion-icon></div>
+        <div>
+          <span class="panel-kicker">Ouvrir un passage</span>
+          <h2>Que souhaitez-vous lire ?</h2>
+        </div>
+      </div>
+
+      <div class="field-grid">
+        <ion-select
+          class="reader-field ionic-select"
+          label="Livre biblique"
+          label-placement="floating"
+          fill="outline"
+          [(ngModel)]="selectedBook"
+          (ionChange)="onBookChange()"
+          placeholder="Choisir un livre"
+          interface="action-sheet"
+          cancelText="Annuler"
+          [interfaceOptions]="{ header: 'Choisir un livre', subHeader: 'Sélectionnez un livre biblique' }"
+          [disabled]="loading">
+          <ion-select-option *ngFor="let book of books" [value]="book.value">
+            {{ book.name }}
+          </ion-select-option>
+        </ion-select>
+
+        <ion-input
+          class="reader-field chapter-field ionic-input"
+          label="Chapitre"
+          label-placement="floating"
+          fill="outline"
+          [(ngModel)]="chapterNumber"
+          (ionInput)="onChapterChange()"
+          (keydown.enter)="onEnter($event)"
+          type="number"
+          placeholder="Ex. 3"
+          min="1"
+          [disabled]="loading">
+        </ion-input>
+      </div>
+
+      <button type="button" class="search-button" (click)="searchBible()" [disabled]="loading">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        <span>{{ loading ? 'Ouverture du passage...' : 'Commencer la lecture' }}</span>
+        <ion-icon *ngIf="!loading" name="arrow-forward-outline"></ion-icon>
+      </button>
+    </section>
+
+    <div *ngIf="errorMessage" class="message message-error" role="alert">
+      <ion-icon name="alert-circle-outline"></ion-icon>
+      <div><strong>Recherche impossible</strong><p>{{ errorMessage }}</p></div>
+    </div>
+
+    <section *ngIf="loading" class="loading-state" aria-live="polite">
+      <div class="loading-mark"><ion-spinner name="crescent"></ion-spinner></div>
+      <h2>Préparation de votre lecture</h2>
+      <p>Le chapitre arrive dans un instant.</p>
+    </section>
+
+    <section *ngIf="!loading && bible && verses.length > 0" class="reading-section">
+      <div class="reading-heading">
+        <div>
+          <span class="translation-label">{{ bible.translation }}</span>
+          <h2>{{ getDisplayedBookName(bible.book) }} <strong>{{ bible.chapter }}</strong></h2>
+        </div>
+        <div class="verse-count"><strong>{{ verses.length }}</strong><span>versets</span></div>
+      </div>
+
+      <div class="reading-rule"><span></span></div>
+
+      <div class="verse-list">
+        <article *ngFor="let verse of verses" class="verse-row">
+          <span class="verse-number">{{ verse.v }}</span>
+          <p>{{ verse.t }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section *ngIf="!loading && !errorMessage && bible && verses.length === 0" class="empty-state">
+      <div class="empty-icon"><ion-icon name="book-outline"></ion-icon></div>
+      <h2>Aucun verset trouvé</h2>
+      <p>Ce chapitre ne contient pas de passage disponible.</p>
+    </section>
+
+    <section *ngIf="!loading && !errorMessage && !bible" class="welcome-state">
+      <div class="welcome-art"><span>✦</span><ion-icon name="book-outline"></ion-icon><span>·</span></div>
+      <h2>La lecture commence ici</h2>
+      <p>Choisissez un livre et un chapitre<br>pour ouvrir votre prochain passage.</p>
+    </section>
+  </main>
+
+  <ion-fab *ngIf="bible && verses.length > 0" slot="fixed" vertical="bottom" horizontal="end" class="scroll-top-fab">
+    <ion-fab-button size="small" (click)="scrollToTop()" aria-label="Revenir en haut de la page">
+      <ion-icon name="chevron-up-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

@@ -9,10 +9,10 @@ import { AlertController } from '@ionic/angular';
 })
 export class CheckoutPage implements OnInit {
 
-  montantSelectionne = 100;
-  montantPersonnalise: number | null = 100;
+  montantSelectionne = 10;
+  montantPersonnalise: number | null = 10;
 
-  montants = [50, 100, 200, 500, 1000];
+  montants = [5, 10, 25, 50, 100];
 
   // Informations de paiement
   numeroTelephone: string = '';
@@ -121,7 +121,7 @@ export class CheckoutPage implements OnInit {
       header: 'Confirmation',
       message: `
         <div style="text-align: left;">
-          <p><strong>Montant :</strong> ${this.montantSelectionne} FC</p>
+          <p><strong>Montant :</strong> $${this.montantSelectionne.toFixed(2)} USD</p>
           <p><strong>Moyen de paiement :</strong> ${this.getNomMoyenPaiement()}</p>
           <p><strong>Référence :</strong> DON-${Date.now().toString().slice(-6)}</p>
           <br>

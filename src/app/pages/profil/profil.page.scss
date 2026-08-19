@@ -1,28 +1,14 @@
-/* tab1.page.scss - CSS corrigé avec espace réduit */
+// tab1.page.scss - Ajoutez ce CSS pour les corrections
 ion-toolbar {
-  padding-top: var(--ion-safe-area-top, 8px) !important;
-  --padding-top: var(--ion-safe-area-top, 8px) !important;
-  min-height: 60px;
   --background: white;
-  
-  @media (max-width: 480px) {
-    min-height: 55px;
-    padding-top: var(--ion-safe-area-top, 5px) !important;
-    --padding-top: var(--ion-safe-area-top, 5px) !important;
-  }
 }
 
-h1 {
-  font-size: 1.1rem !important;
-}
+ h1 {
+      font-size: 1.1rem !important;
+    }
 
 ion-content {
-  --padding-top: 0px !important;
   --background: white;
-  
-  @media (max-width: 480px) {
-    --padding-top: 0px !important;
-  }
 }
 
 /* Ajustement pour le conteneur */
