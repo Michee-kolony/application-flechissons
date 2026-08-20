@@ -145,7 +145,8 @@
 
       <!-- ACTIONS -->
       <div class="bg-white shadow-lg rounded-xl p-3 flex justify-around items-center">
-        <button (click)="toggleLike()" class="flex flex-col items-center gap-0.5 transition-transform hover:scale-110">
+        <button (click)="toggleLike()" class="like-action flex flex-col items-center gap-0.5 transition-transform hover:scale-110" aria-label="Aimer la publication">
+          <span *ngIf="showLikeBurst" class="floating-heart" aria-hidden="true">&#10084;</span>
           <i class="text-xl" [class]="isLiked ? 'fas fa-heart text-orange-500' : 'far fa-heart text-gray-500'"></i>
           <span class="text-xs font-semibold text-gray-700">{{ likeCount }}</span>
         </button>

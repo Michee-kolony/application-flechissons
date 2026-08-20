@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/co
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 export interface CommentaireBackend {
   _id?: string;
@@ -67,6 +68,7 @@ export class ArticlePage implements OnInit, OnDestroy {
   currentImageIndex: number = 0;
   isLiked: boolean = false;
   likeCount: number = 0;
+  showLikeBurst: boolean = false;
 
   userData: UserData | null = null;
   userPhoto: string = '';
@@ -314,8 +316,14 @@ export class ArticlePage implements OnInit, OnDestroy {
     this.http.put(url, body).subscribe({
       next: (response: any) => {
         if (response.success) {
+          const wasLiked = this.isLiked;
           this.isLiked = !this.isLiked;
           this.likeCount = response.likes;
+
+          if (!wasLiked && this.isLiked) {
+            this.triggerLikeFeedback();
+          }
+
           console.log('Like toggled:', response.message);
         }
       },
@@ -325,6 +333,14 @@ export class ArticlePage implements OnInit, OnDestroy {
         this.likeCount = this.isLiked ? this.likeCount + 1 : this.likeCount - 1;
       }
     });
+  }
+
+  private triggerLikeFeedback(): void {
+    this.showLikeBurst = false;
+    setTimeout(() => this.showLikeBurst = true, 0);
+    setTimeout(() => this.showLikeBurst = false, 700);
+
+    void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
   }
 
   // =====================================================
