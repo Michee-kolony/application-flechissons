@@ -1,102 +1,597 @@
+// tab5.page.scss
+
+// =====================================================
+// VARIABLES
+// =====================================================
+
+$color-primary: #26352f;
+$color-primary-light: #34443c;
+$color-secondary: #f97316;
+$color-secondary-dark: #ea580c;
+$color-secondary-light: #fed7aa;
+$color-bg: #fffaf5;
+$color-border: #f0e3d7;
+$color-text: #26352f;
+$color-text-light: #718079;
+$color-text-muted: #a6afa9;
+
+// =====================================================
+// BASE
+// =====================================================
+
+ion-content {
+  --background: #fffaf5;
+}
+
 ion-toolbar {
-  --background: rgba(255, 255, 255, 0.92);
+  --background: $color-bg;
   --border-color: transparent;
-  backdrop-filter: blur(12px);
+  --min-height: auto;
 }
 
 h1 {
   font-size: 1.1rem !important;
 }
 
-ion-content {
-  --background: #ffffff;
+// =====================================================
+// HEADER - MÊME DESIGN QUE LES AUTRES PAGES
+// =====================================================
+
+.contact-header ion-toolbar {
+  --background: #fffaf5;
+  --border-color: transparent;
+  --min-height: auto;
+  padding: 10px 20px 14px;
 }
 
-.glass-field {
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  box-shadow: 0 8px 24px rgba(30, 15, 5, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+.topbar {
+  display: flex;
+  justify-content: space-between;
 }
 
-.glass-field:focus-within {
-  background: rgba(255, 255, 255, 0.24);
-  border-color: rgba(251, 146, 60, 0.95);
-  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.24), 0 8px 24px rgba(30, 15, 5, 0.2);
+.topbar h1 {
+  margin: 4px 0 0;
+  color: $color-primary;
+  font-size: 25px !important;
+  font-weight: 800;
+  letter-spacing: -.02em;
 }
 
-ion-content h1,
-ion-content p,
-ion-content label,
-ion-content input,
-ion-content textarea,
-ion-content ion-select {
-  color: #fff !important;
+.kicker {
+  color: $color-secondary-dark;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .15em;
+  text-transform: uppercase;
 }
 
-ion-content input::placeholder,
-ion-content textarea::placeholder {
-  color: rgba(255, 255, 255, 0.72) !important;
-}
-
-ion-content ion-select {
-  --placeholder-color: rgba(255, 255, 255, 0.72);
-  --placeholder-opacity: 1;
-}
-
-/* Modern contact layout */
-
-ion-toolbar {
-  --background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
-}
-
-ion-content { --background: #fff; }
-
-.contact-topbar {
-  display: flex; align-items: center; gap: 11px; max-width: 480px;
-  margin: 0 auto; padding: 8px 20px;
-}
-
-.contact-topbar__icon, .contact-intro__icon {
-  display: grid; place-items: center; color: #f97316; background: #fff4eb;
-}
-
-.contact-topbar__icon { width: 36px; height: 36px; border-radius: 12px; font-size: 19px; }
-.contact-kicker { margin: 0; color: #f97316 !important; font-size: 10px !important; font-weight: 800; letter-spacing: .13em; }
-.contact-topbar h1.toolbar-title { margin: 0; color: #f97316 !important; font-size: 1.1rem !important; font-weight: 700; line-height: 1.25; }
-.contact-topbar p { margin: 1px 0 0; color: #6b7280 !important; font-size: .875rem !important; line-height: 1.25; }
+// =====================================================
+// PAGE PRINCIPALE
+// =====================================================
 
 .contact-page {
-  position: relative; isolation: isolate; max-width: 480px; min-height: 100%; margin: 0 auto;
-  padding: 36px 20px 44px; overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 36px 20px 44px;
+  overflow: hidden;
+  min-height: 100%;
 }
 
-.contact-texture { position: absolute; z-index: -1; pointer-events: none; }
-.contact-texture--dots { top: 42px; right: -20px; width: 128px; height: 108px; opacity: .7; background-image: radial-gradient(#fdba74 1.5px, transparent 1.5px); background-size: 13px 13px; }
-.contact-texture--circle { top: 126px; left: -88px; width: 180px; height: 180px; border-radius: 50%; background: linear-gradient(145deg, rgba(255,237,213,.8), rgba(255,247,237,0)); }
-.contact-texture--ring { right: -95px; bottom: 74px; width: 190px; height: 190px; border: 24px solid rgba(255,237,213,.55); border-radius: 50%; }
+// =====================================================
+// ÉLÉMENTS DÉCORATIFS
+// =====================================================
 
-.contact-intro { position: relative; padding-right: 72px; margin-bottom: 31px; }
-.contact-intro__icon { position: absolute; top: 6px; right: 3px; width: 54px; height: 54px; border-radius: 19px; font-size: 26px; box-shadow: 0 10px 26px rgba(249,115,22,.12); transform: rotate(7deg); }
-.contact-intro h2 { margin: 9px 0 10px; color: #1f2937 !important; font-size: clamp(29px, 8vw, 38px) !important; line-height: 1.06; font-weight: 800; letter-spacing: -.045em; }
-.contact-intro h2 span { color: #f97316; }
-.contact-intro > p:not(.contact-kicker) { max-width: 360px; margin: 0; color: #6b7280 !important; font-size: 14px !important; line-height: 1.6; }
+.contact-texture {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
 
-.contact-form { display: grid; gap: 19px; position: relative; }
-.contact-field label { display: flex; align-items: center; gap: 7px; margin: 0 0 8px 2px; color: #374151 !important; font-size: 13px !important; font-weight: 700; }
-.contact-field label ion-icon { color: #f97316; font-size: 16px; }
-.contact-input { display: flex; align-items: center; min-height: 56px; padding: 0 16px; background: rgba(255,255,255,.92); border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 5px 15px rgba(31,41,55,.035); transition: border-color .2s, box-shadow .2s, transform .2s; }
-.contact-input:focus-within { border-color: #fb923c; box-shadow: 0 0 0 4px rgba(251,146,60,.13); transform: translateY(-1px); }
-.contact-input input, .contact-input textarea { width: 100%; padding: 0; color: #374151 !important; font: inherit; font-size: 14px; outline: 0; border: 0; background: transparent; }
-.contact-input input::placeholder, .contact-input textarea::placeholder { color: #9ca3af !important; }
-.contact-input--select ion-select { width: 100%; color: #374151 !important; font-size: 14px; --placeholder-color: #9ca3af; --placeholder-opacity: 1; }
-.contact-input--message { align-items: flex-start; min-height: 128px; padding-top: 15px; }
-.contact-input textarea { min-height: 96px; line-height: 1.5; resize: none; }
+.contact-texture--dots {
+  top: 42px;
+  right: -20px;
+  width: 128px;
+  height: 108px;
+  opacity: .7;
+  background-image: radial-gradient(#fdba74 1.5px, transparent 1.5px);
+  background-size: 13px 13px;
+}
 
-.contact-submit { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 58px; margin-top: 5px; color: #fff; font-size: 15px; font-weight: 750; border: 0; border-radius: 17px; background: linear-gradient(100deg, #f97316, #ea580c); box-shadow: 0 13px 22px rgba(234,88,12,.23); transition: transform .2s, box-shadow .2s; }
-.contact-submit span { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 9px; background: rgba(255,255,255,.2); font-size: 17px; }
-.contact-submit:active { transform: scale(.98); box-shadow: 0 7px 14px rgba(234,88,12,.2); }
-.contact-privacy { display: flex; align-items: center; justify-content: center; gap: 5px; margin: -3px 0 0; color: #9ca3af !important; font-size: 11px !important; text-align: center; }
-.contact-privacy ion-icon { color: #fb923c; font-size: 13px; }
+.contact-texture--circle {
+  top: 126px;
+  left: -88px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255,237,213,.8), rgba(255,247,237,0));
+}
+
+.contact-texture--ring {
+  right: -95px;
+  bottom: 74px;
+  width: 190px;
+  height: 190px;
+  border: 24px solid rgba(255,237,213,.55);
+  border-radius: 50%;
+}
+
+// =====================================================
+// SECTION INTRO
+// =====================================================
+
+.contact-intro {
+  position: relative;
+  padding-right: 72px;
+  margin-bottom: 31px;
+}
+
+.contact-intro__icon {
+  position: absolute;
+  top: 6px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 19px;
+  color: $color-secondary;
+  background: #fff4eb;
+  font-size: 26px;
+  box-shadow: 0 10px 26px rgba(249,115,22,.12);
+  transform: rotate(7deg);
+}
+
+.contact-kicker {
+  display: block;
+  margin: 0 0 6px 0;
+  color: $color-secondary-dark !important;
+  font-size: 10px !important;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.contact-intro h2 {
+  margin: 9px 0 10px;
+  color: #1f2937 !important;
+  font-size: clamp(29px, 8vw, 38px) !important;
+  line-height: 1.06;
+  font-weight: 800;
+  letter-spacing: -.045em;
+
+  span {
+    color: $color-secondary;
+  }
+}
+
+.contact-intro > p:not(.contact-kicker) {
+  max-width: 360px;
+  margin: 0;
+  color: #6b7280 !important;
+  font-size: 14px !important;
+  line-height: 1.6;
+}
+
+// =====================================================
+// FORMULAIRE
+// =====================================================
+
+.contact-form {
+  display: grid;
+  gap: 19px;
+  position: relative;
+}
+
+.contact-field {
+  label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 0 8px 2px;
+    color: #374151 !important;
+    font-size: 13px !important;
+    font-weight: 700;
+
+    ion-icon {
+      color: $color-secondary;
+      font-size: 16px;
+    }
+  }
+}
+
+.contact-input {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 16px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(31,41,55,.035);
+  transition: border-color .2s, box-shadow .2s, transform .2s;
+
+  &:focus-within {
+    border-color: #fb923c;
+    box-shadow: 0 0 0 4px rgba(251,146,60,.13);
+    transform: translateY(-1px);
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 0;
+    color: #374151 !important;
+    font: inherit;
+    font-size: 14px;
+    outline: 0;
+    border: 0;
+    background: transparent;
+
+    &::placeholder {
+      color: #9ca3af !important;
+    }
+  }
+
+  &--select {
+    ion-select {
+      width: 100%;
+      color: #374151 !important;
+      font-size: 14px;
+      --placeholder-color: #9ca3af;
+      --placeholder-opacity: 1;
+    }
+  }
+
+  &--message {
+    align-items: flex-start;
+    min-height: 128px;
+    padding-top: 15px;
+
+    textarea {
+      min-height: 96px;
+      line-height: 1.5;
+      resize: none;
+    }
+  }
+}
+
+// =====================================================
+// BOUTON ENVOYER
+// =====================================================
+
+.contact-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  margin-top: 5px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 750;
+  border: 0;
+  border-radius: 17px;
+  background: linear-gradient(100deg, #f97316, #ea580c);
+  box-shadow: 0 13px 22px rgba(234,88,12,.23);
+  transition: transform .2s, box-shadow .2s;
+  cursor: pointer;
+
+  span {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.2);
+    font-size: 17px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 30px rgba(234,88,12,.3);
+  }
+
+  &:active {
+    transform: scale(.98);
+    box-shadow: 0 7px 14px rgba(234,88,12,.2);
+  }
+}
+
+// =====================================================
+// CONFIDENTIALITÉ
+// =====================================================
+
+.contact-privacy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: -3px 0 0;
+  color: #9ca3af !important;
+  font-size: 11px !important;
+  text-align: center;
+
+  ion-icon {
+    color: #fb923c;
+    font-size: 13px;
+  }
+}
+
+// =====================================================
+// ANIMATION D'ENTRÉE
+// =====================================================
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.contact-intro {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.contact-form {
+  animation: fadeInUp 0.5s ease-out 0.15s both;
+}
+
+// =====================================================
+// RESPONSIVE
+// =====================================================
+
+@media (max-width: 640px) {
+  .contact-page {
+    padding: 28px 16px 40px;
+  }
+
+  .contact-intro {
+    padding-right: 56px;
+  }
+
+  .contact-intro__icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    font-size: 22px;
+    right: 0;
+  }
+
+  .contact-intro h2 {
+    font-size: clamp(24px, 7vw, 30px) !important;
+  }
+
+  .contact-intro > p:not(.contact-kicker) {
+    font-size: 13px !important;
+  }
+
+  .contact-input {
+    min-height: 50px;
+    padding: 0 14px;
+    border-radius: 14px;
+
+    input, textarea {
+      font-size: 13px;
+    }
+  }
+
+  .contact-input--message {
+    min-height: 112px;
+    padding-top: 13px;
+
+    textarea {
+      min-height: 80px;
+    }
+  }
+
+  .contact-submit {
+    min-height: 52px;
+    font-size: 14px;
+    border-radius: 15px;
+
+    span {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+  }
+
+  .contact-privacy {
+    font-size: 10px !important;
+  }
+
+  .contact-field label {
+    font-size: 12px !important;
+  }
+
+  .contact-texture--dots {
+    width: 90px;
+    height: 80px;
+    background-size: 10px 10px;
+  }
+
+  .contact-texture--circle {
+    width: 140px;
+    height: 140px;
+    top: 100px;
+    left: -70px;
+  }
+
+  .contact-texture--ring {
+    width: 140px;
+    height: 140px;
+    border-width: 18px;
+    right: -70px;
+    bottom: 60px;
+  }
+
+  .topbar h1 {
+    font-size: 22px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .contact-page {
+    padding: 20px 14px 32px;
+  }
+
+  .topbar h1 {
+    font-size: 20px !important;
+  }
+
+  .contact-intro {
+    padding-right: 44px;
+  }
+
+  .contact-intro__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    font-size: 18px;
+  }
+
+  .contact-intro h2 {
+    font-size: clamp(20px, 6vw, 24px) !important;
+  }
+
+  .contact-intro > p:not(.contact-kicker) {
+    font-size: 12px !important;
+  }
+
+  .contact-kicker {
+    font-size: 8px !important;
+  }
+
+  .contact-field {
+    label {
+      font-size: 11px !important;
+    }
+  }
+
+  .contact-input {
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 12px;
+
+    input, textarea {
+      font-size: 12px;
+    }
+  }
+
+  .contact-input--message {
+    min-height: 96px;
+    padding-top: 10px;
+
+    textarea {
+      min-height: 68px;
+    }
+  }
+
+  .contact-submit {
+    min-height: 46px;
+    font-size: 13px;
+    border-radius: 13px;
+    gap: 8px;
+
+    span {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      font-size: 13px;
+    }
+  }
+
+  .contact-privacy {
+    font-size: 9px !important;
+
+    ion-icon {
+      font-size: 11px;
+    }
+  }
+
+  .contact-texture--dots {
+    width: 70px;
+    height: 60px;
+    background-size: 8px 8px;
+  }
+
+  .contact-texture--circle {
+    width: 100px;
+    height: 100px;
+    top: 80px;
+    left: -50px;
+  }
+
+  .contact-texture--ring {
+    width: 100px;
+    height: 100px;
+    border-width: 14px;
+    right: -50px;
+    bottom: 50px;
+  }
+}
+
+// Support pour les écrans plus grands
+@media (min-width: 641px) {
+  .contact-page {
+    padding: 40px 24px 48px;
+  }
+
+  .contact-intro {
+    padding-right: 88px;
+  }
+
+  .contact-intro__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 22px;
+    font-size: 30px;
+  }
+
+  .contact-intro h2 {
+    font-size: 40px !important;
+  }
+
+  .contact-input {
+    min-height: 60px;
+    padding: 0 20px;
+    border-radius: 18px;
+
+    input, textarea {
+      font-size: 15px;
+    }
+  }
+
+  .contact-input--message {
+    min-height: 144px;
+    padding-top: 18px;
+
+    textarea {
+      min-height: 108px;
+    }
+  }
+
+  .contact-submit {
+    min-height: 64px;
+    font-size: 16px;
+    border-radius: 19px;
+
+    span {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      font-size: 19px;
+    }
+  }
+
+  .contact-field label {
+    font-size: 14px !important;
+  }
+}

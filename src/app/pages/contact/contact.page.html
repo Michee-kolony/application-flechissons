@@ -1,74 +1,66 @@
-<ng-container *ngIf="false">
-<ion-header class="ion-no-border">
-  <ion-toolbar class="container">
-    <div class="flex items-center py-2 justify-between w-full">
-      <!-- TITRE -->
+<!-- tab5.page.html -->
+<ion-header class="contact-header ion-no-border">
+  <ion-toolbar>
+    <div class="topbar">
       <div>
-        <h1 class="text-xl font-bold text-orange-500">Contact</h1>
-        <p class="text-sm text-gray-500">Découvrez comment Dieu agis dans la vie de chacune d'entre nous.</p>
+        <span class="kicker">NOUS CONTACTER</span>
+        <h1>Contact</h1>
       </div>
     </div>
   </ion-toolbar>
 </ion-header>
 
+<ion-content>
+  <main class="contact-page">
+    <!-- Éléments décoratifs -->
+    <i class="contact-texture contact-texture--dots" aria-hidden="true"></i>
+    <i class="contact-texture contact-texture--circle" aria-hidden="true"></i>
+    <i class="contact-texture contact-texture--ring" aria-hidden="true"></i>
 
-<ion-content [fullscreen]="true" class="ion-padding">
-
-  <div class="max-w-md mx-auto px-4 pt-6 pb-20">
-
-    <!-- En-tête -->
-    <div class="text-center mb-8">
-      <div class="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-orange-200">
-        <ion-icon name="chatbubbles-outline" class="text-3xl text-white"></ion-icon>
+    <!-- Section intro -->
+    <section class="contact-intro">
+      <div class="contact-intro__icon">
+        <ion-icon name="paper-plane-outline"></ion-icon>
       </div>
-      <h1 class="text-2xl font-bold text-gray-800 mt-4">Nous contacter</h1>
-      <p class="text-sm text-gray-500 mt-1">Nous répondons dans les plus brefs délais</p>
-    </div>
+      <span class="contact-kicker">NOUS SOMMES À VOTRE ÉCOUTE</span>
+      <h2>Échangeons<br><span>ensemble.</span></h2>
+      <p>Une question, un témoignage ou un besoin de prière ? Laissez-nous un message, nous vous répondrons rapidement.</p>
+    </section>
 
     <!-- Formulaire -->
-    <form class="space-y-5">
-
+    <form class="contact-form">
       <!-- Nom -->
-      <div>
-        <label class="text-sm font-semibold text-gray-700 flex items-center gap-1">
-          <ion-icon name="person-outline" class="text-orange-500 text-base"></ion-icon>
+      <div class="contact-field">
+        <label for="contact-name">
+          <ion-icon name="person-outline"></ion-icon>
           Votre nom
         </label>
-        <div class="glass-field mt-1.5 flex items-center rounded-2xl px-4 h-14 transition-all duration-200">
-          <input
-            type="text"
-            placeholder="Entrez votre nom complet"
-            class="w-full px-2 outline-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400">
+        <div class="contact-input">
+          <input id="contact-name" type="text" placeholder="Entrez votre nom complet" autocomplete="name">
         </div>
       </div>
 
       <!-- Email / Téléphone -->
-      <div>
-        <label class="text-sm font-semibold text-gray-700 flex items-center gap-1">
-          <ion-icon name="mail-outline" class="text-orange-500 text-base"></ion-icon>
+      <div class="contact-field">
+        <label for="contact-details">
+          <ion-icon name="mail-outline"></ion-icon>
           Email ou téléphone
         </label>
-        <div class="glass-field mt-1.5 flex items-center rounded-2xl px-4 h-14 transition-all duration-200">
-          <input
-            type="text"
-            placeholder="ex: contact@email.com ou 06 12 34 56 78"
-            class="w-full px-2 outline-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400">
+        <div class="contact-input">
+          <input id="contact-details" type="text" placeholder="ex. contact@email.com" autocomplete="email">
         </div>
       </div>
 
       <!-- Sujet -->
-      <div>
-        <label class="text-sm font-semibold text-gray-700 flex items-center gap-1">
-          <ion-icon name="list-outline" class="text-orange-500 text-base"></ion-icon>
+      <div class="contact-field">
+        <label for="contact-subject">
+          <ion-icon name="albums-outline"></ion-icon>
           Sujet
         </label>
-        <div class="glass-field mt-1.5 rounded-2xl px-4 h-14 flex items-center transition-all duration-200">
-          <ion-select
-            placeholder="Choisir un sujet"
-            interface="popover"
-            class="w-full text-sm text-gray-700">
+        <div class="contact-input contact-input--select">
+          <ion-select id="contact-subject" placeholder="Choisir un sujet" interface="popover">
             <ion-select-option value="priere">Requête de prière</ion-select-option>
-              <ion-select-option value="priere">Demande de rendez-vous au Pasteur</ion-select-option>
+            <ion-select-option value="rendez-vous">Demande de rendez-vous au Pasteur</ion-select-option>
             <ion-select-option value="temoignage">Témoignage</ion-select-option>
             <ion-select-option value="question">J'ai une question</ion-select-option>
             <ion-select-option value="predication">Demande concernant une prédication</ion-select-option>
@@ -78,67 +70,29 @@
       </div>
 
       <!-- Message -->
-      <div>
-        <label class="text-sm font-semibold text-gray-700 flex items-center gap-1">
-          <ion-icon name="create-outline" class="text-orange-500 text-base"></ion-icon>
+      <div class="contact-field">
+        <label for="contact-message">
+          <ion-icon name="create-outline"></ion-icon>
           Votre message
         </label>
-        <div class="glass-field mt-1.5 rounded-2xl transition-all duration-200 overflow-hidden">
-          <textarea
-            rows="5"
-            placeholder="Écrivez votre message en détail..."
-            class="w-full p-4 outline-none bg-transparent text-sm text-gray-700 placeholder:text-gray-400 resize-none">
-          </textarea>
+        <div class="contact-input contact-input--message">
+          <textarea id="contact-message" rows="5" placeholder="Écrivez votre message en détail..."></textarea>
         </div>
       </div>
 
       <!-- Bouton Envoyer -->
-      <button
-        type="submit"
-        class="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3.5 rounded-2xl font-bold text-base shadow-lg shadow-orange-200/60 flex items-center justify-center gap-2 active:scale-95 transition-all duration-200 hover:shadow-xl hover:shadow-orange-200/80">
-        <ion-icon name="send-outline" class="text-xl"></ion-icon>
-        Envoyer
+      <button type="submit" class="contact-submit">
+        Envoyer le message
+        <span>
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </span>
       </button>
 
-      <!-- Note supplémentaire -->
-      <p class="text-center text-xs text-gray-400 mt-2">
-        <ion-icon name="lock-closed-outline" class="align-middle mr-1"></ion-icon>
-        Vos informations sont confidentielles
+      <!-- Note confidentialité -->
+      <p class="contact-privacy">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        Vos informations restent strictement confidentielles.
       </p>
-
-    </form>
-  </div>
-
-</ion-content>
-</ng-container>
-
-<ion-header class="ion-no-border">
-  <ion-toolbar>
-    <div class="contact-topbar">
-      <div class="contact-topbar__icon"><ion-icon name="chatbubble-ellipses-outline"></ion-icon></div>
-      <div><h1 class="toolbar-title">Contact</h1><p>Nous sommes à votre écoute</p></div>
-    </div>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <main class="contact-page">
-    <i class="contact-texture contact-texture--dots" aria-hidden="true"></i>
-    <i class="contact-texture contact-texture--circle" aria-hidden="true"></i>
-    <i class="contact-texture contact-texture--ring" aria-hidden="true"></i>
-    <section class="contact-intro">
-      <div class="contact-intro__icon"><ion-icon name="paper-plane-outline"></ion-icon></div>
-      <p class="contact-kicker">NOUS SOMMES À VOTRE ÉCOUTE</p>
-      <h2>Échangeons<br><span>ensemble.</span></h2>
-      <p>Une question, un témoignage ou un besoin de prière ? Laissez-nous un message, nous vous répondrons rapidement.</p>
-    </section>
-    <form class="contact-form">
-      <div class="contact-field"><label for="contact-name"><ion-icon name="person-outline"></ion-icon>Votre nom</label><div class="contact-input"><input id="contact-name" type="text" placeholder="Entrez votre nom complet" autocomplete="name"></div></div>
-      <div class="contact-field"><label for="contact-details"><ion-icon name="mail-outline"></ion-icon>Email ou téléphone</label><div class="contact-input"><input id="contact-details" type="text" placeholder="ex. contact@email.com" autocomplete="email"></div></div>
-      <div class="contact-field"><label for="contact-subject"><ion-icon name="albums-outline"></ion-icon>Sujet</label><div class="contact-input contact-input--select"><ion-select id="contact-subject" placeholder="Choisir un sujet" interface="popover"><ion-select-option value="priere">Requête de prière</ion-select-option><ion-select-option value="rendez-vous">Demande de rendez-vous au Pasteur</ion-select-option><ion-select-option value="temoignage">Témoignage</ion-select-option><ion-select-option value="question">J'ai une question</ion-select-option><ion-select-option value="predication">Demande concernant une prédication</ion-select-option><ion-select-option value="autre">Autre demande</ion-select-option></ion-select></div></div>
-      <div class="contact-field"><label for="contact-message"><ion-icon name="create-outline"></ion-icon>Votre message</label><div class="contact-input contact-input--message"><textarea id="contact-message" rows="5" placeholder="Écrivez votre message en détail..."></textarea></div></div>
-      <button type="submit" class="contact-submit">Envoyer le message <span><ion-icon name="arrow-forward-outline"></ion-icon></span></button>
-      <p class="contact-privacy"><ion-icon name="lock-closed-outline"></ion-icon> Vos informations restent strictement confidentielles.</p>
     </form>
   </main>
 </ion-content>

@@ -1,142 +1,133 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="container">
-    <div class="flex items-center py-2 justify-between w-full">
-      <!-- TITRE -->
+<!-- tab4.page.html -->
+<ion-header class="profil-header ion-no-border">
+  <ion-toolbar>
+    <div class="topbar container">
       <div>
-        <h1 class="toolbar-title text-xl font-bold text-orange-500">Profil</h1>
-        <p class="text-sm text-gray-500">Bienvenue dans votre espace profil</p>
+        <span class="kicker">MON COMPTE</span>
+        <h1>Profil</h1>
       </div>
     </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="ion-padding-top">
-  <div class="container py-4 pb-32">
-
+<ion-content>
+  <main class="profil-page">
     <!-- ================================================= -->
-    <!-- SECTION HÉROS RECTANGULAIRE PLEINE LARGEUR -->
+    <!-- SECTION HÉROS - MÊME DESIGN QUE LES AUTRES -->
     <!-- ================================================= -->
-    <div class="relative bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg overflow-hidden w-full">
-
-      <!-- Décorations -->
-      <div class="absolute -top-16 -right-16 w-32 h-32 rounded-full bg-white/10"></div>
-      <div class="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-white/5"></div>
-      <div class="absolute top-1/2 -right-8 w-20 h-20 rounded-full bg-white/5"></div>
-
-      <div class="relative z-10">
-        <!-- Ligne 1 : Photo + Nom + Email -->
-        <div class="flex items-center gap-4">
-          <!-- Photo / Initiale -->
-          <div class="w-20 h-20 rounded-full flex items-center justify-center shadow-lg overflow-hidden flex-shrink-0"
-               [class.bg-white]="hasPhoto"
-               [class.bg-orange-400]="!hasPhoto">
-            
+    <section class="profil-hero">
+      <div class="profil-hero-content">
+        <!-- Photo / Initiale -->
+        <div class="profil-avatar-wrapper">
+          <div class="profil-avatar" [class.has-photo]="hasPhoto">
             <img *ngIf="hasPhoto" 
                  [src]="user.photo" 
                  [alt]="fullName" 
-                 class="w-full h-full object-cover" 
+                 class="profil-avatar-img" 
                  referrerpolicy="no-referrer"
                  (error)="onPhotoError()">
-            
-            <span *ngIf="!hasPhoto" 
-                  class="text-3xl font-bold text-white">
+            <span *ngIf="!hasPhoto" class="profil-avatar-initiale">
               {{ userInitial }}
             </span>
           </div>
-
-          <!-- Infos -->
-          <div class="min-w-0 flex-1">
-            <h2 class="text-xl font-bold truncate">{{ fullName }}</h2>
-            <p class="text-orange-100 text-sm truncate">{{ user.email || 'Email non renseigné' }}</p>
-          </div>
         </div>
 
-        <!-- Ligne 2 : Badge statut + Bouton modifier -->
-        <div class="flex items-center justify-between mt-4 flex-wrap gap-3">
-          <div *ngIf="user.profilComplete" class="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-1.5">
-            <ion-icon name="checkmark-circle" class="text-base"></ion-icon>
-            <span class="text-xs font-medium">Profil complet</span>
-          </div>
-          <div *ngIf="!user.profilComplete" class="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-1.5">
-            <ion-icon name="information-circle-outline" class="text-base"></ion-icon>
-            <span class="text-xs font-medium">À compléter</span>
+        <!-- Infos -->
+        <div class="profil-info">
+          <h2 class="profil-name">{{ fullName }}</h2>
+          <p class="profil-email">{{ user.email || 'Email non renseigné' }}</p>
+          
+          <div class="profil-badge-wrapper">
+            <div *ngIf="user.profilComplete" class="profil-badge profil-badge--complete">
+              <ion-icon name="checkmark-circle"></ion-icon>
+              <span>Profil complet</span>
+            </div>
+            <div *ngIf="!user.profilComplete" class="profil-badge profil-badge--incomplete">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <span>À compléter</span>
+            </div>
           </div>
 
-          <button type="button" (click)="editProfile()" class="bg-white text-orange-600 px-5 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-orange-50 transition-colors">
+          <button type="button" [routerLink]="['/editprofil']" class="profil-edit-btn">
+            <ion-icon name="create-outline"></ion-icon>
             Modifier
           </button>
         </div>
       </div>
-    </div>
+    </section>
 
-       <!-- ================================================= -->
-<!-- MENU CARTES OPTIONS - DESIGN ULTRA ÉPURÉ -->
-<!-- ================================================= -->
-<div class="mt-6 space-y-2.5">
+    <!-- ================================================= -->
+    <!-- MENU CARTES OPTIONS -->
+    <!-- ================================================= -->
+    <div class="menu-options">
 
-  <!-- Carte 1 : Faire un don -->
-  <div [routerLink]="['/checkout']" 
-       class="group bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100/80 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-orange-200/80 transition-all duration-300 active:scale-[0.97]">
-    <div class="flex items-center gap-3.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300">
-        <ion-icon name="heart-outline" class="text-orange-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
+      <!-- Carte 1 : Faire un don -->
+      <div [routerLink]="['/checkout']" class="menu-card">
+        <div class="menu-card-icon">
+          <ion-icon name="heart-outline"></ion-icon>
+        </div>
+        <div class="menu-card-content">
+          <h3>Faire un don</h3>
+          <p>Soutenir notre mission</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
-      <h3 class="font-medium text-gray-800 text-sm tracking-tight">Faire un don</h3>
-    </div>
-    <ion-icon name="chevron-forward-outline" class="text-gray-300 text-sm group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
-  </div>
 
-  <!-- Carte 2 : FAQ -->
-  <div [routerLink]="['/faq']" class="group bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100/80 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-orange-200/80 transition-all duration-300 active:scale-[0.97]">
-    <div class="flex items-center gap-3.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300">
-        <ion-icon name="help-circle-outline" class="text-orange-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
+      <!-- Carte 2 : FAQ -->
+      <div [routerLink]="['/faq']" class="menu-card">
+        <div class="menu-card-icon">
+          <ion-icon name="help-circle-outline"></ion-icon>
+        </div>
+        <div class="menu-card-content">
+          <h3>FAQ</h3>
+          <p>Questions fréquentes</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
-      <h3 class="font-medium text-gray-800 text-sm tracking-tight">FAQ</h3>
-    </div>
-    <ion-icon name="chevron-forward-outline" class="text-gray-300 text-sm group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
-  </div>
 
-   <!-- Carte 2 : FAQ -->
-  <div [routerLink]="['/bible']" class="group bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100/80 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-orange-200/80 transition-all duration-300 active:scale-[0.97]">
-    <div class="flex items-center gap-3.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300">
-        <ion-icon name="book-outline" class="text-orange-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
+      <!-- Carte 3 : Lire la Bible -->
+      <div [routerLink]="['/bible']" class="menu-card">
+        <div class="menu-card-icon">
+          <ion-icon name="book-outline"></ion-icon>
+        </div>
+        <div class="menu-card-content">
+          <h3>Lire la Bible</h3>
+          <p>La parole de Dieu</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
-      <h3 class="font-medium text-gray-800 text-sm tracking-tight">Lire la bile</h3>
-    </div>
-    <ion-icon name="chevron-forward-outline" class="text-gray-300 text-sm group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
-  </div>
 
-  
-  <!-- Carte confidentialité -->
-  <div [routerLink]="['/privacy']" class="group bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100/80 flex items-center justify-between cursor-pointer hover:shadow-lg hover:border-orange-200/80 transition-all duration-300 active:scale-[0.97]">
-    <div class="flex items-center gap-3.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-orange-100 group-hover:to-orange-200/50 transition-all duration-300">
-        <ion-icon name="lock-closed-outline" class="text-orange-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
+      <!-- Carte 4 : Confidentialité -->
+      <div [routerLink]="['/privacy']" class="menu-card">
+        <div class="menu-card-icon">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+        </div>
+        <div class="menu-card-content">
+          <h3>Votre activité est protégée</h3>
+          <p>Politique de confidentialité</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
-      <h3 class="font-medium text-gray-800 text-sm tracking-tight">Votre activité est protegée</h3>
+
+      <!-- Carte 5 : Déconnexion -->
+      <button type="button" (click)="logout()" [disabled]="isLoading" class="menu-card menu-card--danger">
+        <div class="menu-card-icon">
+          <ion-spinner *ngIf="isLoading" name="crescent" class="spinner-danger"></ion-spinner>
+          <ion-icon *ngIf="!isLoading" name="log-out-outline"></ion-icon>
+        </div>
+        <div class="menu-card-content">
+          <h3 *ngIf="!isLoading">Déconnexion</h3>
+          <h3 *ngIf="isLoading">Déconnexion...</h3>
+          <p>Quitter votre compte</p>
+        </div>
+        <ion-icon *ngIf="!isLoading" name="chevron-forward-outline" class="menu-card-arrow menu-card-arrow--danger"></ion-icon>
+      </button>
+
     </div>
-    <ion-icon name="chevron-forward-outline" class="text-gray-300 text-sm group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
-  </div>
 
-  <!-- Carte 4 : Déconnexion -->
-  <button type="button" (click)="logout()" [disabled]="isLoading"
-          class="group w-full bg-white rounded-2xl px-4 py-3 shadow-sm border border-red-100/80 flex items-center justify-between hover:shadow-lg hover:border-red-200/80 transition-all duration-300 active:scale-[0.97] disabled:opacity-70 disabled:cursor-not-allowed">
-    <div class="flex items-center gap-3.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-50 to-red-100/70 flex items-center justify-center flex-shrink-0 group-hover:from-red-100 group-hover:to-red-200/50 transition-all duration-300">
-        <ion-spinner *ngIf="isLoading" name="crescent" class="text-red-500 text-base"></ion-spinner>
-        <ion-icon *ngIf="!isLoading" name="log-out-outline" class="text-red-500 text-lg group-hover:scale-110 transition-transform duration-300"></ion-icon>
-      </div>
-      <h3 class="font-medium text-red-500 text-sm tracking-tight">
-        <span *ngIf="!isLoading">Déconnexion</span>
-        <span *ngIf="isLoading">Déconnexion...</span>
-      </h3>
+    <!-- Version de l'app -->
+    <div class="profil-version">
+      <span>Version 1.0.0</span>
     </div>
-    <ion-icon *ngIf="!isLoading" name="chevron-forward-outline" class="text-red-200 text-sm group-hover:text-red-400 group-hover:translate-x-0.5 transition-all duration-300"></ion-icon>
-  </button>
-
-</div>
-
-</div>
+  </main>
 </ion-content>

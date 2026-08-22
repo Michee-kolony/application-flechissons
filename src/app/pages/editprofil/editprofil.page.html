@@ -1,0 +1,95 @@
+<ion-header class="profile-header ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/profil" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mon profil</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" aria-label="Enregistrer">
+        <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <main class="profile-editor">
+    <section class="intro">
+      <div class="intro__eyebrow"><span></span> Votre espace personnel</div>
+      <h1>Faisons connaissance.</h1>
+      <p>Quelques informations suffisent pour personnaliser votre expérience sur Fléchissons.</p>
+    </section>
+
+    <form>
+      <section class="profile-identity">
+        <div class="avatar">{{ userInitial }}</div>
+        <div>
+          <strong>{{ user.prenom || user.nom || 'Votre profil' }}</strong>
+          <span>{{ user.email || 'Ajoutez vos informations personnelles' }}</span>
+        </div>
+        <ion-icon name="sparkles-outline"></ion-icon>
+      </section>
+
+      <section class="photo-field" (click)="openPhotoPicker()">
+        <div class="photo-field__preview">
+          <div class="avatar avatar--large" [class.avatar--photo]="photoPreview">
+            <img *ngIf="photoPreview" [src]="photoPreview" alt="Aperçu de la photo de profil">
+            <span *ngIf="!photoPreview">U</span>
+          </div>
+          <button type="button" class="photo-camera" (click)="$event.stopPropagation(); openPhotoPicker()" aria-label="Modifier la photo de profil">
+            <ion-icon name="camera-outline"></ion-icon>
+          </button>
+        </div>
+        <div class="photo-field__copy">
+          <strong>Photo de profil</strong>
+          <span>Ajoutez une photo pour personnaliser votre profil.</span>
+          <button type="button" class="photo-action" (click)="$event.stopPropagation(); openPhotoPicker()"><ion-icon name="image-outline"></ion-icon> Modifier la photo</button>
+        </div>
+      </section>
+
+      <input #cameraInput class="photo-input" type="file" accept="image/*" capture="environment" (change)="onPhotoSelected($event)">
+      <input #galleryInput class="photo-input" type="file" accept="image/*" (change)="onPhotoSelected($event)">
+
+      <section class="form-section">
+        <div class="section-heading"><span class="section-number">01</span><div><h2>Vous concernant</h2><p>Ces informations restent privées.</p></div></div>
+        <div class="field-grid">
+          <label class="field"><span>Prénom</span><div class="input-shell"><ion-icon name="person-outline"></ion-icon><input type="text" placeholder="Votre prénom" autocomplete="given-name"></div></label>
+          <label class="field"><span>Nom</span><div class="input-shell input-shell--muted"><ion-icon name="person-outline"></ion-icon><input type="text" placeholder="Votre nom" autocomplete="family-name"></div></label>
+          <label class="field"><span>Date de naissance</span><div class="input-shell"><ion-icon name="calendar-outline"></ion-icon><input type="date"></div></label>
+          <label class="field"><span>Genre</span><ion-select interface="popover" placeholder="Sélectionner"><ion-select-option value="homme">Homme</ion-select-option><ion-select-option value="femme">Femme</ion-select-option><ion-select-option value="autre">Autre</ion-select-option><ion-select-option value="non_precise">Je préfère ne pas préciser</ion-select-option></ion-select></label>
+          <label class="field field--full"><span>Ville</span><div class="input-shell"><ion-icon name="location-outline"></ion-icon><input type="text" placeholder="Votre ville" autocomplete="address-level2"></div></label>
+          <label class="field field--full"><span>Téléphone <small>Facultatif</small></span><div class="input-shell"><ion-icon name="call-outline"></ion-icon><input type="tel" placeholder="06 00 00 00 00" autocomplete="tel"></div></label>
+        </div>
+      </section>
+
+      <section class="form-section form-section--interests">
+        <div class="section-heading"><span class="section-number">02</span><div><h2>Ce qui vous inspire</h2><p>Choisissez vos thèmes favoris.</p></div></div>
+        <div class="category-grid">
+          <button type="button" *ngFor="let category of categories" class="category" [class.category--selected]="selectedCategories.includes(category.value)" (click)="toggleCategory(category.value)">
+            <ion-icon [name]="category.icon"></ion-icon><span>{{ category.label }}</span><ion-icon class="category__check" name="checkmark-circle"></ion-icon>
+          </button>
+        </div>
+      </section>
+
+      <section class="preference-row">
+        <div class="preference-icon"><ion-icon name="notifications-outline"></ion-icon></div>
+        <div><strong>Recevoir les notifications</strong><span>Restez informé des nouveautés.</span></div>
+        <ion-toggle color="warning"></ion-toggle>
+      </section>
+
+      <button class="save-button" type="button"><span>Enregistrer mon profil</span><ion-icon name="arrow-forward-outline"></ion-icon></button>
+      <p class="privacy-note"><ion-icon name="lock-closed-outline"></ion-icon> Vos données sont utilisées uniquement pour améliorer votre expérience.</p>
+    </form>
+  </main>
+
+  <div class="photo-sheet-backdrop" *ngIf="isPhotoSheetOpen" (click)="closePhotoPicker()">
+    <section class="photo-sheet" role="dialog" aria-modal="true" aria-labelledby="photo-sheet-title" (click)="$event.stopPropagation()">
+      <div class="photo-sheet__handle"></div>
+      <h2 id="photo-sheet-title">Modifier votre photo</h2>
+      <p>Choisissez comment vous souhaitez ajouter votre photo.</p>
+      <button type="button" (click)="cameraInput.click(); closePhotoPicker()"><ion-icon name="camera-outline"></ion-icon><span>Prendre une photo</span><ion-icon class="photo-sheet__arrow" name="chevron-forward-outline"></ion-icon></button>
+      <button type="button" (click)="galleryInput.click(); closePhotoPicker()"><ion-icon name="images-outline"></ion-icon><span>Choisir dans la galerie</span><ion-icon class="photo-sheet__arrow" name="chevron-forward-outline"></ion-icon></button>
+      <button type="button" class="photo-sheet__cancel" (click)="closePhotoPicker()">Annuler</button>
+    </section>
+  </div>
+</ion-content>

@@ -59,3 +59,13 @@ ion-content::part(scroll) {
 ion-content::part(scroll)::-webkit-scrollbar {
   display: none;
 }
+
+/* Surface commune des pages internes de l'application. */
+ion-content {
+  --background: #fffaf5;
+}
+
+app-login ion-content,
+app-signup ion-content {
+  --background: initial;
+}

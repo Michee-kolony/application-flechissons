@@ -1,137 +1,48 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="container">
-    <div class="flex items-center py-2 justify-between w-full">
-      <!-- TITRE -->
-      <div>
-        <h1 class="text-xl font-bold text-orange-500">Témoignages</h1>
-        <p class="text-sm text-gray-500">Découvrez comment Dieu agis dans la vie de chacune d'entre nous.</p>
-      </div>
+<ion-header class="testimony-header ion-no-border">
+  <ion-toolbar>
+    <div class="topbar container">
+      <div><span class="kicker">FLÉCHISSONS AUDIO</span><h1>Témoignages</h1></div>
     </div>
-
     <div class="testimony-search">
       <ion-icon name="search-outline" class="search-icon" aria-hidden="true"></ion-icon>
-      <input
-        [(ngModel)]="searchTerm"
-        type="search"
-        placeholder="Rechercher un témoignage..."
-        aria-label="Rechercher un témoignage">
-      <ion-icon
-        *ngIf="searchTerm"
-        name="close-circle"
-        class="clear-icon"
-        (click)="searchTerm = ''"
-        aria-label="Effacer la recherche">
-      </ion-icon>
-      <button type="button" class="search-btn" aria-label="Lancer la recherche">
-        <ion-icon name="arrow-forward-outline"></ion-icon>
-      </button>
+      <input [(ngModel)]="searchTerm" type="search" placeholder="Que souhaitez-vous écouter ?" aria-label="Rechercher un témoignage">
+      <ion-icon *ngIf="searchTerm" name="close-circle" class="clear-icon" (click)="searchTerm = ''" aria-label="Effacer la recherche"></ion-icon>
     </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-
-  <div class="container pt-4 pb-14">
-
-    <!-- Témoignage mis en avant -->
-
-    <div
-      class="relative h-56 rounded-3xl overflow-hidden m shadow-xl">
-
-      <img
-        [src]="featured.image"
-        class="w-full h-full object-cover">
-
-      <div
-        class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent">
-
-        <div class="absolute bottom-5 left-5 right-5">
-
-          <p class="text-white text-xs uppercase tracking-widest">
-            Témoignage du jour
-          </p>
-
-          <h2 class="text-white text-2xl font-bold mt-1">
-            {{featured.title}}
-          </h2>
-
-          <p class="text-gray-200 mt-1">
-            {{featured.author}}
-          </p>
-
-        </div>
-
-      </div>
-
-      <!-- Play -->
-
-      <button
-        class="absolute right-5 bottom-5 w-16 h-16 rounded-full bg-orange-500 flex items-center justify-center shadow-2xl">
-
-        <ion-icon
-          name="play"
-          class="text-white text-3xl ml-1">
-        </ion-icon>
-
-      </button>
-
+  <main class="testimony-page">
+    <div class="category-scroll" aria-label="Catégories">
+      <button type="button" class="category-pill category-pill--active">Pour vous</button>
+      <button type="button" class="category-pill">Prière</button>
+      <button type="button" class="category-pill">Espérance</button>
+      <button type="button" class="category-pill">Miracles</button>
     </div>
 
-    <!-- Derniers témoignages -->
-
-    <h3 class="font-bold text-xl text-gray-700 mt-8 mb-4">
-      Témoignages inspirants
-    </h3>
-
-    <div
-      *ngFor="let item of filteredTestimonies"
-      class="flex items-center bg-white rounded-2xl p-3 shadow-lg mb-4">
-
-      <img
-        [src]="item.image"
-        class="w-16 h-16 rounded-xl object-cover">
-
-      <div class="ml-4 flex-1">
-
-        <h4 class="font-semibold text-sm text-gray-800">
-          {{item.title}}
-        </h4>
-
-        <p class="text-gray-500 font-thin text-sm">
-          {{item.author}}
-        </p>
-
-        <div class="flex items-center mt-2">
-
-          <ion-icon
-            name="time-outline"
-            class="text-orange-500 mr-1">
-          </ion-icon>
-
-          <span class="text-xs text-gray-500">
-            {{item.duration}}
-          </span>
-
-        </div>
-
+    <section class="featured-player">
+      <img [src]="featured.image" [alt]="featured.title">
+      <div class="featured-player__shade"></div>
+      <div class="featured-player__content">
+        <span class="featured-player__label"><ion-icon name="sparkles-outline"></ion-icon> À la une aujourd'hui</span>
+        <h2>{{ featured.title }}</h2>
+        <div class="featured-player__meta"><span>Épisode spécial</span><span>•</span><span>18 min</span></div>
+        <button type="button" class="play-button" aria-label="Lire le témoignage à la une"><ion-icon name="play"></ion-icon></button>
       </div>
+    </section>
 
-      <button
-        class="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center">
+    <div class="section-title"><div><span class="section-kicker">À écouter maintenant</span><h3>Vos témoignages</h3></div><button type="button" aria-label="Afficher tous les témoignages"><ion-icon name="chevron-forward-outline"></ion-icon></button></div>
 
-        <ion-icon
-          name="play"
-          class="text-white text-xl ml-0.5">
-        </ion-icon>
+    <section class="episode-list">
+      <article *ngFor="let item of filteredTestimonies; let index = index" class="episode-row">
+        <div class="episode-art"><img [src]="item.image" [alt]="item.title"><span>{{ index + 1 }}</span></div>
+        <div class="episode-copy"><h4>{{ item.title }}</h4><div class="episode-meta"><ion-icon name="headset-outline"></ion-icon><span>Témoignage audio</span><span>•</span><span>{{ item.duration }}</span></div></div>
+        <button type="button" class="episode-more" aria-label="Options"><ion-icon name="ellipsis-vertical"></ion-icon></button>
+        <button type="button" class="episode-play" aria-label="Lire le témoignage"><ion-icon name="play"></ion-icon></button>
+      </article>
+    </section>
 
-      </button>
-
-    </div>
-
-    <p *ngIf="!filteredTestimonies.length" class="empty-state">
-      Aucun témoignage ne correspond à votre recherche.
-    </p>
-
-  </div>
-
+    <section class="now-playing"><div class="now-playing__art"><ion-icon name="musical-notes-outline"></ion-icon></div><div><span>PRÊT À ÉCOUTER</span><strong>Votre prochaine dose d'espérance</strong></div><ion-icon class="now-playing__wave" name="pulse-outline"></ion-icon></section>
+    <p *ngIf="!filteredTestimonies.length" class="empty-state">Aucun témoignage ne correspond à votre recherche.</p>
+  </main>
 </ion-content>

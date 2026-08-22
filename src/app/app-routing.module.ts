@@ -59,6 +59,10 @@ const routes: Routes = [
   {
     path: 'bible',
     loadChildren: () => import('./pages/bible/bible.module').then( m => m.BiblePageModule)
+  },
+  {
+    path: 'editprofil',
+    loadChildren: () => import('./pages/editprofil/editprofil.module').then( m => m.EditprofilPageModule)
   }
 ];
 @NgModule({
