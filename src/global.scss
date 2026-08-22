@@ -27,10 +27,6 @@
   --ion-font-family: 'Roboto', sans-serif;
 }
 
-ion-header {
-  padding-top: max(var(--ion-safe-area-top, 0px), env(safe-area-inset-top, 0px));
-}
-
 html,
 body,
 ion-app,

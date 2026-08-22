@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar } from '@capacitor/status-bar';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +9,9 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class AppComponent {
-  constructor() {}
+  constructor() {
+    if (Capacitor.isNativePlatform()) {
+      void StatusBar.setOverlaysWebView({ overlay: false });
+    }
+  }
 }
