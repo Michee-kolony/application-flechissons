@@ -6,7 +6,7 @@
         <span class="kicker">BIENVENUE</span>
         <h1>Accueil</h1>
       </div>
-      <button class="header-icon" (click)="goToProfile()" aria-label="Profil">
+      <button class="header-icon mt-2" (click)="goToProfile()" aria-label="Profil">
         <img *ngIf="userPhoto" [src]="userPhoto" alt="Photo de profil" class="profile-avatar" (error)="onPhotoError()">
         <span *ngIf="!userPhoto" class="profile-initiale">{{ userInitiale }}</span>
       </button>
