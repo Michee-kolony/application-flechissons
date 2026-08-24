@@ -46,10 +46,23 @@ export class Tab2Page implements OnInit, OnDestroy {
   currentAudio: Audio | null = null;
   isPlaying = false;
   isLoading = true;
+  isRefreshing = false;
   categories: string[] = [];
   audioDurations: { [key: string]: string } = {};
   
+  // Variables pour le lecteur
+  audioProgress = 0;
+  currentTime = '0:00';
+  totalDuration = '0:00';
+  durationInSeconds = 0;
+  
+  // Variables pour le volume
+  volume = 0.8;
+  previousVolume = 0.8;
+  showVolumeSlider = false;
+  
   private audioElement: HTMLAudioElement | null = null;
+  private progressInterval: any;
 
   constructor(
     private http: HttpClient,
@@ -58,13 +71,21 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.fetchAudios();
+    // Restaurer le volume sauvegardé
+    const savedVolume = localStorage.getItem('audioVolume');
+    if (savedVolume) {
+      this.volume = parseFloat(savedVolume);
+    }
   }
 
   ngOnDestroy() {
-    if (this.audioElement) {
-      this.audioElement.pause();
-      this.audioElement = null;
-    }
+    this.cleanupAudio();
+  }
+
+  get volumeIcon(): string {
+    if (this.volume === 0) return 'volume-mute-outline';
+    if (this.volume < 0.5) return 'volume-low-outline';
+    return 'volume-high-outline';
   }
 
   fetchAudios() {
@@ -72,17 +93,58 @@ export class Tab2Page implements OnInit, OnDestroy {
     this.http.get<AudioResponse>(this.urlAudio).subscribe({
       next: (response) => {
         if (response.success && response.audios.length > 0) {
-          this.audios = response.audios;
-          this.featuredAudio = response.audios[0];
+          // Trier les audios par date de création (du plus récent au plus ancien)
+          this.audios = response.audios.sort((a, b) => {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
+          
+          this.featuredAudio = this.audios[0];
           this.extractCategories();
           this.loadDurations();
         }
         this.isLoading = false;
+        this.isRefreshing = false;
       },
       error: (error) => {
         console.error('Erreur:', error);
         this.isLoading = false;
+        this.isRefreshing = false;
         this.showErrorAlert();
+      }
+    });
+  }
+
+  // =====================================================
+  // PULL-TO-REFRESH
+  // =====================================================
+
+  handleRefresh(event: any) {
+    this.isRefreshing = true;
+    
+    this.cleanupAudio();
+    this.currentAudio = null;
+    this.audioProgress = 0;
+    this.currentTime = '0:00';
+    this.totalDuration = '0:00';
+    
+    this.http.get<AudioResponse>(this.urlAudio).subscribe({
+      next: (response) => {
+        if (response.success && response.audios.length > 0) {
+          this.audios = response.audios.sort((a, b) => {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
+          this.featuredAudio = this.audios[0];
+          this.extractCategories();
+          this.loadDurations();
+        }
+        this.isRefreshing = false;
+        event.target.complete();
+      },
+      error: (error) => {
+        console.error('Erreur lors du rafraîchissement:', error);
+        this.isRefreshing = false;
+        event.target.complete();
+        this.showRefreshErrorAlert();
       }
     });
   }
@@ -123,7 +185,6 @@ export class Tab2Page implements OnInit, OnDestroy {
   get filteredAudios() {
     let filtered = this.audios;
 
-    // Filtrer par recherche
     const query = this.searchTerm.trim().toLocaleLowerCase();
     if (query) {
       filtered = filtered.filter((audio) =>
@@ -133,7 +194,6 @@ export class Tab2Page implements OnInit, OnDestroy {
       );
     }
 
-    // Filtrer par catégorie
     if (this.selectedCategory !== 'tous') {
       filtered = filtered.filter((audio) =>
         audio.categorie.toLowerCase() === this.selectedCategory
@@ -146,35 +206,46 @@ export class Tab2Page implements OnInit, OnDestroy {
   playAudio(audio: Audio | null) {
     if (!audio) return;
 
-    // Si c'est le même audio, on toggle play/pause
     if (this.currentAudio?._id === audio._id) {
       this.togglePlayPause();
       return;
     }
 
-    // Arrêter l'audio actuel
-    if (this.audioElement) {
-      this.audioElement.pause();
-      this.audioElement = null;
-    }
+    this.cleanupAudio();
 
     this.currentAudio = audio;
-    this.featuredAudio = audio; // Mettre à jour le featured avec l'audio en cours
+    this.featuredAudio = audio;
     this.audioElement = new Audio(audio.fichierAudio);
     
+    this.audioElement.volume = this.volume;
+    
+    this.audioElement.addEventListener('loadedmetadata', () => {
+      this.durationInSeconds = this.audioElement!.duration;
+      this.totalDuration = this.formatTime(this.durationInSeconds);
+    });
+
     this.audioElement.addEventListener('ended', () => {
       this.isPlaying = false;
+      this.audioProgress = 100;
+      this.currentTime = this.totalDuration;
+      this.stopProgressUpdate();
+    });
+
+    this.audioElement.addEventListener('timeupdate', () => {
+      this.updateProgress();
     });
 
     this.audioElement.addEventListener('error', (e) => {
       console.error('Erreur de lecture:', e);
       this.isPlaying = false;
+      this.stopProgressUpdate();
       this.showAudioErrorAlert();
     });
 
     this.audioElement.play()
       .then(() => {
         this.isPlaying = true;
+        this.startProgressUpdate();
       })
       .catch((error) => {
         console.error('Erreur:', error);
@@ -189,10 +260,12 @@ export class Tab2Page implements OnInit, OnDestroy {
     if (this.isPlaying) {
       this.audioElement.pause();
       this.isPlaying = false;
+      this.stopProgressUpdate();
     } else {
       this.audioElement.play()
         .then(() => {
           this.isPlaying = true;
+          this.startProgressUpdate();
         })
         .catch((error) => {
           console.error('Erreur:', error);
@@ -201,10 +274,142 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
 
+  updateProgress() {
+    if (this.audioElement) {
+      const current = this.audioElement.currentTime;
+      const duration = this.audioElement.duration;
+      if (duration > 0) {
+        this.audioProgress = (current / duration) * 100;
+        this.currentTime = this.formatTime(current);
+        this.totalDuration = this.formatTime(duration);
+        this.durationInSeconds = duration;
+      }
+    }
+  }
+
+  startProgressUpdate() {
+    this.stopProgressUpdate();
+    this.progressInterval = setInterval(() => {
+      this.updateProgress();
+    }, 500);
+  }
+
+  stopProgressUpdate() {
+    if (this.progressInterval) {
+      clearInterval(this.progressInterval);
+      this.progressInterval = null;
+    }
+  }
+
+  formatTime(seconds: number): string {
+    if (!seconds || isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // =====================================================
+  // GESTION DU SEEK (AVANCER/RECULER)
+  // =====================================================
+
+  seek(seconds: number) {
+    if (!this.audioElement) return;
+    
+    const newTime = this.audioElement.currentTime + seconds;
+    const maxTime = this.audioElement.duration;
+    
+    // Empêcher de dépasser les limites
+    if (newTime < 0) {
+      this.audioElement.currentTime = 0;
+    } else if (newTime > maxTime) {
+      this.audioElement.currentTime = maxTime;
+    } else {
+      this.audioElement.currentTime = newTime;
+    }
+    
+    // Mettre à jour l'affichage immédiatement
+    this.updateProgress();
+  }
+
+  seekTo(event: MouseEvent) {
+    if (!this.audioElement) return;
+    
+    const progressBar = event.currentTarget as HTMLElement;
+    const rect = progressBar.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const width = rect.width;
+    const percentage = x / width;
+    
+    const duration = this.audioElement.duration;
+    if (duration > 0) {
+      const newTime = percentage * duration;
+      this.audioElement.currentTime = Math.max(0, Math.min(newTime, duration));
+      this.updateProgress();
+    }
+  }
+
+  // =====================================================
+  // GESTION DU VOLUME
+  // =====================================================
+
+  toggleVolumeSlider() {
+    this.showVolumeSlider = !this.showVolumeSlider;
+    if (this.showVolumeSlider) {
+      setTimeout(() => {
+        this.showVolumeSlider = false;
+      }, 3000);
+    }
+  }
+
+  setVolume(event: any) {
+    const value = parseFloat(event.target.value);
+    this.volume = value;
+    if (this.audioElement) {
+      this.audioElement.volume = value;
+    }
+    localStorage.setItem('audioVolume', value.toString());
+  }
+
+  // =====================================================
+  // FERMETURE
+  // =====================================================
+
+  closeNowPlaying() {
+    this.cleanupAudio();
+    this.currentAudio = null;
+    this.audioProgress = 0;
+    this.currentTime = '0:00';
+    this.totalDuration = '0:00';
+    this.durationInSeconds = 0;
+    this.showVolumeSlider = false;
+  }
+
+  cleanupAudio() {
+    if (this.audioElement) {
+      this.audioElement.pause();
+      this.audioElement = null;
+    }
+    this.stopProgressUpdate();
+    this.isPlaying = false;
+  }
+
+  // =====================================================
+  // ALERTES
+  // =====================================================
+
   async showErrorAlert() {
     const alert = await this.alertController.create({
       header: 'Erreur',
       message: 'Impossible de charger les témoignages audio.',
+      buttons: ['OK']
+    });
+    await alert.present();
+  }
+
+  async showRefreshErrorAlert() {
+    const alert = await this.alertController.create({
+      header: 'Erreur de rafraîchissement',
+      message: 'Impossible de rafraîchir les données. Veuillez réessayer.',
       buttons: ['OK']
     });
     await alert.present();

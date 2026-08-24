@@ -28,37 +28,60 @@
     </section>
 
     <!-- Formulaire -->
-    <form class="contact-form">
-      <!-- Nom -->
-      <div class="contact-field">
-        <label for="contact-name">
-          <ion-icon name="person-outline"></ion-icon>
-          Votre nom
-        </label>
-        <div class="contact-input">
-          <input id="contact-name" type="text" placeholder="Entrez votre nom complet" autocomplete="name">
+    <form class="contact-form" (ngSubmit)="onSubmit()" #contactForm="ngForm">
+      <!-- Ligne 1: Nom + Email/Téléphone -->
+      <div class="contact-row">
+        <div class="contact-field">
+          <label for="contact-name">
+            <ion-icon name="person-outline"></ion-icon>
+            Votre nom
+          </label>
+          <div class="contact-input" [class.error]="submitted && !formData.nom">
+            <input 
+              id="contact-name" 
+              type="text" 
+              placeholder="Entrez votre nom" 
+              autocomplete="name"
+              [(ngModel)]="formData.nom"
+              name="nom"
+              required>
+          </div>
+          <span class="error-message" *ngIf="submitted && !formData.nom">Le nom est requis</span>
+        </div>
+
+        <div class="contact-field">
+          <label for="contact-details">
+            <ion-icon name="mail-outline"></ion-icon>
+            Email ou téléphone
+          </label>
+          <div class="contact-input" [class.error]="submitted && !formData.email">
+            <input 
+              id="contact-details" 
+              type="text" 
+              placeholder="ex. contact@email.com" 
+              autocomplete="email"
+              [(ngModel)]="formData.email"
+              name="email"
+              required>
+          </div>
+          <span class="error-message" *ngIf="submitted && !formData.email">L'email ou téléphone est requis</span>
         </div>
       </div>
 
-      <!-- Email / Téléphone -->
-      <div class="contact-field">
-        <label for="contact-details">
-          <ion-icon name="mail-outline"></ion-icon>
-          Email ou téléphone
-        </label>
-        <div class="contact-input">
-          <input id="contact-details" type="text" placeholder="ex. contact@email.com" autocomplete="email">
-        </div>
-      </div>
-
-      <!-- Sujet -->
-      <div class="contact-field">
+      <!-- Ligne 2: Sujet en pleine largeur -->
+      <div class="contact-field contact-field--full">
         <label for="contact-subject">
           <ion-icon name="albums-outline"></ion-icon>
           Sujet
         </label>
-        <div class="contact-input contact-input--select">
-          <ion-select id="contact-subject" placeholder="Choisir un sujet" interface="popover">
+        <div class="contact-input contact-input--select" [class.error]="submitted && !formData.sujet">
+          <ion-select 
+            id="contact-subject" 
+            placeholder="Choisir un sujet" 
+            interface="popover"
+            [(ngModel)]="formData.sujet"
+            name="sujet"
+            required>
             <ion-select-option value="priere">Requête de prière</ion-select-option>
             <ion-select-option value="rendez-vous">Demande de rendez-vous au Pasteur</ion-select-option>
             <ion-select-option value="temoignage">Témoignage</ion-select-option>
@@ -67,25 +90,34 @@
             <ion-select-option value="autre">Autre demande</ion-select-option>
           </ion-select>
         </div>
+        <span class="error-message" *ngIf="submitted && !formData.sujet">Veuillez choisir un sujet</span>
       </div>
 
-      <!-- Message -->
-      <div class="contact-field">
+      <!-- Message - pleine largeur -->
+      <div class="contact-field contact-field--full">
         <label for="contact-message">
           <ion-icon name="create-outline"></ion-icon>
           Votre message
         </label>
-        <div class="contact-input contact-input--message">
-          <textarea id="contact-message" rows="5" placeholder="Écrivez votre message en détail..."></textarea>
+        <div class="contact-input contact-input--message" [class.error]="submitted && !formData.message">
+          <textarea 
+            id="contact-message" 
+            rows="6" 
+            placeholder="Écrivez votre message en détail..."
+            [(ngModel)]="formData.message"
+            name="message"
+            required></textarea>
         </div>
+        <span class="error-message" *ngIf="submitted && !formData.message">Le message est requis</span>
       </div>
 
       <!-- Bouton Envoyer -->
-      <button type="submit" class="contact-submit">
-        Envoyer le message
-        <span>
-          <ion-icon name="arrow-forward-outline"></ion-icon>
+      <button type="submit" class="contact-submit" [disabled]="isLoading">
+        <span *ngIf="!isLoading" class="submit-text">
+          <ion-icon name="send-outline"></ion-icon>
+          Envoyer
         </span>
+        <span *ngIf="isLoading" class="spinner">Envoi...</span>
       </button>
 
       <!-- Note confidentialité -->
@@ -95,4 +127,47 @@
       </p>
     </form>
   </main>
+
+  <!-- Overlay Glassmorphisme -->
+  <div class="overlay" *ngIf="showOverlay" (click)="closeOverlay()">
+    <div class="overlay-content">
+      <!-- État Envoi -->
+      <div class="overlay-state" *ngIf="!isSuccess && !isError">
+        <div class="overlay-icon sending">
+          <i class="fas fa-paper-plane fa-3x fa-fade"></i>
+        </div>
+        <h3>Envoi en cours...</h3>
+        <p>Votre message est en train d'être envoyé.</p>
+        <div class="loader-bar">
+          <div class="loader-bar-fill" [style.width]="progress + '%'"></div>
+        </div>
+      </div>
+
+      <!-- État Succès -->
+      <div class="overlay-state" *ngIf="isSuccess">
+        <div class="overlay-icon success">
+          <i class="fas fa-check-circle fa-3x fa-bounce"></i>
+        </div>
+        <h3>Message envoyé !</h3>
+        <p>Nous vous répondrons dans les plus brefs délais.</p>
+        <button type="button" class="overlay-btn" (click)="closeOverlay()">
+          <ion-icon name="checkmark-outline"></ion-icon>
+          Merci !
+        </button>
+      </div>
+
+      <!-- État Erreur -->
+      <div class="overlay-state" *ngIf="isError">
+        <div class="overlay-icon error">
+          <i class="fas fa-times-circle fa-3x fa-shake"></i>
+        </div>
+        <h3>Erreur !</h3>
+        <p>{{ errorMessage || 'Une erreur est survenue. Veuillez réessayer.' }}</p>
+        <button type="button" class="overlay-btn overlay-btn--error" (click)="closeOverlay()">
+          <ion-icon name="refresh-outline"></ion-icon>
+          Réessayer
+        </button>
+      </div>
+    </div>
+  </div>
 </ion-content>

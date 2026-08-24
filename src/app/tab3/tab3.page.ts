@@ -121,7 +121,7 @@ export class Tab3Page implements OnInit {
   // =====================================================
 
   goToProfile(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/tabs/profil']);
   }
 
   // =====================================================

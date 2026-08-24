@@ -175,16 +175,31 @@ h1 {
 }
 
 // =====================================================
-// FORMULAIRE
+// FORMULAIRE - DEUX INPUTS PAR LIGNE
 // =====================================================
 
 .contact-form {
   display: grid;
-  gap: 19px;
+  gap: 16px;
   position: relative;
 }
 
+// Ligne avec deux colonnes
+.contact-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+// Champs
 .contact-field {
+  flex: 1;
+  min-width: 0;
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+
   label {
     display: flex;
     align-items: center;
@@ -201,21 +216,35 @@ h1 {
   }
 }
 
+// Inputs
 .contact-input {
   display: flex;
   align-items: center;
-  min-height: 56px;
+  min-height: 52px;
   padding: 0 16px;
-  background: rgba(255,255,255,.92);
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  box-shadow: 0 5px 15px rgba(31,41,55,.035);
-  transition: border-color .2s, box-shadow .2s, transform .2s;
+  background: #ffffff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(31,41,55,.04);
+  transition: all .25s ease;
 
   &:focus-within {
-    border-color: #fb923c;
-    box-shadow: 0 0 0 4px rgba(251,146,60,.13);
+    border-color: $color-secondary;
+    box-shadow: 0 0 0 4px rgba(249,115,22,.1), 0 2px 12px rgba(31,41,55,.06);
     transform: translateY(-1px);
+  }
+
+  &:hover {
+    border-color: #d1d5db;
+  }
+
+  &.error {
+    border-color: #ef4444;
+    
+    &:focus-within {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 4px rgba(239,68,68,.1);
+    }
   }
 
   input, textarea {
@@ -240,20 +269,33 @@ h1 {
       font-size: 14px;
       --placeholder-color: #9ca3af;
       --placeholder-opacity: 1;
+      padding: 0;
+      
+      &::part(icon) {
+        color: $color-secondary;
+      }
     }
   }
 
   &--message {
     align-items: flex-start;
-    min-height: 128px;
-    padding-top: 15px;
+    min-height: 140px;
+    padding-top: 14px;
 
     textarea {
-      min-height: 96px;
-      line-height: 1.5;
+      min-height: 110px;
+      line-height: 1.6;
       resize: none;
     }
   }
+}
+
+.error-message {
+  display: block;
+  margin-top: 4px;
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 // =====================================================
@@ -264,39 +306,64 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  min-height: 58px;
-  margin-top: 5px;
+  min-height: 56px;
+  margin-top: 8px;
   color: #fff;
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 700;
   border: 0;
-  border-radius: 17px;
+  border-radius: 16px;
   background: linear-gradient(100deg, #f97316, #ea580c);
   box-shadow: 0 13px 22px rgba(234,88,12,.23);
   transition: transform .2s, box-shadow .2s;
   cursor: pointer;
 
-  span {
-    display: grid;
-    place-items: center;
-    width: 27px;
-    height: 27px;
-    border-radius: 9px;
-    background: rgba(255,255,255,.2);
-    font-size: 17px;
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
 
-  &:hover {
+  .submit-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+
+  .spinner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    &::after {
+      content: '';
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 18px 30px rgba(234,88,12,.3);
   }
 
-  &:active {
+  &:active:not(:disabled) {
     transform: scale(.98);
     box-shadow: 0 7px 14px rgba(234,88,12,.2);
   }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 // =====================================================
@@ -320,8 +387,159 @@ h1 {
 }
 
 // =====================================================
-// ANIMATION D'ENTRÉE
+// OVERLAY GLASSMORPHISME
 // =====================================================
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+}
+
+.overlay-content {
+  max-width: 380px;
+  width: 100%;
+  padding: 40px 32px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.overlay-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.overlay-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  
+  i {
+    font-size: 40px;
+  }
+
+  &.sending {
+    background: rgba(249, 115, 22, 0.15);
+    color: $color-secondary;
+  }
+
+  &.success {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+  }
+
+  &.error {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+}
+
+.overlay-state h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 8px;
+}
+
+.overlay-state p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.loader-bar {
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.loader-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-secondary, $color-secondary-dark);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.overlay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 32px;
+  background: $color-secondary;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(249, 115, 22, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &--error {
+    background: #ef4444;
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+    }
+  }
+}
+
+// =====================================================
+// ANIMATIONS
+// =====================================================
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
 @keyframes fadeInUp {
   from {
@@ -371,10 +589,15 @@ h1 {
     font-size: 13px !important;
   }
 
+  .contact-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
   .contact-input {
-    min-height: 50px;
+    min-height: 48px;
     padding: 0 14px;
-    border-radius: 14px;
+    border-radius: 12px;
 
     input, textarea {
       font-size: 13px;
@@ -382,24 +605,27 @@ h1 {
   }
 
   .contact-input--message {
-    min-height: 112px;
-    padding-top: 13px;
+    min-height: 120px;
+    padding-top: 12px;
 
     textarea {
-      min-height: 80px;
+      min-height: 90px;
     }
   }
 
   .contact-submit {
-    min-height: 52px;
+    min-height: 50px;
     font-size: 14px;
-    border-radius: 15px;
+    border-radius: 14px;
+    gap: 8px;
 
-    span {
-      width: 24px;
-      height: 24px;
-      border-radius: 8px;
-      font-size: 15px;
+    .submit-text ion-icon {
+      font-size: 18px;
+    }
+
+    .spinner::after {
+      width: 16px;
+      height: 16px;
     }
   }
 
@@ -435,6 +661,24 @@ h1 {
   .topbar h1 {
     font-size: 22px !important;
   }
+
+  .overlay-content {
+    padding: 32px 24px;
+    margin: 16px;
+  }
+
+  .overlay-icon {
+    width: 64px;
+    height: 64px;
+
+    i {
+      font-size: 32px;
+    }
+  }
+
+  .overlay-state h3 {
+    font-size: 20px;
+  }
 }
 
 @media (max-width: 380px) {
@@ -469,6 +713,10 @@ h1 {
     font-size: 8px !important;
   }
 
+  .contact-row {
+    gap: 14px;
+  }
+
   .contact-field {
     label {
       font-size: 11px !important;
@@ -476,9 +724,9 @@ h1 {
   }
 
   .contact-input {
-    min-height: 44px;
+    min-height: 42px;
     padding: 0 12px;
-    border-radius: 12px;
+    border-radius: 10px;
 
     input, textarea {
       font-size: 12px;
@@ -486,25 +734,27 @@ h1 {
   }
 
   .contact-input--message {
-    min-height: 96px;
+    min-height: 100px;
     padding-top: 10px;
 
     textarea {
-      min-height: 68px;
+      min-height: 72px;
     }
   }
 
   .contact-submit {
-    min-height: 46px;
+    min-height: 44px;
     font-size: 13px;
-    border-radius: 13px;
-    gap: 8px;
+    border-radius: 12px;
+    gap: 6px;
 
-    span {
-      width: 22px;
-      height: 22px;
-      border-radius: 7px;
-      font-size: 13px;
+    .submit-text ion-icon {
+      font-size: 16px;
+    }
+
+    .spinner::after {
+      width: 14px;
+      height: 14px;
     }
   }
 
@@ -536,6 +786,23 @@ h1 {
     right: -50px;
     bottom: 50px;
   }
+
+  .overlay-content {
+    padding: 24px 16px;
+  }
+
+  .overlay-icon {
+    width: 56px;
+    height: 56px;
+
+    i {
+      font-size: 28px;
+    }
+  }
+
+  .overlay-state h3 {
+    font-size: 18px;
+  }
 }
 
 // Support pour les écrans plus grands
@@ -559,10 +826,14 @@ h1 {
     font-size: 40px !important;
   }
 
+  .contact-row {
+    gap: 20px;
+  }
+
   .contact-input {
-    min-height: 60px;
-    padding: 0 20px;
-    border-radius: 18px;
+    min-height: 56px;
+    padding: 0 18px;
+    border-radius: 16px;
 
     input, textarea {
       font-size: 15px;
@@ -570,24 +841,22 @@ h1 {
   }
 
   .contact-input--message {
-    min-height: 144px;
-    padding-top: 18px;
+    min-height: 160px;
+    padding-top: 16px;
 
     textarea {
-      min-height: 108px;
+      min-height: 120px;
     }
   }
 
   .contact-submit {
-    min-height: 64px;
+    min-height: 60px;
     font-size: 16px;
-    border-radius: 19px;
+    border-radius: 18px;
+    gap: 12px;
 
-    span {
-      width: 30px;
-      height: 30px;
-      border-radius: 10px;
-      font-size: 19px;
+    .submit-text ion-icon {
+      font-size: 22px;
     }
   }
 

@@ -1,7 +1,7 @@
-// tab2.page.scss - Style identique à tab1 pour le header
+// tab2.page.scss
 
 // =====================================================
-// VARIABLES (copiées de tab1)
+// VARIABLES
 // =====================================================
 
 $color-primary: #26352f;
@@ -21,6 +21,7 @@ $color-text-muted: #a6afa9;
 
 ion-content {
   --background: #fffaf5;
+  --padding-bottom: 0;
 }
 
 ion-toolbar {
@@ -30,7 +31,7 @@ ion-toolbar {
 }
 
 // =====================================================
-// HEADER - MÊME DESIGN QUE TAB1 (ACCUEIL)
+// HEADER - MÊME DESIGN QUE TAB1
 // =====================================================
 
 .testimony-header {
@@ -330,6 +331,58 @@ ion-toolbar {
         border-color: #e8ddd0;
       }
 
+      &--playing {
+        background: linear-gradient(135deg, #f97316, #ea580c, #c2410c) !important;
+        border-color: #f97316 !important;
+        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
+
+        .episode-art span {
+          background: rgba(255,255,255,0.9);
+          color: #f97316;
+        }
+
+        .episode-copy {
+          h4 {
+            color: #ffffff !important;
+          }
+
+          .episode-meta {
+            color: rgba(255,255,255,0.8) !important;
+
+            ion-icon {
+              color: rgba(255,255,255,0.8) !important;
+            }
+
+            span {
+              color: rgba(255,255,255,0.8) !important;
+            }
+          }
+        }
+
+        .episode-more {
+          color: rgba(255,255,255,0.7);
+
+          &:hover {
+            color: #ffffff;
+          }
+        }
+
+        .episode-play {
+          background: #ffffff;
+          color: #f97316;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+
+          &:hover {
+            transform: scale(1.08);
+            background: #ffffff;
+          }
+
+          ion-icon {
+            color: #f97316;
+          }
+        }
+      }
+
       .episode-art {
         position: relative;
         width: 56px;
@@ -419,7 +472,7 @@ ion-toolbar {
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: transform 0.3s ease, background 0.3s ease;
+        transition: all 0.3s ease;
         flex-shrink: 0;
 
         &:hover {
@@ -434,88 +487,22 @@ ion-toolbar {
         ion-icon {
           font-size: 16px;
         }
-      }
-    }
-  }
 
-  .now-playing {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    background: #ffffff;
-    border-radius: 14px;
-    color: #1a1a2e;
-    margin-top: 4px;
-    border: 1px solid #f0e8e0;
+        &--playing {
+          background: #ffffff;
+          color: #f97316;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 
-    &__art {
-      width: 44px;
-      height: 44px;
-      border-radius: 8px;
-      overflow: hidden;
-      flex-shrink: 0;
+          &:hover {
+            background: #ffffff;
+            transform: scale(1.08);
+          }
 
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    div {
-      flex: 1;
-      min-width: 0;
-
-      span {
-        font-size: 9px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        color: #f97316;
-        text-transform: uppercase;
-        display: block;
-        margin-bottom: 1px;
-      }
-
-      strong {
-        font-size: 13px;
-        font-weight: 700;
-        display: block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-
-    &__controls {
-      display: flex;
-      gap: 6px;
-
-      .now-playing__control {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        border: none;
-        background: #f97316;
-        color: #ffffff;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: transform 0.3s ease;
-
-        &:hover {
-          transform: scale(1.1);
+          ion-icon {
+            color: #f97316;
+          }
         }
       }
-    }
-
-    &__wave {
-      font-size: 24px;
-      color: #f97316;
-      flex-shrink: 0;
-      animation: pulse 1.5s ease-in-out infinite;
     }
   }
 
@@ -530,7 +517,328 @@ ion-toolbar {
   }
 }
 
-// Skeleton Loading
+// =====================================================
+// NOW PLAYING BAR - FIXE EN BAS
+// =====================================================
+
+.now-playing-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding: 0 16px 12px;
+  z-index: 9999;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-top: 1px solid #f0e8e0;
+
+  &.active {
+    transform: translateY(0);
+  }
+
+  // =====================================================
+  // PROGRESS BAR - CLIQUABLE
+  // =====================================================
+
+  &__progress {
+    width: 100%;
+    height: 4px;
+    background: #f0e8e0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: -1px;
+    cursor: pointer;
+    position: relative;
+    transition: height 0.2s ease;
+
+    &:hover {
+      height: 6px;
+      margin-top: -2px;
+      
+      .now-playing-bar__progress-fill::after {
+        opacity: 1;
+      }
+    }
+
+    &-fill {
+      height: 100%;
+      background: linear-gradient(90deg, $color-secondary, $color-secondary-dark);
+      border-radius: 2px;
+      transition: width 0.1s ease;
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        right: -4px;
+        top: -3px;
+        width: 10px;
+        height: 10px;
+        background: $color-secondary;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+    }
+  }
+
+  // =====================================================
+  // CONTENU
+  // =====================================================
+
+  &__content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0 4px;
+    position: relative;
+  }
+
+  &__art {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      ion-icon {
+        color: #ffffff;
+        font-size: 18px;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+    }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+
+    strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: $color-primary;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    span {
+      display: block;
+      font-size: 11px;
+      color: $color-text-light;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // =====================================================
+  // CONTROLS
+  // =====================================================
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  &__btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: $color-secondary;
+    color: #ffffff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+
+    &:hover {
+      transform: scale(1.08);
+      background: $color-secondary-dark;
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
+
+    ion-icon {
+      font-size: 18px;
+    }
+
+    &--seek {
+      background: transparent;
+      color: $color-text-light;
+      font-size: 20px;
+      width: 40px;
+      gap: 2px;
+
+      &:hover {
+        background: #f5f5f5;
+        color: $color-secondary;
+      }
+
+      .seek-label {
+        font-size: 8px;
+        font-weight: 700;
+        position: absolute;
+        bottom: 2px;
+        right: 4px;
+        background: $color-secondary;
+        color: #ffffff;
+        padding: 1px 4px;
+        border-radius: 4px;
+        line-height: 1.2;
+      }
+    }
+
+    &--close {
+      background: transparent;
+      color: $color-text-light;
+      font-size: 20px;
+
+      &:hover {
+        background: #f5f5f5;
+        color: $color-text;
+      }
+    }
+
+    &--volume {
+      background: transparent;
+      color: $color-text-light;
+      font-size: 20px;
+
+      &:hover {
+        background: #f5f5f5;
+        color: $color-text;
+      }
+    }
+  }
+
+  // =====================================================
+  // VOLUME SLIDER
+  // =====================================================
+
+  &__volume-wrapper {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    right: 50px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid #f0e8e0;
+    animation: slideUp 0.3s ease;
+    z-index: 10;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 20px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid #ffffff;
+    }
+  }
+
+  &__volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80px;
+    height: 4px;
+    border-radius: 2px;
+    background: #f0e8e0;
+    outline: none;
+    transition: background 0.2s;
+    cursor: pointer;
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: $color-secondary;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.15);
+      }
+    }
+
+    &::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: $color-secondary;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+    }
+
+    &::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    &::-moz-range-track {
+      height: 4px;
+      border-radius: 2px;
+      background: #f0e8e0;
+    }
+  }
+
+  // =====================================================
+  // TIME
+  // =====================================================
+
+  &__time {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 2px 0;
+    font-size: 10px;
+    color: $color-text-muted;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+}
+
+// =====================================================
+// SKELETON
+// =====================================================
+
 .skeleton-container {
   .skeleton-categories {
     display: flex;
@@ -685,7 +993,21 @@ ion-toolbar {
   }
 }
 
-// Animations
+// =====================================================
+// ANIMATIONS
+// =====================================================
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes shimmer-slide {
   0% {
     left: -100%;
@@ -703,5 +1025,250 @@ ion-toolbar {
   50% { 
     opacity: 0.5; 
     transform: scale(1.1); 
+  }
+}
+
+// =====================================================
+// RESPONSIVE
+// =====================================================
+
+@media (max-width: 640px) {
+  .testimony-page {
+    padding: 7px 12px 90px;
+  }
+
+  .now-playing-bar {
+    padding: 0 12px 10px;
+
+    &__btn {
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+
+      ion-icon {
+        font-size: 16px;
+      }
+
+      &--seek {
+        width: 34px;
+        font-size: 16px;
+
+        .seek-label {
+          font-size: 7px;
+          padding: 1px 3px;
+        }
+      }
+    }
+
+    &__info {
+      strong {
+        font-size: 12px;
+      }
+      span {
+        font-size: 10px;
+      }
+    }
+
+    &__art {
+      width: 40px;
+      height: 40px;
+    }
+
+    &__progress {
+      height: 3px;
+      
+      &:hover {
+        height: 5px;
+      }
+    }
+  }
+
+  .featured-player {
+    height: 220px;
+  }
+
+  .topbar h1 {
+    font-size: 22px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .testimony-page {
+    padding: 5px 10px 80px;
+  }
+
+  .topbar h1 {
+    font-size: 20px !important;
+  }
+
+  .testimony-search {
+    padding: 0 12px;
+
+    input {
+      font-size: 13px;
+      padding: 10px 0;
+    }
+  }
+
+  .now-playing-bar {
+    padding: 0 8px 8px;
+
+    &__btn {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+
+      ion-icon {
+        font-size: 14px;
+      }
+
+      &--seek {
+        width: 30px;
+        font-size: 14px;
+
+        .seek-label {
+          font-size: 6px;
+          padding: 1px 2px;
+        }
+      }
+    }
+
+    &__art {
+      width: 36px;
+      height: 36px;
+    }
+
+    &__info {
+      strong {
+        font-size: 11px;
+      }
+      span {
+        font-size: 9px;
+      }
+    }
+
+    &__progress {
+      height: 3px;
+      
+      &:hover {
+        height: 4px;
+      }
+    }
+
+    &__time {
+      font-size: 9px;
+    }
+  }
+
+  .featured-player {
+    height: 200px;
+    
+    &__content {
+      padding: 16px 14px 18px;
+      
+      h2 {
+        font-size: 17px;
+      }
+      
+      .play-button {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+        
+        ion-icon {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+
+  .episode-row {
+    padding: 8px 10px;
+    
+    .episode-art {
+      width: 48px;
+      height: 48px;
+    }
+    
+    .episode-copy {
+      h4 {
+        font-size: 13px;
+      }
+      
+      .episode-meta {
+        font-size: 10px;
+      }
+    }
+    
+    .episode-play {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+      
+      ion-icon {
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+// Support pour les écrans plus grands
+@media (min-width: 641px) {
+  .testimony-page {
+    padding: 7px 24px 110px;
+  }
+
+  .now-playing-bar {
+    padding: 0 20px 14px;
+
+    &__btn {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+
+      ion-icon {
+        font-size: 20px;
+      }
+
+      &--seek {
+        width: 44px;
+        font-size: 22px;
+
+        .seek-label {
+          font-size: 9px;
+          padding: 1px 5px;
+        }
+      }
+    }
+
+    &__info {
+      strong {
+        font-size: 15px;
+      }
+      span {
+        font-size: 12px;
+      }
+    }
+
+    &__art {
+      width: 52px;
+      height: 52px;
+    }
+
+    &__progress {
+      height: 5px;
+      
+      &:hover {
+        height: 7px;
+      }
+    }
+
+    &__time {
+      font-size: 11px;
+    }
+  }
+
+  .featured-player {
+    height: 300px;
   }
 }

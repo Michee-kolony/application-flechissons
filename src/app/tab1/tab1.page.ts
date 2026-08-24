@@ -240,7 +240,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
    */
 
   goToProfile(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/tabs/profil']);
   }
 
   /**
