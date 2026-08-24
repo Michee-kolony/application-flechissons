@@ -71,6 +71,7 @@ export class ProfilPage implements OnInit {
       if (userData) {
         this.user = JSON.parse(userData);
         console.log('✅ Utilisateur chargé:', this.user);
+        console.log('📸 Photo:', this.user.photo);
       } else {
         console.warn('⚠️ Aucun utilisateur trouvé dans le localStorage');
         this.user = {};
@@ -137,6 +138,10 @@ export class ProfilPage implements OnInit {
   onPhotoError(): void {
     console.warn('⚠️ Erreur de chargement de la photo, suppression de la photo');
     this.user.photo = '';
+    // Mettre à jour le localStorage
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    currentUser.photo = '';
+    localStorage.setItem('user', JSON.stringify(currentUser));
   }
 
   // =====================================================
@@ -168,8 +173,7 @@ export class ProfilPage implements OnInit {
 
   editProfile() {
     console.log('✏️ Modifier le profil');
-    // Rediriger vers la page d'édition du profil
-    // this.router.navigate(['/edit-profile']);
+    this.router.navigate(['/editprofil']);
   }
 
   // =====================================================
@@ -177,6 +181,16 @@ export class ProfilPage implements OnInit {
   // =====================================================
 
   refreshData() {
+    console.log('🔄 Rafraîchissement des données...');
+    this.loadUserData();
+  }
+
+  // =====================================================
+  // ION VIEW WILL ENTER - RECHARGE À CHAQUE RETOUR
+  // =====================================================
+
+  ionViewWillEnter() {
+    console.log('📱 Retour sur la page profil - Rechargement des données');
     this.loadUserData();
   }
 }

@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController, ToastController } from '@ionic/angular';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 interface ProfilePreferences {
   categories: string[];
@@ -8,6 +10,7 @@ interface ProfilePreferences {
 }
 
 interface ProfileUser {
+  id?: string;
   nom?: string;
   email?: string;
   prenom?: string;
@@ -18,6 +21,10 @@ interface ProfileUser {
   ville?: string;
   profilComplete?: boolean;
   preferences?: ProfilePreferences;
+  role?: string;
+  derniereConnexion?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 @Component({
@@ -28,11 +35,29 @@ interface ProfileUser {
 })
 export class EditprofilPage implements OnInit {
 
-  user: ProfileUser = {};
+  user: ProfileUser = {
+    preferences: {
+      categories: [],
+      notifications: true,
+      langue: 'fr'
+    }
+  };
+  
   isSaving = false;
   isPhotoSheetOpen = false;
   photoPreview = '';
   selectedCategories: string[] = [];
+  private selectedFile: File | null = null; // Stocker le fichier sélectionné
+  
+  // =====================================================
+  // API - LOCALHOST
+  // =====================================================
+  
+  private apiUrl = 'https://backend-flechissons.onrender.com/user';
+
+  // =====================================================
+  // CATÉGORIES
+  // =====================================================
 
   readonly categories = [
     { value: 'priere', label: 'Prière', icon: 'heart-outline' },
@@ -41,14 +66,28 @@ export class EditprofilPage implements OnInit {
     { value: 'actualites', label: 'Actualités', icon: 'newspaper-outline' }
   ];
 
+  // =====================================================
+  // CONSTRUCTEUR
+  // =====================================================
+
   constructor(
     private navCtrl: NavController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private http: HttpClient,
+    private router: Router
   ) { }
+
+  // =====================================================
+  // INIT
+  // =====================================================
 
   ngOnInit() {
     this.loadUser();
   }
+
+  // =====================================================
+  // CHARGER UTILISATEUR
+  // =====================================================
 
   private loadUser(): void {
     const savedUser = localStorage.getItem('user');
@@ -59,21 +98,41 @@ export class EditprofilPage implements OnInit {
     }
 
     try {
-      this.user = JSON.parse(savedUser);
-      this.user.preferences = {
-        categories: this.user.preferences?.categories || [],
-        notifications: this.user.preferences?.notifications ?? true,
-        langue: this.user.preferences?.langue || 'fr'
+      const parsedUser = JSON.parse(savedUser);
+      
+      // Initialiser l'utilisateur avec des préférences par défaut
+      this.user = {
+        ...parsedUser,
+        preferences: {
+          categories: parsedUser.preferences?.categories || [],
+          notifications: parsedUser.preferences?.notifications ?? true,
+          langue: parsedUser.preferences?.langue || 'fr'
+        }
       };
+      
       this.selectedCategories = [...(this.user.preferences?.categories || [])];
+      
+      // Charger la photo si présente
+      if (this.user.photo) {
+        this.photoPreview = this.user.photo;
+      }
+      
     } catch {
       this.navCtrl.navigateRoot('/login');
     }
   }
 
+  // =====================================================
+  // GET INITIALES
+  // =====================================================
+
   get userInitial(): string {
     return (this.user.prenom || this.user.nom || this.user.email || 'U').trim().charAt(0).toUpperCase();
   }
+
+  // =====================================================
+  // TOGGLE CATÉGORIE
+  // =====================================================
 
   toggleCategory(category: string): void {
     this.selectedCategories = this.selectedCategories.includes(category)
@@ -81,13 +140,25 @@ export class EditprofilPage implements OnInit {
       : [...this.selectedCategories, category];
   }
 
+  // =====================================================
+  // OUVERTURE PHOTO
+  // =====================================================
+
   openPhotoPicker(): void {
     this.isPhotoSheetOpen = true;
   }
 
+  // =====================================================
+  // FERMETURE PHOTO
+  // =====================================================
+
   closePhotoPicker(): void {
     this.isPhotoSheetOpen = false;
   }
+
+  // =====================================================
+  // SÉLECTION PHOTO
+  // =====================================================
 
   onPhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -97,6 +168,10 @@ export class EditprofilPage implements OnInit {
       return;
     }
 
+    // Stocker le fichier pour l'upload
+    this.selectedFile = file;
+
+    // Aperçu local
     const reader = new FileReader();
     reader.onload = () => {
       this.photoPreview = reader.result as string;
@@ -104,30 +179,193 @@ export class EditprofilPage implements OnInit {
     reader.readAsDataURL(file);
   }
 
+  // =====================================================
+  // SAUVEGARDER PROFIL (AVEC PHOTO)
+  // =====================================================
+
   async saveProfile(): Promise<void> {
     this.isSaving = true;
-    const preferences: ProfilePreferences = {
-      categories: this.selectedCategories,
-      notifications: this.user.preferences?.notifications ?? true,
-      langue: this.user.preferences?.langue || 'fr'
-    };
 
-    this.user.preferences = preferences;
-    this.user.profilComplete = Boolean(
-      this.user.prenom?.trim() && this.user.sexe && this.user.dateNaissance && this.user.ville?.trim()
-    );
+    try {
+      // =================================================
+      // RÉCUPÉRER LE TOKEN
+      // =================================================
+      
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Token manquant. Veuillez vous reconnecter.');
+      }
 
-    localStorage.setItem('user', JSON.stringify(this.user));
+      // =================================================
+      // PRÉPARER LES DONNÉES AVEC FORM DATA
+      // =================================================
+      
+      const formData = new FormData();
 
-    const toast = await this.toastController.create({
-      message: 'Votre profil a bien été enregistré.',
-      duration: 1800,
-      position: 'bottom',
-      color: 'success'
-    });
-    await toast.present();
-    this.isSaving = false;
-    this.navCtrl.navigateBack('/tabs/profil');
+      // Ajouter les champs textes
+      formData.append('prenom', this.user.prenom || '');
+      formData.append('sexe', this.user.sexe || '');
+      
+      if (this.user.dateNaissance) {
+        formData.append('dateNaissance', this.user.dateNaissance);
+      }
+      
+      formData.append('telephone', this.user.telephone || '');
+      formData.append('ville', this.user.ville || '');
+      
+      // Ajouter les préférences (convertir en JSON)
+      formData.append('categories', JSON.stringify(this.selectedCategories));
+      formData.append('notifications', String(this.user.preferences?.notifications ?? true));
+      formData.append('langue', this.user.preferences?.langue || 'fr');
+
+      // =================================================
+      // AJOUTER LA PHOTO SI SÉLECTIONNÉE
+      // =================================================
+      
+      if (this.selectedFile) {
+        formData.append('photo', this.selectedFile, this.selectedFile.name);
+        console.log('📸 Photo ajoutée :', this.selectedFile.name);
+      }
+
+      // =================================================
+      // HEADERS (SANS Content-Type pour FormData)
+      // =================================================
+      
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${token}`
+      });
+
+      // =================================================
+      // APPEL API
+      // =================================================
+      
+      console.log('📤 Envoi des données avec FormData...');
+      
+      const response = await this.http.put<{
+        success: boolean;
+        message: string;
+        user: ProfileUser;
+      }>(
+        `${this.apiUrl}/profile`,
+        formData,
+        { headers }
+      ).toPromise();
+
+      console.log('✅ Réponse API :', response);
+
+      // =================================================
+      // VÉRIFIER RÉPONSE
+      // =================================================
+      
+      if (!response || !response.success) {
+        throw new Error(response?.message || 'Erreur lors de la sauvegarde');
+      }
+
+      // =================================================
+      // METTRE À JOUR LOCALSTORAGE
+      // =================================================
+      
+      // Conserver les champs qui ne sont pas dans la réponse
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      // Fusionner avec les nouvelles données
+      const updatedUser = {
+        ...currentUser,
+        ...response.user,
+        // S'assurer que les préférences sont bien à jour
+        preferences: {
+          categories: this.selectedCategories,
+          notifications: this.user.preferences?.notifications ?? true,
+          langue: this.user.preferences?.langue || 'fr'
+        }
+      };
+
+      // Sauvegarder dans localStorage
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // Mettre à jour l'user local
+      this.user = updatedUser;
+      
+      // Mettre à jour la photo preview si une nouvelle photo a été uploadée
+      if (response.user?.photo) {
+        this.photoPreview = response.user.photo;
+        this.selectedFile = null; // Réinitialiser le fichier
+      }
+
+      console.log('💾 User mis à jour dans localStorage :', updatedUser);
+
+      // =================================================
+      // TOAST SUCCESS
+      // =================================================
+      
+      const toast = await this.toastController.create({
+        message: this.selectedFile ? 'Profil et photo mis à jour !' : 'Votre profil a bien été enregistré.',
+        duration: 1800,
+        position: 'bottom',
+        color: 'success'
+      });
+      await toast.present();
+
+      // =================================================
+      // REDIRECTION
+      // =================================================
+      
+      this.isSaving = false;
+      this.navCtrl.navigateBack('/tabs/profil');
+
+    } catch (error: any) {
+      console.error('❌ Erreur lors de la sauvegarde :', error);
+
+      // =================================================
+      // GESTION DES ERREURS
+      // =================================================
+      
+      let errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+      
+      if (error?.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      // =================================================
+      // TOAST ERROR
+      // =================================================
+      
+      const toast = await this.toastController.create({
+        message: errorMessage,
+        duration: 3000,
+        position: 'bottom',
+        color: 'danger'
+      });
+      await toast.present();
+
+      this.isSaving = false;
+    }
   }
 
+  // =====================================================
+  // DATA URL TO FILE
+  // =====================================================
+
+  private dataURLToFile(dataURL: string, filename: string): File {
+    const arr = dataURL.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  // =====================================================
+  // SAUVEGARDER COMPLET (supprimé car tout est dans saveProfile)
+  // =====================================================
+
+  // La méthode saveProfile gère maintenant tout (texte + photo)
 }

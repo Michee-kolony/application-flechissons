@@ -6,6 +6,12 @@
         <span class="kicker">MON COMPTE</span>
         <h1>Profil</h1>
       </div>
+      <!-- Ajout d'un bouton de rafraîchissement -->
+      <ion-buttons slot="end">
+        <ion-button (click)="refreshData()" fill="clear">
+          <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </div>
   </ion-toolbar>
 </ion-header>
@@ -48,7 +54,7 @@
             </div>
           </div>
 
-          <button type="button" [routerLink]="['/editprofil']" class="profil-edit-btn">
+          <button type="button" (click)="editProfile()" class="profil-edit-btn">
             <ion-icon name="create-outline"></ion-icon>
             Modifier
           </button>
