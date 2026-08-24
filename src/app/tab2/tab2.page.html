@@ -13,36 +13,128 @@
 
 <ion-content>
   <main class="testimony-page">
-    <div class="category-scroll" aria-label="Catégories">
-      <button type="button" class="category-pill category-pill--active">Pour vous</button>
-      <button type="button" class="category-pill">Prière</button>
-      <button type="button" class="category-pill">Espérance</button>
-      <button type="button" class="category-pill">Miracles</button>
+    <!-- Skeleton Loading -->
+    <div *ngIf="isLoading" class="skeleton-container">
+      <div class="skeleton-categories">
+        <div class="skeleton-pill" *ngFor="let _ of [1,2,3,4]"></div>
+      </div>
+      <div class="skeleton-featured">
+        <div class="skeleton-shimmer"></div>
+        <div class="skeleton-featured-content">
+          <div class="skeleton-label"></div>
+          <div class="skeleton-title"></div>
+          <div class="skeleton-meta"></div>
+          <div class="skeleton-play-button"></div>
+        </div>
+      </div>
+      <div class="skeleton-section-title">
+        <div>
+          <div class="skeleton-kicker"></div>
+          <div class="skeleton-heading"></div>
+        </div>
+        <div class="skeleton-arrow"></div>
+      </div>
+      <div class="skeleton-list">
+        <div class="skeleton-item" *ngFor="let _ of [1,2,3,4,5]">
+          <div class="skeleton-art"></div>
+          <div class="skeleton-copy">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+          <div class="skeleton-play-small"></div>
+        </div>
+      </div>
     </div>
 
-    <section class="featured-player">
-      <img [src]="featured.image" [alt]="featured.title">
-      <div class="featured-player__shade"></div>
-      <div class="featured-player__content">
-        <span class="featured-player__label"><ion-icon name="sparkles-outline"></ion-icon> À la une aujourd'hui</span>
-        <h2>{{ featured.title }}</h2>
-        <div class="featured-player__meta"><span>Épisode spécial</span><span>•</span><span>18 min</span></div>
-        <button type="button" class="play-button" aria-label="Lire le témoignage à la une"><ion-icon name="play"></ion-icon></button>
+    <!-- Contenu chargé -->
+    <ng-container *ngIf="!isLoading">
+      <!-- Catégories dynamiques avec filtrage -->
+      <div class="category-scroll" aria-label="Catégories">
+        <button 
+          type="button" 
+          class="category-pill" 
+          [class.category-pill--active]="selectedCategory === 'tous'"
+          (click)="filterByCategory('tous')">
+          Tous
+        </button>
+        <button 
+          *ngFor="let categorie of categories" 
+          type="button" 
+          class="category-pill" 
+          [class.category-pill--active]="selectedCategory === categorie"
+          (click)="filterByCategory(categorie)">
+          {{ categorie | titlecase }}
+        </button>
       </div>
-    </section>
 
-    <div class="section-title"><div><span class="section-kicker">À écouter maintenant</span><h3>Vos témoignages</h3></div><button type="button" aria-label="Afficher tous les témoignages"><ion-icon name="chevron-forward-outline"></ion-icon></button></div>
+      <section class="featured-player">
+        <img [src]="featuredAudio ? featuredAudio.photoCouverture : 'https://picsum.photos/800/500?random=1'" [alt]="featuredAudio ? featuredAudio.nom : 'Témoignage'">
+        <div class="featured-player__shade"></div>
+        <div class="featured-player__content">
+          <span class="featured-player__label">
+            <ion-icon name="sparkles-outline"></ion-icon> 
+            {{ isPlaying && currentAudio && featuredAudio && currentAudio._id === featuredAudio._id ? 'En cours de lecture' : 'À la une' }}
+          </span>
+          <h2>{{ featuredAudio ? featuredAudio.nom : 'Dieu a changé ma vie' }}</h2>
+          <div class="featured-player__meta">
+            <span>{{ featuredAudio ? featuredAudio.personne : 'Témoignage' }}</span>
+            <span>•</span>
+            <span>{{ featuredAudio ? (featuredAudio.categorie | titlecase) : 'Témoignage' }}</span>
+            <span>•</span>
+            <span>{{ featuredAudio ? (audioDurations[featuredAudio._id] || 'Chargement...') : '18 min' }}</span>
+          </div>
+          <button type="button" class="play-button" (click)="playAudio(featuredAudio)" aria-label="Lire le témoignage à la une">
+            <ion-icon [name]="isPlaying && currentAudio && featuredAudio && currentAudio._id === featuredAudio._id ? 'pause' : 'play'"></ion-icon>
+          </button>
+        </div>
+      </section>
 
-    <section class="episode-list">
-      <article *ngFor="let item of filteredTestimonies; let index = index" class="episode-row">
-        <div class="episode-art"><img [src]="item.image" [alt]="item.title"><span>{{ index + 1 }}</span></div>
-        <div class="episode-copy"><h4>{{ item.title }}</h4><div class="episode-meta"><ion-icon name="headset-outline"></ion-icon><span>Témoignage audio</span><span>•</span><span>{{ item.duration }}</span></div></div>
-        <button type="button" class="episode-more" aria-label="Options"><ion-icon name="ellipsis-vertical"></ion-icon></button>
-        <button type="button" class="episode-play" aria-label="Lire le témoignage"><ion-icon name="play"></ion-icon></button>
-      </article>
-    </section>
+      <div class="section-title">
+        <div><span class="section-kicker">À écouter maintenant</span><h3>Vos témoignages</h3></div>
+        <button type="button" aria-label="Afficher tous les témoignages"><ion-icon name="chevron-forward-outline"></ion-icon></button>
+      </div>
 
-    <section class="now-playing"><div class="now-playing__art"><ion-icon name="musical-notes-outline"></ion-icon></div><div><span>PRÊT À ÉCOUTER</span><strong>Votre prochaine dose d'espérance</strong></div><ion-icon class="now-playing__wave" name="pulse-outline"></ion-icon></section>
-    <p *ngIf="!filteredTestimonies.length" class="empty-state">Aucun témoignage ne correspond à votre recherche.</p>
+      <section class="episode-list">
+        <article *ngFor="let item of filteredAudios; let index = index" class="episode-row">
+          <div class="episode-art">
+            <img [src]="item.photoCouverture" [alt]="item.nom">
+            <span>{{ index + 1 }}</span>
+          </div>
+          <div class="episode-copy">
+            <h4>{{ item.nom }}</h4>
+            <div class="episode-meta">
+              <ion-icon name="headset-outline"></ion-icon>
+              <span>{{ item.personne }}</span>
+              <span>•</span>
+              <span>{{ item.categorie | titlecase }}</span>
+              <span>•</span>
+              <span>{{ audioDurations[item._id] || 'Chargement...' }}</span>
+            </div>
+          </div>
+          <button type="button" class="episode-more" aria-label="Options"><ion-icon name="ellipsis-vertical"></ion-icon></button>
+          <button type="button" class="episode-play" (click)="playAudio(item)" aria-label="Lire le témoignage">
+            <ion-icon [name]="isPlaying && currentAudio && currentAudio._id === item._id ? 'pause' : 'play'"></ion-icon>
+          </button>
+        </article>
+      </section>
+
+      <section class="now-playing" *ngIf="currentAudio">
+        <div class="now-playing__art">
+          <img [src]="currentAudio.photoCouverture" [alt]="currentAudio.nom">
+        </div>
+        <div>
+          <span>PRÊT À ÉCOUTER</span>
+          <strong>{{ currentAudio.nom }}</strong>
+        </div>
+        <div class="now-playing__controls">
+          <button type="button" class="now-playing__control" (click)="togglePlayPause()">
+            <ion-icon [name]="isPlaying ? 'pause' : 'play'"></ion-icon>
+          </button>
+        </div>
+        <ion-icon class="now-playing__wave" name="pulse-outline"></ion-icon>
+      </section>
+      
+      <p *ngIf="!filteredAudios.length" class="empty-state">Aucun témoignage ne correspond à votre recherche.</p>
+    </ng-container>
   </main>
 </ion-content>
