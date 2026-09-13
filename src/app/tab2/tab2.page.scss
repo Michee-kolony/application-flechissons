@@ -9,7 +9,7 @@ $color-primary-light: #34443c;
 $color-secondary: #f97316;
 $color-secondary-dark: #ea580c;
 $color-secondary-light: #fed7aa;
-$color-bg: #fffaf5;
+$color-bg: var(--app-bg);
 $color-border: #f0e3d7;
 $color-text: #26352f;
 $color-text-light: #718079;
@@ -20,12 +20,12 @@ $color-text-muted: #a6afa9;
 // =====================================================
 
 ion-content {
-  --background: #fffaf5;
+  --background: var(--app-bg);
   --padding-bottom: 0;
 }
 
 ion-toolbar {
-  --background: #fffaf5;
+  --background: var(--app-bg);
   --border-color: transparent;
   --min-height: auto;
 }
@@ -35,12 +35,12 @@ ion-toolbar {
 // =====================================================
 
 .testimony-header {
-  --background: #fffaf5;
+  --background: var(--app-bg);
   --border-color: transparent;
   padding-bottom: 0;
   
   ion-toolbar {
-    --background: #fffaf5;
+    --background: var(--app-bg);
     --border-color: transparent;
     --min-height: auto;
     padding: 10px 20px 14px;
@@ -126,7 +126,7 @@ ion-toolbar {
   max-width: 560px;
   margin: 0 auto;
   padding: 7px 16px 100px;
-  background: #fffaf5;
+  background: var(--app-bg);
 
   .category-scroll {
     display: flex;
@@ -1270,5 +1270,182 @@ ion-toolbar {
 
   .featured-player {
     height: 300px;
+  }
+}
+
+// =====================================================
+// MODE SOMBRE (BLEU DE NUIT)
+// =====================================================
+
+:host-context(.dark) {
+  ion-content,
+  ion-toolbar,
+  .testimony-header,
+  .testimony-header ion-toolbar {
+    --background: var(--app-bg);
+  }
+
+  .topbar h1,
+  .section-title h3 {
+    color: var(--app-text);
+  }
+
+  .testimony-search {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+
+    &:focus-within {
+      background: var(--app-surface);
+    }
+
+    input {
+      color: var(--app-text);
+    }
+
+    .search-icon,
+    .clear-icon {
+      color: var(--app-text-secondary);
+    }
+  }
+
+  .testimony-page {
+    background: var(--app-bg);
+
+    .category-pill {
+      background: var(--app-surface);
+      border-color: var(--app-border);
+      color: var(--app-text-secondary);
+
+      &:hover {
+        background: var(--app-surface-alt);
+        border-color: var(--app-border);
+      }
+
+      &--active {
+        background: $color-secondary;
+        border-color: $color-secondary;
+        color: #fff;
+
+        &:hover {
+          background: $color-secondary-dark;
+          border-color: $color-secondary-dark;
+        }
+      }
+    }
+
+    .section-title button {
+      color: var(--app-text-secondary);
+
+      &:hover {
+        color: var(--app-text);
+      }
+    }
+
+    .episode-row {
+      background: var(--app-surface);
+      border-color: var(--app-border);
+
+      &:hover {
+        background: var(--app-surface-alt);
+        border-color: var(--app-border);
+      }
+
+      .episode-art {
+        background: var(--app-surface-alt);
+      }
+
+      .episode-copy h4 {
+        color: var(--app-text);
+      }
+
+      .episode-meta {
+        color: var(--app-text-secondary);
+      }
+
+      .episode-more {
+        color: var(--app-text-secondary);
+
+        &:hover {
+          color: var(--app-text);
+        }
+      }
+    }
+
+    .empty-state {
+      background: var(--app-surface);
+      border-color: var(--app-border);
+      color: var(--app-text-secondary);
+    }
+  }
+
+  .now-playing-bar {
+    background: var(--app-surface);
+    border-top-color: var(--app-border);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+
+    &__progress {
+      background: var(--app-border);
+    }
+
+    &__info {
+      strong {
+        color: var(--app-text);
+      }
+      span {
+        color: var(--app-text-secondary);
+      }
+    }
+
+    &__btn {
+      &--seek,
+      &--close,
+      &--volume {
+        color: var(--app-text-secondary);
+
+        &:hover {
+          background: var(--app-surface-alt);
+          color: var(--app-text);
+        }
+      }
+    }
+
+    &__volume-wrapper {
+      background: var(--app-surface);
+      border-color: var(--app-border);
+
+      &::after {
+        border-top-color: var(--app-surface);
+      }
+    }
+
+    &__volume-slider {
+      background: var(--app-border);
+
+      &::-moz-range-track {
+        background: var(--app-border);
+      }
+    }
+
+    &__time {
+      color: var(--app-text-secondary);
+    }
+  }
+
+  .skeleton-container {
+    .skeleton-pill,
+    .skeleton-featured,
+    .skeleton-kicker,
+    .skeleton-heading,
+    .skeleton-arrow,
+    .skeleton-art,
+    .skeleton-line,
+    .skeleton-play-small {
+      background: var(--app-surface-alt);
+    }
+
+    .skeleton-item {
+      background: var(--app-surface);
+      border-color: var(--app-border);
+    }
   }
 }

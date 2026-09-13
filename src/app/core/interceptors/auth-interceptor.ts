@@ -10,12 +10,12 @@ import {
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService) {}
 
   // =============================================
   // LISTE DES URLS À EXCLURE
@@ -123,15 +123,14 @@ export class AuthInterceptor implements HttpInterceptor {
           !this.isExcludedUrl(request.url)
         ) {
 
-          // Supprimer les données locales
+          // Supprimer les données locales (session expirée/invalide)
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           localStorage.removeItem('userId');
 
-          // Rediriger vers login
-          this.router.navigateByUrl('/login', {
-            replaceUrl: true
-          });
+          // L'app reste en libre accès : on affiche la modal de connexion
+          // discrète plutôt que de forcer une redirection vers /login.
+          this.authService.openLoginModal();
 
         }
 

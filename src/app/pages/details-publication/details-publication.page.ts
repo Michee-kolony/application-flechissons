@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { IonContent } from '@ionic/angular';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector:'app-details-publication',
@@ -44,7 +45,8 @@ export class DetailsPublicationPage implements OnInit, OnDestroy {
   ];
 
   constructor(
-    private sanitizer:DomSanitizer
+    private sanitizer:DomSanitizer,
+    private authService:AuthService
   ){}
 
   ngOnInit(){
@@ -83,6 +85,10 @@ export class DetailsPublicationPage implements OnInit, OnDestroy {
   }
 
   toggleLike(){
+    if(!this.authService.requireAuth()){
+      return;
+    }
+
     if(this.publication.liked){
       this.publication.likes--;
       this.publication.liked=false;
@@ -95,6 +101,10 @@ export class DetailsPublicationPage implements OnInit, OnDestroy {
   ajouterCommentaire(){
     const texte=this.nouveauCommentaire.trim();
     if(!texte){
+      return;
+    }
+
+    if(!this.authService.requireAuth()){
       return;
     }
 

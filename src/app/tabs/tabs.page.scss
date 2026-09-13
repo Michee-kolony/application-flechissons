@@ -197,3 +197,26 @@
   max-width: none; /* Supprime la limite de largeur */
   width: auto;
 }
+
+/* =====================================================
+   MODE SOMBRE (BLEU DE NUIT)
+   ===================================================== */
+:host-context(.dark) {
+  .custom-tab-bar {
+    --background: var(--app-surface);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .custom-tab-bar ion-tab-button {
+    --color: var(--app-text);
+  }
+
+  .custom-tab-bar ion-tab-button ion-icon,
+  .custom-tab-bar ion-tab-button .tab-label {
+    color: var(--app-text);
+  }
+
+  .custom-tab-bar ion-tab-button:not(.tab-selected):hover {
+    background: rgba(255, 152, 0, 0.12);
+  }
+}

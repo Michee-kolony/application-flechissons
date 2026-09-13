@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { ThemeMode, ThemeService } from '../../services/theme.service';
+import { AuthService } from '../../services/auth.service';
 
 interface User {
   id?: string;
@@ -50,7 +52,9 @@ export class ProfilPage implements OnInit {
 
   constructor(
     private router: Router,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    public themeService: ThemeService,
+    private authService: AuthService
   ) {}
 
   // =====================================================
@@ -66,6 +70,17 @@ export class ProfilPage implements OnInit {
   // =====================================================
 
   loadUserData() {
+    // Le profil est reserve aux utilisateurs connectes : si ce n'est
+    // pas le cas, on affiche la modal de connexion discrete et on
+    // renvoie l'utilisateur vers l'accueil (pas de redirection forcee
+    // vers /login, l'app reste en libre acces).
+    if (!this.authService.isLoggedIn) {
+      this.user = {};
+      this.authService.requireAuth();
+      this.navCtrl.navigateRoot('/tabs/tab1');
+      return;
+    }
+
     try {
       const userData = localStorage.getItem('user');
       if (userData) {
@@ -73,24 +88,12 @@ export class ProfilPage implements OnInit {
         console.log('✅ Utilisateur chargé:', this.user);
         console.log('📸 Photo:', this.user.photo);
       } else {
-        console.warn('⚠️ Aucun utilisateur trouvé dans le localStorage');
         this.user = {};
-        // Rediriger vers login si pas d'utilisateur
-        this.redirectToLogin();
       }
     } catch (error) {
       console.error('❌ Erreur lors du chargement de l\'utilisateur:', error);
       this.user = {};
-      this.redirectToLogin();
     }
-  }
-
-  // =====================================================
-  // REDIRIGER VERS LOGIN
-  // =====================================================
-
-  redirectToLogin() {
-    this.navCtrl.navigateRoot('/login');
   }
 
   // =====================================================
@@ -160,11 +163,19 @@ export class ProfilPage implements OnInit {
       
       this.isLoading = false;
       console.log('✅ Déconnecté avec succès');
-      
-      // Rediriger vers la page de login
-      this.redirectToLogin();
-      
+
+      // Retour à l'accueil (l'app reste en libre accès après déconnexion)
+      this.navCtrl.navigateRoot('/tabs/tab1');
+
     }, 1500);
+  }
+
+  // =====================================================
+  // APPARENCE (MODE CLAIR / SOMBRE)
+  // =====================================================
+
+  setThemeMode(mode: ThemeMode) {
+    this.themeService.setMode(mode);
   }
 
   // =====================================================

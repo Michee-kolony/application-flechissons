@@ -17,7 +17,6 @@
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-@import "@ionic/angular/css/palettes/dark.system.css";
 
 @tailwind base;
 @tailwind components;
@@ -25,6 +24,42 @@
 
 :root {
   --ion-font-family: 'Roboto', sans-serif;
+
+  // =====================================================
+  // KINOVA — Jetons de thème (mode clair)
+  // =====================================================
+  --app-bg: #f9fafb;           // gris très clair (gray-50), jamais de blanc pur en fond
+  --app-surface: #ffffff;      // cartes / surfaces surélevées
+  --app-surface-alt: #f3f4f6;  // surfaces secondaires / hover
+  --app-text: #111827;
+  --app-text-secondary: #6b7280;
+  --app-border: #e5e7eb;
+}
+
+// =====================================================
+// KINOVA — Mode sombre (bleu de nuit), activé via la classe .dark
+// sur <html> (voir ThemeService), pilotable depuis la page Profil
+// =====================================================
+html.dark {
+  color-scheme: dark;
+
+  --app-bg: #0f172a;
+  --app-surface: #1e293b;
+  --app-surface-alt: #273549;
+  --app-text: #ffffff;
+  --app-text-secondary: #cbd5e1;
+  --app-border: #334155;
+
+  // Variables Ionic — alignées sur le bleu de nuit ci-dessus
+  --ion-background-color: #0f172a;
+  --ion-background-color-rgb: 15, 23, 42;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+  --ion-toolbar-background: #1e293b;
+  --ion-item-background: #1e293b;
+  --ion-card-background: #1e293b;
+  --ion-border-color: #334155;
+  --ion-tab-bar-background: #1e293b;
 }
 
 html,
@@ -62,10 +97,16 @@ ion-content::part(scroll)::-webkit-scrollbar {
 
 /* Surface commune des pages internes de l'application. */
 ion-content {
-  --background: #fffaf5;
+  --background: var(--app-bg);
 }
 
 app-login ion-content,
 app-signup ion-content {
   --background: initial;
+}
+
+/* Couleur de fond/texte par défaut du body (évite tout flash blanc) */
+body {
+  background: var(--app-bg);
+  color: var(--app-text);
 }

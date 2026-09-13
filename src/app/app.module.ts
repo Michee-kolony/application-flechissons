@@ -11,10 +11,12 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 
 // ✅ IMPORTER L'INTERCEPTOR
 import { AuthInterceptor } from './core/interceptors/auth-interceptor';
+import { LoginRequiredModalComponent } from './components/login-required-modal/login-required-modal.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    LoginRequiredModalComponent
   ],
   imports: [
     BrowserModule,

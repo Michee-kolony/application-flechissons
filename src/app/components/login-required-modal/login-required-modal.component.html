@@ -1,0 +1,23 @@
+<div class="auth-modal-backdrop" *ngIf="isOpen" (click)="close()">
+  <section
+    class="auth-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="auth-modal-title"
+    (click)="$event.stopPropagation()"
+  >
+    <button type="button" class="auth-modal__close" (click)="close()" aria-label="Fermer">
+      <ion-icon name="close-outline"></ion-icon>
+    </button>
+
+    <div class="auth-modal__icon">
+      <ion-icon name="lock-closed-outline"></ion-icon>
+    </div>
+
+    <h2 id="auth-modal-title">Connexion requise</h2>
+    <p>Connectez-vous pour liker et commenter.</p>
+
+    <button type="button" class="auth-modal__primary" (click)="goToLogin()">Se connecter</button>
+    <button type="button" class="auth-modal__secondary" (click)="goToSignup()">Créer un compte</button>
+  </section>
+</div>

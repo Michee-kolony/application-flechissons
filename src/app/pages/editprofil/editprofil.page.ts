@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NavController, ToastController } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 interface ProfilePreferences {
   categories: string[];
@@ -74,7 +75,8 @@ export class EditprofilPage implements OnInit {
     private navCtrl: NavController,
     private toastController: ToastController,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) { }
 
   // =====================================================
@@ -90,10 +92,20 @@ export class EditprofilPage implements OnInit {
   // =====================================================
 
   private loadUser(): void {
+    // Page reservee aux utilisateurs connectes : si ce n'est pas le
+    // cas (ex. accès direct par URL), on affiche la modal de connexion
+    // et on renvoie vers l'accueil plutot que de forcer /login.
+    if (!this.authService.isLoggedIn) {
+      this.authService.requireAuth();
+      this.navCtrl.navigateRoot('/tabs/tab1');
+      return;
+    }
+
     const savedUser = localStorage.getItem('user');
 
     if (!savedUser) {
-      this.navCtrl.navigateRoot('/login');
+      this.authService.requireAuth();
+      this.navCtrl.navigateRoot('/tabs/tab1');
       return;
     }
 
@@ -118,7 +130,7 @@ export class EditprofilPage implements OnInit {
       }
       
     } catch {
-      this.navCtrl.navigateRoot('/login');
+      this.navCtrl.navigateRoot('/tabs/tab1');
     }
   }
 

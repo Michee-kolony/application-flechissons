@@ -8,7 +8,7 @@ $color-primary: #26352f;
 $color-primary-light: #34443c;
 $color-secondary: #f97316;
 $color-secondary-dark: #ea580c;
-$color-bg: #fffaf5;
+$color-bg: var(--app-bg);
 $color-border: #f0e3d7;
 $color-text: #26352f;
 $color-text-light: #718079;
@@ -19,12 +19,12 @@ $color-text-muted: #a6afa9;
 // =====================================================
 
 ion-content {
-  --background: #fffaf5;
+  --background: var(--app-bg);
 }
 
 ion-toolbar {
-  --background: #fffaf5;
-  --border-color: #fffaf5;
+  --background: var(--app-bg);
+  --border-color: var(--app-bg);
   --min-height: auto;
 }
 
@@ -37,7 +37,7 @@ h1 {
 // =====================================================
 
 .predication-header ion-toolbar {
-  --background: #fffaf5;
+  --background: var(--app-bg);
   --border-color: transparent;
   --min-height: auto;
   padding: 10px 20px 14px;
@@ -811,5 +811,104 @@ h1 {
 
   .action-icon {
     font-size: 16px;
+  }
+}
+
+// =====================================================
+// MODE SOMBRE (BLEU DE NUIT)
+// =====================================================
+
+:host-context(.dark) {
+  ion-content,
+  ion-toolbar,
+  .predication-header ion-toolbar {
+    --background: var(--app-bg);
+    --border-color: var(--app-bg);
+  }
+
+  .topbar h1 {
+    color: var(--app-text);
+  }
+
+  .header-icon {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+    color: var(--app-text);
+  }
+
+  .predication-search {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+    box-shadow: none;
+
+    input {
+      color: var(--app-text);
+    }
+  }
+
+  .category-pill {
+    border-color: var(--app-border);
+    color: var(--app-text-secondary);
+
+    &:hover {
+      border-color: var(--app-text);
+      color: var(--app-text);
+    }
+
+    &--active {
+      background: $color-secondary;
+      border-color: $color-secondary;
+      color: #fff;
+
+      &:hover {
+        background: $color-secondary-dark;
+      }
+    }
+  }
+
+  .skeleton-card,
+  .predication-card,
+  .empty-state {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--app-surface-alt) 25%, var(--app-border) 50%, var(--app-surface-alt) 75%);
+  }
+
+  .author-name,
+  .card-title,
+  .empty-title {
+    color: var(--app-text);
+  }
+
+  .author-meta,
+  .card-description,
+  .card-stats,
+  .action-btn,
+  .action-icon,
+  .empty-subtitle,
+  .error-message,
+  .results-footer p {
+    color: var(--app-text-secondary);
+  }
+
+  .card-media,
+  .media-image {
+    background-color: var(--app-surface-alt);
+  }
+
+  .card-stats,
+  .card-actions {
+    border-color: var(--app-border);
+  }
+
+  .action-btn:hover {
+    background: var(--app-surface-alt);
+  }
+
+  .empty-icon {
+    color: var(--app-text-secondary);
   }
 }

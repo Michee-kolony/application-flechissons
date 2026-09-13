@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { AuthService } from '../../services/auth.service';
 
 export interface CommentaireBackend {
   _id?: string;
@@ -84,7 +85,8 @@ export class ArticlePage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -247,8 +249,11 @@ export class ArticlePage implements OnInit, OnDestroy {
   // =====================================================
 
   ajouterCommentaire(): void {
-    if (!this.nouveauCommentaire.trim() || !this.article || !this.userId) {
-      console.warn('Commentaire vide ou utilisateur non connecte');
+    if (!this.nouveauCommentaire.trim() || !this.article) {
+      return;
+    }
+
+    if (!this.authService.requireAuth()) {
       return;
     }
 
@@ -305,8 +310,11 @@ export class ArticlePage implements OnInit, OnDestroy {
   // =====================================================
 
   toggleLike(): void {
-    if (!this.article || !this.userId) {
-      console.warn('Utilisateur non connecte');
+    if (!this.article) {
+      return;
+    }
+
+    if (!this.authService.requireAuth()) {
       return;
     }
 

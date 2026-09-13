@@ -9,7 +9,7 @@ $color-primary-light: #34443c;
 $color-secondary: #f97316;
 $color-secondary-dark: #ea580c;
 $color-secondary-light: #fed7aa;
-$color-bg: #fffaf5;
+$color-bg: var(--app-bg);
 $color-border: #f0e3d7;
 $color-text: #26352f;
 $color-text-light: #718079;
@@ -20,11 +20,11 @@ $color-text-muted: #a6afa9;
 // =====================================================
 
 ion-content {
-  --background: #fffaf5;
+  --background: var(--app-bg);
 }
 
 ion-toolbar {
-  --background: #fffaf5;
+  --background: var(--app-bg);
   --border-color: transparent;
   --min-height: auto;
 }
@@ -38,7 +38,7 @@ h1 {
 // =====================================================
 
 .accueil-header ion-toolbar {
-  --background: #fffaf5;
+  --background: var(--app-bg);
   --border-color: transparent;
   --min-height: auto;
   padding: 10px 20px 14px;
@@ -921,5 +921,92 @@ h1 {
     .play-icon-small {
       font-size: 18px;
     }
+  }
+}
+
+// =====================================================
+// MODE SOMBRE (BLEU DE NUIT)
+// =====================================================
+
+:host-context(.dark) {
+  ion-content,
+  ion-toolbar,
+  .accueil-header ion-toolbar {
+    --background: var(--app-bg);
+  }
+
+  .topbar h1,
+  .section-header h3 {
+    color: var(--app-text);
+  }
+
+  .header-icon {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+    color: var(--app-text);
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--app-surface) 25%, var(--app-surface-alt) 50%, var(--app-surface) 75%);
+  }
+
+  .skeleton-card,
+  .skeleton-annonce {
+    background: var(--app-surface);
+  }
+
+  .predication-card {
+    background: var(--app-surface-alt);
+  }
+
+  .annonce-card,
+  .empty-state {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+  }
+
+  .annonce-author-name,
+  .annonce-title {
+    color: var(--app-text);
+  }
+
+  .annonce-meta,
+  .annonce-description,
+  .annonce-stats,
+  .action-btn,
+  .action-icon,
+  .empty-text,
+  .end-message p {
+    color: var(--app-text-secondary);
+  }
+
+  .annonce-media,
+  .annonce-image {
+    background-color: var(--app-surface-alt);
+  }
+
+  .annonce-stats,
+  .annonce-actions {
+    border-color: var(--app-border);
+  }
+
+  .action-btn:hover {
+    background: var(--app-surface-alt);
+  }
+
+  .annonce-no-image {
+    background: rgba(249, 115, 22, 0.1);
+
+    span {
+      color: var(--app-text-secondary);
+    }
+  }
+
+  .end-icon {
+    background: rgba(249, 115, 22, 0.12);
+  }
+
+  .empty-icon {
+    color: var(--app-text-secondary);
   }
 }

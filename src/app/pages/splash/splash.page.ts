@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 
 @Component({
@@ -24,7 +23,6 @@ export class SplashPage implements OnInit, OnDestroy {
   private redirectTimeout: any;
 
   constructor(
-    private router: Router,
     private navCtrl: NavController
   ) {}
 
@@ -42,63 +40,18 @@ export class SplashPage implements OnInit, OnDestroy {
     }, 1000);
 
     /*
-     * Vérification de l'utilisateur connecté
-     * et redirection après quelques secondes
+     * Redirection vers l'accueil après quelques secondes.
+     * L'application est en libre accès : connecté ou non,
+     * l'utilisateur atterrit sur /tabs/tab1 (la connexion n'est
+     * demandée qu'au moment d'une action qui la requiert, via la
+     * modal globale gérée par AuthService).
      */
     this.redirectTimeout = setTimeout(() => {
 
-      this.checkUserAndRedirect();
+      this.navCtrl.navigateRoot('/tabs/tab1');
 
     }, 5000);
 
-  }
-
-  /**
-   * Vérifie si l'utilisateur est connecté
-   * et redirige vers la bonne page
-   */
-  checkUserAndRedirect(): void {
-    try {
-      // Récupérer les données du localStorage (mêmes clés que dans login.page.ts)
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
-      const userId = localStorage.getItem('userId');
-
-      // Vérifier si l'utilisateur est connecté
-      // (token présent ET utilisateur présent ET userId présent)
-      if (token && userData && userId) {
-        try {
-          const user = JSON.parse(userData);
-          // Vérifier que l'utilisateur a bien un ID qui correspond au userId stocké
-          if (user && user.id && user.id === userId) {
-            console.log('✅ Utilisateur connecté détecté :', user.email);
-            console.log('🆔 User ID :', userId);
-            console.log('🔐 Token présent :', token.substring(0, 20) + '...');
-            
-            // Rediriger vers l'accueil
-            this.navCtrl.navigateRoot('/tabs/tab1');
-            return;
-          } else {
-            console.warn('⚠️ Incohérence des données utilisateur');
-          }
-        } catch (parseError) {
-          console.error('❌ Erreur de parsing des données utilisateur:', parseError);
-          // Supprimer les données corrompues
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          localStorage.removeItem('userId');
-        }
-      }
-
-      // Si pas d'utilisateur connecté ou données invalides
-      console.log('👤 Aucun utilisateur connecté, redirection vers /login');
-      this.navCtrl.navigateRoot('/login');
-
-    } catch (error) {
-      // En cas d'erreur, rediriger vers login par sécurité
-      console.error('❌ Erreur lors de la vérification de l\'utilisateur:', error);
-      this.navCtrl.navigateRoot('/login');
-    }
   }
 
   ngOnDestroy() {

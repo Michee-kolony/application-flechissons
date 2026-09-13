@@ -63,6 +63,42 @@
     </section>
 
     <!-- ================================================= -->
+    <!-- APPARENCE - MODE CLAIR / SOMBRE -->
+    <!-- ================================================= -->
+    <section class="appearance-card">
+      <h3 class="appearance-title">
+        <ion-icon name="contrast-outline"></ion-icon>
+        Apparence
+      </h3>
+      <div class="appearance-options">
+        <button
+          type="button"
+          class="appearance-option"
+          [class.active]="themeService.currentMode === 'light'"
+          (click)="setThemeMode('light')">
+          <ion-icon name="sunny-outline"></ion-icon>
+          <span>Clair</span>
+        </button>
+        <button
+          type="button"
+          class="appearance-option"
+          [class.active]="themeService.currentMode === 'dark'"
+          (click)="setThemeMode('dark')">
+          <ion-icon name="moon-outline"></ion-icon>
+          <span>Sombre</span>
+        </button>
+        <button
+          type="button"
+          class="appearance-option"
+          [class.active]="themeService.currentMode === 'system'"
+          (click)="setThemeMode('system')">
+          <ion-icon name="phone-portrait-outline"></ion-icon>
+          <span>Système</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
     <!-- MENU CARTES OPTIONS -->
     <!-- ================================================= -->
     <div class="menu-options">
