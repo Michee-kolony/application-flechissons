@@ -1,163 +1,211 @@
 <!-- tab3.page.html -->
-<ion-header class="predication-header ion-no-border">
-  <ion-toolbar>
-    <div class="topbar container">
-      <div>
-        <span class="kicker">PAROLE DE VIE</span>
-        <h1>Prédications</h1>
-      </div>
-      <button class="header-icon" (click)="goToProfile()" aria-label="Profil">
-        <img *ngIf="userPhoto" [src]="userPhoto" alt="Photo de profil" class="profile-avatar" (error)="onPhotoError()">
-        <span *ngIf="!userPhoto" class="profile-initiale">{{ userInitiale }}</span>
-      </button>
+<ion-content [scrollY]="false" class="reels-content">
+
+  <!-- Barre du haut (superposée) -->
+  <div class="reels-topbar">
+    <div class="topbar-title" *ngIf="!showSearch">
+      <span class="kicker">PAROLE DE VIE</span>
+      <h1>Prédications</h1>
     </div>
 
-    <div class="predication-search">
-      <ion-icon name="search-outline" class="search-icon" aria-hidden="true"></ion-icon>
-      <input 
-        [(ngModel)]="searchText" 
-        (input)="rechercher()" 
-        type="search" 
-        placeholder="Rechercher une prédication..." 
+    <div class="reels-search" *ngIf="showSearch">
+      <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+      <input
+        [(ngModel)]="searchText"
+        (input)="rechercher()"
+        type="search"
+        placeholder="Rechercher une prédication..."
         aria-label="Rechercher une prédication">
-      <ion-icon *ngIf="searchText" name="close-circle" class="clear-icon" (click)="clearSearch()" aria-label="Effacer la recherche"></ion-icon>
     </div>
-  </ion-toolbar>
-</ion-header>
 
-<ion-content>
-  <main class="predication-page">
-    <!-- Pull-to-refresh -->
-    <ion-refresher 
-      slot="fixed" 
-      (ionRefresh)="handleRefresh($event)"
-      [pullFactor]="0.5"
-      [pullMin]="100"
-      [pullMax]="200">
-      <ion-refresher-content>
-      </ion-refresher-content>
-    </ion-refresher>
+    <button class="topbar-btn" (click)="toggleSearch()" [attr.aria-label]="showSearch ? 'Fermer la recherche' : 'Rechercher'">
+      <ion-icon [name]="showSearch ? 'close' : 'search'"></ion-icon>
+    </button>
+  </div>
 
-    <!-- Skeletons (chargement) -->
-    <div *ngIf="isLoading" class="skeleton-list">
-      <div *ngFor="let item of skeletonItems" class="skeleton-card">
-        <div class="skeleton-header">
-          <div class="skeleton skeleton-avatar"></div>
-          <div class="skeleton-info">
-            <div class="skeleton skeleton-name"></div>
-            <div class="skeleton skeleton-date"></div>
+  <!-- Chargement -->
+  <div *ngIf="isLoading" class="reels-state">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
+
+  <!-- Erreur -->
+  <div *ngIf="!isLoading && errorMessage" class="reels-state">
+    <ion-icon name="alert-circle-outline" class="state-icon"></ion-icon>
+    <p>{{ errorMessage }}</p>
+    <button class="retry-btn" (click)="chargerPredications()">Réessayer</button>
+  </div>
+
+  <!-- Aucun résultat -->
+  <div *ngIf="!isLoading && !errorMessage && predicationsFiltrees.length === 0" class="reels-state">
+    <ion-icon name="videocam-outline" class="state-icon"></ion-icon>
+    <p>Aucune prédication trouvée</p>
+  </div>
+
+  <!-- Flux vertical -->
+  <div #feed class="reels-feed" [hidden]="isLoading || !!errorMessage">
+    <section
+      #slide
+      *ngFor="let predication of predicationsFiltrees; let i = index; trackBy: trackById"
+      class="reel"
+      [attr.data-index]="i">
+
+      <div class="reel-media" (click)="onVideoTap(predication, i)">
+        <img
+          *ngIf="getPoster(predication)"
+          class="reel-video"
+          [src]="getPoster(predication)"
+          alt=""
+          loading="lazy"
+          decoding="async">
+
+        <video
+          *ngIf="isVideoMounted(i)"
+          class="reel-video"
+          [src]="predication.youtube"
+          [poster]="getPoster(predication)"
+          [attr.preload]="i === activeIndex ? 'auto' : 'metadata'"
+          playsinline
+          webkit-playsinline
+          loop>
+        </video>
+      </div>
+
+      <div class="reel-shade" aria-hidden="true"></div>
+
+      <!-- Icône pause -->
+      <div *ngIf="isPaused && i === activeIndex" class="reel-paused" aria-hidden="true">
+        <ion-icon name="play"></ion-icon>
+      </div>
+
+      <!-- Cœur du double tap -->
+      <div *ngIf="likeBurstId === predication._id" class="reel-burst" aria-hidden="true">
+        <ion-icon name="heart"></ion-icon>
+      </div>
+
+      <!-- Son -->
+      <button class="reel-mute" (click)="toggleMute($event)" [attr.aria-label]="isMuted ? 'Activer le son' : 'Couper le son'">
+        <ion-icon [name]="isMuted ? 'volume-mute' : 'volume-high'"></ion-icon>
+      </button>
+
+      <!-- Actions à droite -->
+      <div class="reel-actions">
+        <img src="assets/logo.png" class="reel-avatar" alt="Fléchissons">
+
+        <button class="reel-action" [class.liked]="isLiked(predication)" (click)="toggleLike(predication, $event)" aria-label="J'aime">
+          <ion-icon [name]="isLiked(predication) ? 'heart' : 'heart-outline'"></ion-icon>
+          <span>{{ formatCount(predication.likes?.length) }}</span>
+        </button>
+
+        <button class="reel-action" (click)="openComments(predication, $event)" aria-label="Commentaires">
+          <ion-icon name="chatbubble-ellipses"></ion-icon>
+          <span>{{ formatCount(predication.commentaires?.length) }}</span>
+        </button>
+
+        <button class="reel-action reel-live" (click)="goToLive($event)" aria-label="Nous suivre en direct">
+          <span class="live-icon">
+            <ion-icon name="radio"></ion-icon>
+          </span>
+          <span>Direct</span>
+        </button>
+
+        <button class="reel-action" (click)="partagerPredication(predication, $event)" aria-label="Partager">
+          <ion-icon name="arrow-redo"></ion-icon>
+          <span>Partager</span>
+        </button>
+      </div>
+
+      <!-- Infos en bas -->
+      <div class="reel-info">
+        <div class="reel-author">
+          <strong>Fléchissons</strong>
+          <span>· {{ getTimeAgo(predication.createdAt) }}</span>
+        </div>
+        <h2 class="reel-title" [class.expanded]="expandedDescription === predication._id">{{ predication.titre }}</h2>
+        <p
+          *ngIf="predication.description"
+          class="reel-description"
+          [class.expanded]="expandedDescription === predication._id"
+          (click)="toggleDescription(predication, $event)">
+          {{ predication.description }}
+        </p>
+        <button
+          *ngIf="hasLongText(predication)"
+          type="button"
+          class="reel-more"
+          (click)="toggleDescription(predication, $event)">
+          {{ expandedDescription === predication._id ? 'Voir moins' : 'Voir plus' }}
+        </button>
+        <span *ngIf="predication.theme" class="reel-theme">#{{ predication.theme }}</span>
+      </div>
+
+      <!-- Progression -->
+      <div class="reel-progress" (click)="seek(i, $event)">
+        <div class="reel-progress-bar"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Panneau des commentaires -->
+  <ion-modal
+    [isOpen]="commentsOpen"
+    [initialBreakpoint]="0.7"
+    [breakpoints]="[0, 0.7, 1]"
+    [expandToScroll]="false"
+    handleBehavior="cycle"
+    class="comments-sheet"
+    (didDismiss)="closeComments()">
+    <ng-template>
+      <div class="comments-header">
+        <h3>{{ commentsArticle?.commentaires?.length ?? 0 }} commentaire{{ (commentsArticle?.commentaires?.length ?? 0) > 1 ? 's' : '' }}</h3>
+        <button class="comments-close" (click)="closeComments()" aria-label="Fermer">
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </div>
+
+      <ion-content class="comments-content">
+        <div *ngIf="!commentsArticle?.commentaires?.length" class="comments-empty">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+          <p>Aucun commentaire pour le moment</p>
+          <span>Soyez le premier à commenter !</span>
+        </div>
+
+        <div *ngFor="let commentaire of commentsArticle?.commentaires" class="comment">
+          <div class="comment-avatar">
+            <img
+              *ngIf="commentaire.photo && commentaire.photo !== 'assets/avatar-default.png'"
+              [src]="commentaire.photo"
+              alt=""
+              (error)="commentaire.photo = null">
+            <span *ngIf="!commentaire.photo || commentaire.photo === 'assets/avatar-default.png'">
+              {{ getInitiale(commentaire.nom, commentaire.prenom) }}
+            </span>
           </div>
-        </div>
-        <div class="skeleton-body">
-          <div class="skeleton skeleton-title"></div>
-          <div class="skeleton skeleton-desc"></div>
-          <div class="skeleton skeleton-desc"></div>
-        </div>
-        <div class="skeleton skeleton-image"></div>
-        <div class="skeleton-footer">
-          <div class="skeleton skeleton-stats"></div>
-          <div class="skeleton skeleton-actions"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Erreur -->
-    <div *ngIf="!isLoading && errorMessage" class="error-container">
-      <div class="error-content">
-        <ion-icon name="alert-circle-outline" class="error-icon"></ion-icon>
-        <p class="error-message">{{ errorMessage }}</p>
-        <button class="retry-btn" (click)="chargerPredications()">Réessayer</button>
-      </div>
-    </div>
-
-    <!-- Liste des prédications -->
-    <div *ngIf="!isLoading && !errorMessage" class="predication-list">
-
-      <!-- Aucun résultat -->
-      <div *ngIf="predicationsFiltrees.length === 0" class="empty-state">
-        <ion-icon name="videocam-outline" class="empty-icon"></ion-icon>
-        <p class="empty-title">Aucune prédication trouvée</p>
-        <p class="empty-subtitle">Essayez une autre recherche</p>
-      </div>
-
-      <!-- Article -->
-      <article
-        *ngFor="let predication of predicationsFiltrees"
-        [routerLink]="['/article', predication._id]"
-        class="predication-card">
-
-        <!-- En-tête avec auteur -->
-        <div class="card-header">
-          <img src="assets/logo.png" class="author-avatar" alt="Fléchissons">
-          <div class="author-info">
-            <h3 class="author-name">Fléchissons</h3>
-            <div class="author-meta">
-              <span>{{ getTimeAgo(predication.createdAt) }}</span>
-              <span>•</span>
-              <ion-icon name="globe-outline"></ion-icon>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <strong>{{ getNomComplet(commentaire.prenom, commentaire.nom) }}</strong>
+              <span>{{ getTimeAgo(commentaire.createdAt) }}</span>
             </div>
+            <p>{{ commentaire.contenu }}</p>
           </div>
         </div>
+      </ion-content>
 
-        <!-- Contenu -->
-        <div class="card-body">
-          <h4 class="card-title">{{ predication.titre }}</h4>
-          <p class="card-description">{{ predication.description }}</p>
-        </div>
-
-        <!-- Image avec bouton play -->
-        <div class="card-media">
-          <img
-            [src]="getImageUrl(predication)"
-            [alt]="predication.titre"
-            class="media-image"
-            (error)="imageErreur($event)">
-          <div class="media-overlay">
-            <button class="play-btn" aria-label="Lire la prédication">
-              <ion-icon name="play" class="play-icon"></ion-icon>
-            </button>
-          </div>
-        </div>
-
-        <!-- Statistiques -->
-        <div class="card-stats">
-          <span>
-            <ion-icon name="heart-outline" class="stat-icon"></ion-icon>
-            {{ predication.likes?.length ?? 0 }} J'aime
-          </span>
-          <span>
-            <ion-icon name="chatbubble-outline" class="stat-icon"></ion-icon>
-            {{ predication.commentaires?.length ?? 0 }} commentaires
-          </span>
-        </div>
-
-        <!-- Actions -->
-        <div class="card-actions">
-          <button class="action-btn" [class.liked]="isLiked(predication)">
-            <ion-icon 
-              [name]="isLiked(predication) ? 'heart' : 'heart-outline'"
-              class="action-icon"
-              [class.liked-icon]="isLiked(predication)">
-            </ion-icon>
-            <span [class.liked-text]="isLiked(predication)">J'aime</span>
-          </button>
-          
-          <button class="action-btn">
-            <ion-icon name="chatbubble-outline" class="action-icon"></ion-icon>
-            Commenter
-          </button>
-          
-          <button class="action-btn" (click)="partagerPredication(predication, $event)">
-            <ion-icon name="share-social-outline" class="action-icon"></ion-icon>
-            Partager
+      <ion-footer class="comments-footer">
+        <div class="comment-input">
+          <input
+            [(ngModel)]="nouveauCommentaire"
+            placeholder="Ajouter un commentaire..."
+            aria-label="Ajouter un commentaire"
+            (keyup.enter)="ajouterCommentaire()">
+          <button
+            (click)="ajouterCommentaire()"
+            [disabled]="!nouveauCommentaire.trim() || isSendingComment"
+            aria-label="Envoyer">
+            <ion-spinner *ngIf="isSendingComment" name="crescent"></ion-spinner>
+            <ion-icon *ngIf="!isSendingComment" name="send"></ion-icon>
           </button>
         </div>
-      </article>
-
-      <!-- Fin des résultats -->
-      <div *ngIf="predicationsFiltrees.length > 0" class="results-footer">
-        <p>{{ predicationsFiltrees.length }} prédication{{ predicationsFiltrees.length > 1 ? 's' : '' }} trouvée{{ predicationsFiltrees.length > 1 ? 's' : '' }}</p>
-      </div>
-    </div>
-  </main>
+      </ion-footer>
+    </ng-template>
+  </ion-modal>
 </ion-content>

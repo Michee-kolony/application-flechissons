@@ -58,12 +58,58 @@ ion-content {
 
 .payment-option {
   min-height: 7.75rem;
-  box-shadow: 0 3px 12px rgba(31, 41, 55, 0.05);
 }
 
+// Cartes sans bordure : le fond suit le thème clair / sombre via --app-surface
+.amount-option,
+.payment-option,
 .payment-details,
+.amount-input {
+  background: var(--app-surface);
+  color: var(--app-text);
+  border: 0;
+  box-shadow: 0 3px 12px rgba(31, 41, 55, 0.06);
+}
+
+.amount-option.is-selected {
+  background: #f97316;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.3);
+}
+
+.payment-option.is-selected {
+  background: rgba(249, 115, 22, 0.12);
+  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.18);
+}
+
+.amount-input:focus-within {
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.18);
+}
+
 .donation-summary {
+  background: rgba(249, 115, 22, 0.1);
   box-shadow: 0 8px 24px rgba(31, 41, 55, 0.05);
+}
+
+:host-context(.dark) {
+  .amount-option,
+  .payment-option,
+  .payment-details,
+  .amount-input {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .amount-option.is-selected {
+    background: #f97316;
+  }
+
+  .payment-option.is-selected {
+    background: rgba(249, 115, 22, 0.18);
+  }
+
+  .donation-summary {
+    background: rgba(249, 115, 22, 0.14);
+  }
 }
 
 .checkout-footer {
@@ -79,8 +125,8 @@ ion-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 3.5rem;
-  box-shadow: 0 10px 20px rgba(234, 88, 12, 0.26);
+  min-height: 2.75rem;
+  box-shadow: 0 6px 14px rgba(234, 88, 12, 0.24);
 }
 
 .secure-note {
@@ -88,7 +134,7 @@ ion-content {
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
-  margin: 0.55rem 0 0;
+  margin: 0.4rem 0 0;
   color: var(--app-text-secondary, #9ca3af);
   font-size: 0.72rem;
 }

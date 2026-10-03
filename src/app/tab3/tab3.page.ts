@@ -1,7 +1,31 @@
 // tab3.page.ts
-import { Component, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ChangeDetectorRef,
+  ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { AuthService } from '../services/auth.service';
+
+export interface Commentaire {
+  _id?: string;
+  utilisateurId: string;
+  nom: string;
+  prenom: string;
+  photo: string | null;
+  contenu: string;
+  createdAt: string;
+  updatedAt?: string;
+}
 
 export interface Article {
   _id: string;
@@ -13,7 +37,7 @@ export interface Article {
   images: string[];
   lien: string | null;
   likes?: string[];
-  commentaires?: any[];
+  commentaires?: Commentaire[];
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -36,33 +60,94 @@ interface UserData {
   styleUrls: ['tab3.page.scss'],
   standalone: false,
 })
-export class Tab3Page implements OnInit {
+export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
 
   private urlArticle = 'https://backend-flechissons.onrender.com/article';
 
+  @ViewChild('feed') feedRef?: ElementRef<HTMLElement>;
+  @ViewChildren('slide') slideRefs!: QueryList<ElementRef<HTMLElement>>;
+
+  private readonly cacheKey = 'predications_cache';
+
   searchText = '';
+  showSearch = false;
   isLoading = true;
   errorMessage = '';
-  isRefreshing = false;
 
   predications: Article[] = [];
   predicationsFiltrees: Article[] = [];
 
-  skeletonItems = [1, 2, 3, 4, 5];
-
   userData: UserData | null = null;
-  userPhoto: string = '';
-  userInitiale: string = '';
   userId: string = '';
+
+  // Lecture
+  activeIndex = 0;
+  isMuted = false;
+  isPaused = false;
+  feedReady = false;
+  expandedDescription: string | null = null;
+  likeBurstId: string | null = null;
+
+  // Commentaires
+  commentsOpen = false;
+  commentsArticle: Article | null = null;
+  nouveauCommentaire = '';
+  isSendingComment = false;
+
+  private observer?: IntersectionObserver;
+  private pageVisible = false;
+  private lastTap = 0;
+  private tapTimer?: ReturnType<typeof setTimeout>;
+  private slidesSub?: { unsubscribe(): void };
+  private progressFrame?: number;
+  private playTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
+    private zone: NgZone,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.loadUserData();
+    this.chargerDepuisCache();
     this.chargerPredications();
+  }
+
+  ngAfterViewInit() {
+    // Les slides sont recréées à chaque chargement / recherche
+    this.slidesSub = this.slideRefs.changes.subscribe(() => setTimeout(() => this.observeSlides()));
+  }
+
+  ngOnDestroy() {
+    this.observer?.disconnect();
+    this.slidesSub?.unsubscribe();
+    this.stopProgressLoop();
+    clearTimeout(this.playTimer);
+    this.pauseAll();
+  }
+
+  ionViewDidEnter() {
+    this.pageVisible = true;
+    this.loadUserData();
+
+    // Les lecteurs vidéo ne sont créés qu'une fois la navigation terminée,
+    // et on laisse l'écran s'afficher avant de lancer le décodage
+    clearTimeout(this.playTimer);
+    this.playTimer = setTimeout(() => {
+      this.feedReady = true;
+      this.cdr.detectChanges();
+      this.playActive();
+    }, 150);
+  }
+
+  ionViewWillLeave() {
+    this.pageVisible = false;
+    clearTimeout(this.playTimer);
+    this.stopProgressLoop();
+    this.pauseAll();
   }
 
   // =====================================================
@@ -72,71 +157,371 @@ export class Tab3Page implements OnInit {
   private loadUserData(): void {
     try {
       const userDataStr = localStorage.getItem('user');
-      
-      if (userDataStr) {
-        this.userData = JSON.parse(userDataStr);
-        this.userPhoto = this.userData?.photo || '';
-        this.userId = this.userData?.id || '';
-        this.calculerInitiale();
-      }
+      this.userData = userDataStr ? JSON.parse(userDataStr) : null;
+      this.userId = this.userData?.id || '';
     } catch (error) {
       console.error('Erreur lors du chargement des données utilisateur:', error);
     }
   }
 
-  /**
-   * Calcule l'initiale à afficher en fonction du nom/prénom
-   */
-  private calculerInitiale(): void {
-    if (!this.userData) {
-      this.userInitiale = '?';
-      return;
-    }
-
-    const { prenom, nom } = this.userData;
-
-    if (prenom && prenom.length > 0) {
-      this.userInitiale = prenom.charAt(0);
-      return;
-    }
-
-    if (nom && nom.length > 0) {
-      this.userInitiale = nom.charAt(0);
-      return;
-    }
-
-    this.userInitiale = '?';
-  }
-
-  /**
-   * Gestionnaire d'erreur de chargement de la photo
-   */
-  onPhotoError(): void {
-    this.userPhoto = '';
-    this.calculerInitiale();
-  }
-
-  // =====================================================
-  // NAVIGATION VERS LE PROFIL
-  // =====================================================
-
   goToProfile(): void {
     this.router.navigate(['/tabs/profil']);
   }
 
+  goToLive(event: Event): void {
+    event.stopPropagation();
+    this.router.navigate(['/tabs/live']);
+  }
+
   // =====================================================
-  // GESTION DES LIKES (lecture seule)
+  // CHARGER LES PRÉDICATIONS
   // =====================================================
 
   /**
-   * Vérifie si l'utilisateur a liké une prédication
+   * Affiche immédiatement la dernière liste connue, le réseau la rafraîchit ensuite
    */
-  isLiked(article: Article): boolean {
-    if (!this.userId || !article || !article.likes) {
-      return false;
+  private chargerDepuisCache(): void {
+    try {
+      const cache = localStorage.getItem(this.cacheKey);
+      if (cache) {
+        this.appliquerPredications(JSON.parse(cache));
+        this.isLoading = false;
+      }
+    } catch {
+      localStorage.removeItem(this.cacheKey);
     }
-    
-    return article.likes.some(id => id === this.userId);
+  }
+
+  chargerPredications(): void {
+    const hasCache = this.predications.length > 0;
+    this.isLoading = !hasCache;
+    this.errorMessage = '';
+
+    this.http.get<any>(this.urlArticle).subscribe({
+      next: (response) => {
+        if (response && response.success && Array.isArray(response.articles)) {
+          const liste: Article[] = response.articles
+            .filter((article: Article) => article.type?.toLowerCase() === 'predications' && !!article.youtube)
+            .sort((a: Article, b: Article) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+          this.appliquerPredications(liste);
+          try {
+            localStorage.setItem(this.cacheKey, JSON.stringify(liste));
+          } catch {
+            // Stockage plein : le cache est facultatif
+          }
+        } else if (!hasCache) {
+          this.errorMessage = 'Aucune prédication trouvée';
+          this.predications = [];
+          this.predicationsFiltrees = [];
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('❌ Erreur lors du chargement des prédications:', error);
+        this.isLoading = false;
+        if (!hasCache) {
+          this.errorMessage = 'Erreur lors du chargement des prédications';
+          this.predications = [];
+          this.predicationsFiltrees = [];
+        }
+      }
+    });
+  }
+
+  /**
+   * Si la liste n'a pas changé (mêmes vidéos, même ordre), on met seulement à jour
+   * les likes / commentaires pour ne pas reconstruire le flux ni couper la lecture
+   */
+  private appliquerPredications(liste: Article[]): void {
+    const memesVideos = liste.length === this.predications.length &&
+      liste.every((article, i) => article._id === this.predications[i]._id);
+
+    if (memesVideos) {
+      liste.forEach((article, i) => Object.assign(this.predications[i], article));
+      return;
+    }
+
+    this.predications = liste;
+    this.rechercher();
+  }
+
+  // =====================================================
+  // LECTURE AUTOMATIQUE (IntersectionObserver)
+  // =====================================================
+
+  private observeSlides(): void {
+    this.observer?.disconnect();
+    const root = this.feedRef?.nativeElement;
+    if (!root) {
+      return;
+    }
+
+    this.observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+          const index = Number((entry.target as HTMLElement).dataset['index']);
+          this.zone.run(() => this.setActive(index));
+        }
+      });
+    }, { root, threshold: [0.6] });
+
+    this.slideRefs.forEach(slide => this.observer!.observe(slide.nativeElement));
+
+    const index = Math.min(this.activeIndex, Math.max(this.predicationsFiltrees.length - 1, 0));
+    root.scrollTop = index * root.clientHeight;
+    this.setActive(index, true);
+  }
+
+  private setActive(index: number, force = false): void {
+    if (index === this.activeIndex && !force) {
+      return;
+    }
+    const previous = this.getVideo(this.activeIndex);
+    if (previous) {
+      previous.pause();
+      previous.currentTime = 0;
+    }
+    this.activeIndex = index;
+    this.isPaused = false;
+    this.expandedDescription = null;
+    // Crée le <video> de la nouvelle slide avant de le lancer
+    this.cdr.detectChanges();
+    this.playActive();
+  }
+
+  /**
+   * Seules la vidéo active et ses voisines ont un vrai lecteur,
+   * les autres n'affichent que leur image
+   */
+  isVideoMounted(index: number): boolean {
+    return this.feedReady && Math.abs(index - this.activeIndex) <= 1;
+  }
+
+  private getVideo(index: number): HTMLVideoElement | null {
+    return this.slideRefs?.get(index)?.nativeElement.querySelector('video') ?? null;
+  }
+
+  private playActive(): void {
+    const active = this.getVideo(this.activeIndex);
+    if (!active || !this.pageVisible || this.isPaused) {
+      return;
+    }
+
+    active.muted = this.isMuted;
+    active.play().catch(() => {
+      // Le navigateur bloque l'autoplay avec son : on relance en muet
+      this.isMuted = true;
+      active.muted = true;
+      active.play().catch(() => (this.isPaused = true));
+    });
+    this.startProgressLoop();
+  }
+
+  private pauseAll(): void {
+    this.feedRef?.nativeElement.querySelectorAll('video').forEach(video => video.pause());
+  }
+
+  // La barre de progression est mise à jour hors d'Angular pour ne pas
+  // relancer la détection de changements de toute l'app à chaque image
+  private startProgressLoop(): void {
+    this.stopProgressLoop();
+    this.zone.runOutsideAngular(() => {
+      const tick = () => {
+        const slide = this.slideRefs?.get(this.activeIndex)?.nativeElement;
+        const video = slide?.querySelector('video');
+        const bar = slide?.querySelector<HTMLElement>('.reel-progress-bar');
+        if (video && bar && video.duration) {
+          bar.style.width = `${(video.currentTime / video.duration) * 100}%`;
+        }
+        this.progressFrame = requestAnimationFrame(tick);
+      };
+      this.progressFrame = requestAnimationFrame(tick);
+    });
+  }
+
+  private stopProgressLoop(): void {
+    if (this.progressFrame) {
+      cancelAnimationFrame(this.progressFrame);
+      this.progressFrame = undefined;
+    }
+  }
+
+  seek(index: number, event: MouseEvent): void {
+    event.stopPropagation();
+    const video = this.getVideo(index);
+    const bar = event.currentTarget as HTMLElement;
+    if (!video || !video.duration) {
+      return;
+    }
+    const ratio = (event.clientX - bar.getBoundingClientRect().left) / bar.offsetWidth;
+    video.currentTime = Math.min(Math.max(ratio, 0), 1) * video.duration;
+  }
+
+  // Simple tap = pause/lecture, double tap = j'aime
+  onVideoTap(article: Article, index: number): void {
+    const now = Date.now();
+    if (now - this.lastTap < 280) {
+      clearTimeout(this.tapTimer);
+      this.lastTap = 0;
+      if (!this.isLiked(article)) {
+        this.toggleLike(article);
+      } else {
+        this.showLikeBurst(article);
+      }
+      return;
+    }
+    this.lastTap = now;
+    this.tapTimer = setTimeout(() => this.togglePlay(index), 280);
+  }
+
+  private togglePlay(index: number): void {
+    const video = this.getVideo(index);
+    if (!video) {
+      return;
+    }
+    if (video.paused) {
+      this.isPaused = false;
+      video.play().catch(() => {});
+    } else {
+      this.isPaused = true;
+      video.pause();
+    }
+  }
+
+  toggleMute(event: Event): void {
+    event.stopPropagation();
+    this.isMuted = !this.isMuted;
+    this.feedRef?.nativeElement.querySelectorAll('video').forEach(video => (video.muted = this.isMuted));
+  }
+
+  /** Affiche « Voir plus » quand le titre ou la description dépasse les 2 lignes visibles */
+  hasLongText(article: Article): boolean {
+    return (article.description?.length ?? 0) > 90 || (article.titre?.length ?? 0) > 60;
+  }
+
+  toggleDescription(article: Article, event: Event): void {
+    event.stopPropagation();
+    this.expandedDescription = this.expandedDescription === article._id ? null : article._id;
+  }
+
+  // =====================================================
+  // LIKES
+  // =====================================================
+
+  isLiked(article: Article): boolean {
+    return !!this.userId && !!article.likes?.includes(this.userId);
+  }
+
+  toggleLike(article: Article, event?: Event): void {
+    event?.stopPropagation();
+
+    if (!this.authService.requireAuth()) {
+      return;
+    }
+
+    // Mise à jour optimiste
+    const wasLiked = this.isLiked(article);
+    const previousLikes = [...(article.likes ?? [])];
+    article.likes = wasLiked
+      ? previousLikes.filter(id => id !== this.userId)
+      : [...previousLikes, this.userId];
+
+    if (!wasLiked) {
+      this.showLikeBurst(article);
+    }
+
+    this.http.put<any>(`${this.urlArticle}/${article._id}/like`, { utilisateurId: this.userId }).subscribe({
+      next: (response) => {
+        if (!response?.success) {
+          article.likes = previousLikes;
+        }
+      },
+      error: (error) => {
+        console.error('Erreur like:', error);
+        article.likes = previousLikes;
+      }
+    });
+  }
+
+  private showLikeBurst(article: Article): void {
+    this.likeBurstId = null;
+    setTimeout(() => (this.likeBurstId = article._id), 0);
+    setTimeout(() => {
+      if (this.likeBurstId === article._id) {
+        this.likeBurstId = null;
+      }
+    }, 800);
+    void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+  }
+
+  // =====================================================
+  // COMMENTAIRES
+  // =====================================================
+
+  openComments(article: Article, event: Event): void {
+    event.stopPropagation();
+    this.commentsArticle = article;
+    this.commentsOpen = true;
+  }
+
+  closeComments(): void {
+    this.commentsOpen = false;
+    this.nouveauCommentaire = '';
+  }
+
+  ajouterCommentaire(): void {
+    const article = this.commentsArticle;
+    const contenu = this.nouveauCommentaire.trim();
+    if (!article || !contenu || this.isSendingComment) {
+      return;
+    }
+
+    if (!this.authService.requireAuth()) {
+      return;
+    }
+
+    const photo = this.userData?.photo && this.userData.photo !== 'assets/avatar-default.png'
+      ? this.userData.photo
+      : null;
+
+    const body = {
+      utilisateurId: this.userId,
+      contenu,
+      nom: this.userData?.nom || 'Utilisateur',
+      prenom: this.userData?.prenom || '',
+      photo
+    };
+
+    this.isSendingComment = true;
+    this.http.post<any>(`${this.urlArticle}/${article._id}/commentaire`, body).subscribe({
+      next: (response) => {
+        if (response?.success) {
+          const comment: Commentaire = response.commentaire ?? {
+            ...body,
+            createdAt: new Date().toISOString()
+          };
+          article.commentaires = [...(article.commentaires ?? []), comment];
+          this.nouveauCommentaire = '';
+        }
+        this.isSendingComment = false;
+      },
+      error: (error) => {
+        console.error('Erreur ajout commentaire:', error);
+        this.isSendingComment = false;
+        alert('Erreur lors de l\'ajout du commentaire');
+      }
+    });
+  }
+
+  getInitiale(nom: string, prenom: string): string {
+    const source = prenom?.trim() || nom?.trim() || '?';
+    return source.charAt(0).toUpperCase();
+  }
+
+  getNomComplet(prenom: string, nom: string): string {
+    return [prenom?.trim(), nom?.trim()].filter(Boolean).join(' ') || 'Utilisateur';
   }
 
   // =====================================================
@@ -144,19 +529,14 @@ export class Tab3Page implements OnInit {
   // =====================================================
 
   async partagerPredication(article: Article, event: Event): Promise<void> {
-    // Empêcher la navigation vers l'article
     event.stopPropagation();
-    
+
     const url = window.location.origin + '/article/' + article._id;
     const text = `${article.titre}\n\n${article.description || ''}`;
-    
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: article.titre,
-          text: text,
-          url: url
-        });
+        await navigator.share({ title: article.titre, text, url });
       } catch (error) {
         console.log('Partage annulé');
       }
@@ -171,101 +551,33 @@ export class Tab3Page implements OnInit {
   }
 
   // =====================================================
-  // PULL-TO-REFRESH NATIF
-  // =====================================================
-
-  handleRefresh(event: any): void {
-    console.log('🔄 Rafraîchissement par tirage déclenché');
-
-    this.isRefreshing = true;
-    
-    this.loadUserData();
-
-    this.http.get<any>(this.urlArticle).subscribe({
-      next: (response) => {
-        if (response && response.success && Array.isArray(response.articles)) {
-          this.predications = response.articles
-            .filter((article: Article) => article.type?.toLowerCase() === 'predications')
-            .sort((a: Article, b: Article) => 
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-
-          this.predicationsFiltrees = [...this.predications];
-          console.log('✅ Prédications rafraîchies:', this.predications.length);
-        } else {
-          console.warn('⚠️ Réponse invalide lors du rafraîchissement');
-        }
-
-        this.isRefreshing = false;
-        event.target.complete();
-      },
-      error: (error) => {
-        console.error('❌ Erreur lors du rafraîchissement:', error);
-        this.isRefreshing = false;
-        event.target.complete();
-      }
-    });
-  }
-
-  // =====================================================
-  // CHARGER LES PRÉDICATIONS
-  // =====================================================
-
-  chargerPredications(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    this.http.get<any>(this.urlArticle).subscribe({
-      next: (response) => {
-        console.log('📦 Prédications récupérées:', response);
-
-        if (response && response.success && Array.isArray(response.articles)) {
-          this.predications = response.articles
-            .filter((article: Article) => article.type?.toLowerCase() === 'predications')
-            .sort((a: Article, b: Article) => 
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-
-          this.predicationsFiltrees = [...this.predications];
-          console.log('✅ Prédications chargées:', this.predications.length);
-        } else {
-          this.errorMessage = 'Aucune prédication trouvée';
-          this.predications = [];
-          this.predicationsFiltrees = [];
-        }
-
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('❌ Erreur lors du chargement des prédications:', error);
-        this.errorMessage = 'Erreur lors du chargement des prédications';
-        this.isLoading = false;
-        this.predications = [];
-        this.predicationsFiltrees = [];
-      }
-    });
-  }
-
-  // =====================================================
   // RECHERCHE
   // =====================================================
+
+  toggleSearch(): void {
+    this.showSearch = !this.showSearch;
+    if (!this.showSearch) {
+      this.clearSearch();
+    }
+  }
 
   rechercher(): void {
     const search = this.searchText.toLowerCase().trim();
 
-    if (!search) {
-      this.predicationsFiltrees = [...this.predications];
-      return;
-    }
-
-    this.predicationsFiltrees = this.predications.filter(item =>
-      item.titre.toLowerCase().includes(search) ||
-      item.description.toLowerCase().includes(search) ||
-      (item.theme && item.theme.toLowerCase().includes(search))
-    );
+    this.predicationsFiltrees = !search
+      ? [...this.predications]
+      : this.predications.filter(item =>
+          item.titre.toLowerCase().includes(search) ||
+          item.description?.toLowerCase().includes(search) ||
+          (item.theme && item.theme.toLowerCase().includes(search))
+        );
+    this.activeIndex = 0;
   }
 
   clearSearch(): void {
+    if (!this.searchText) {
+      return;
+    }
     this.searchText = '';
     this.predicationsFiltrees = [...this.predications];
   }
@@ -273,6 +585,13 @@ export class Tab3Page implements OnInit {
   // =====================================================
   // FORMATAGE
   // =====================================================
+
+  formatCount(value: number | undefined): string {
+    const n = value ?? 0;
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace('.0', '') + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1).replace('.0', '') + 'k';
+    return String(n);
+  }
 
   getTimeAgo(dateString: string): string {
     const now = new Date();
@@ -295,23 +614,11 @@ export class Tab3Page implements OnInit {
     });
   }
 
-  getImageUrl(article: Article): string {
-    if (article.images && article.images.length > 0) {
-      return article.images[0];
-    }
-    return 'assets/images.jpg';
+  getPoster(article: Article): string {
+    return article.images?.[0] || '';
   }
 
-  imageErreur(event: Event): void {
-    const image = event.target as HTMLImageElement;
-    image.src = 'assets/images.jpg';
-  }
-
-  // =====================================================
-  // NAVIGATION
-  // =====================================================
-
-  openArticle(id: string): void {
-    this.router.navigate(['/article', id]);
+  trackById(_: number, article: Article): string {
+    return article._id;
   }
 }

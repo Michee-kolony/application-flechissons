@@ -33,8 +33,8 @@
         <button
           *ngFor="let montant of montants"
           (click)="choisirMontant(montant)"
-          class="h-14 rounded-xl border font-bold transition-all duration-300 transform hover:scale-105"
-          [ngClass]="montantSelectionne===montant ? 'bg-orange-500 text-white border-orange-500 shadow-lg' : 'bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border-gray-200 dark:border-slate-700 hover:border-orange-300'">
+          class="amount-option h-14 rounded-xl font-bold transition-all duration-300 transform hover:scale-105"
+          [class.is-selected]="montantSelectionne===montant">
           {{ montant | currency:'USD':'symbol':'1.0-0' }}
         </button>
       </div>
@@ -43,7 +43,7 @@
     <!-- Montant personnalisé -->
     <div class="mt-5">
       <label class="text-sm font-semibold text-gray-700 dark:text-slate-300">Ou saisir un autre montant</label>
-      <div class="mt-2 flex items-center bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 h-14 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-100 dark:focus-within:ring-orange-500/20 transition">
+      <div class="amount-input mt-2 flex items-center rounded-xl px-4 h-14 transition">
         <input
           #montantInput
           [(ngModel)]="montantPersonnalise"
@@ -63,8 +63,8 @@
         <!-- M-Pesa -->
         <button
           (click)="choisirPaiement('mpesa')"
-          class="payment-option rounded-2xl bg-gray-50 dark:bg-slate-800 border p-4 transition-all duration-300 transform hover:scale-105"
-          [ngClass]="moyenSelectionne==='mpesa' ? 'border-orange-500 ring-2 ring-orange-100 dark:ring-orange-500/20 shadow-lg' : 'border-gray-100 dark:border-slate-700'">
+          class="payment-option rounded-2xl p-4 transition-all duration-300 transform hover:scale-105"
+          [class.is-selected]="moyenSelectionne==='mpesa'">
           <div class="flex justify-center">
             <img
               src="../../../assets/mpesa.png"
@@ -80,8 +80,8 @@
         <!-- Orange Money -->
         <button
           (click)="choisirPaiement('orange')"
-          class="payment-option rounded-2xl bg-gray-50 dark:bg-slate-800 border p-4 transition-all duration-300 transform hover:scale-105"
-          [ngClass]="moyenSelectionne==='orange' ? 'border-orange-500 ring-2 ring-orange-100 dark:ring-orange-500/20 shadow-lg' : 'border-gray-100 dark:border-slate-700'">
+          class="payment-option rounded-2xl p-4 transition-all duration-300 transform hover:scale-105"
+          [class.is-selected]="moyenSelectionne==='orange'">
           <div class="flex justify-center">
             <img
               src="../../../assets/orangemoney.png"
@@ -97,8 +97,8 @@
         <!-- Airtel Money -->
         <button
           (click)="choisirPaiement('airtel')"
-          class="payment-option rounded-2xl bg-gray-50 dark:bg-slate-800 border p-4 transition-all duration-300 transform hover:scale-105"
-          [ngClass]="moyenSelectionne==='airtel' ? 'border-orange-500 ring-2 ring-orange-100 dark:ring-orange-500/20 shadow-lg' : 'border-gray-100 dark:border-slate-700'">
+          class="payment-option rounded-2xl p-4 transition-all duration-300 transform hover:scale-105"
+          [class.is-selected]="moyenSelectionne==='airtel'">
           <div class="flex justify-center">
             <img
               src="../../../assets/airtelmoney.png"
@@ -114,8 +114,8 @@
         <!-- Mastercard -->
         <button
           (click)="choisirPaiement('mastercard')"
-          class="payment-option rounded-2xl bg-gray-50 dark:bg-slate-800 border p-4 transition-all duration-300 transform hover:scale-105"
-          [ngClass]="moyenSelectionne==='mastercard' ? 'border-orange-500 ring-2 ring-orange-100 dark:ring-orange-500/20 shadow-lg' : 'border-gray-100 dark:border-slate-700'">
+          class="payment-option rounded-2xl p-4 transition-all duration-300 transform hover:scale-105"
+          [class.is-selected]="moyenSelectionne==='mastercard'">
           <div class="flex justify-center">
             <img
               src="../../../assets/mastercard.png"
@@ -132,7 +132,7 @@
     </div>
 
     <!-- Informations de paiement -->
-    <div class="payment-details mt-6 bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 border border-gray-100 dark:border-slate-700 shadow-sm">
+    <div class="payment-details mt-6 rounded-2xl p-4">
       <div class="flex items-center gap-2 mb-3">
         <ion-icon [name]="getIconePaiement()" class="text-2xl text-orange-500"></ion-icon>
         <h4 class="font-semibold text-gray-800 dark:text-slate-100">
@@ -202,7 +202,7 @@
     </div>
 
     <!-- Résumé du don -->
-    <div class="donation-summary mt-6 bg-orange-50 dark:bg-orange-950/30 rounded-2xl p-4 border border-orange-100 dark:border-orange-900/40">
+    <div class="donation-summary mt-6 rounded-2xl p-4">
       <div class="flex justify-between items-center">
         <div>
           <p class="text-sm text-gray-600 dark:text-slate-400">Montant du don</p>
@@ -220,10 +220,10 @@
 
 <ion-footer class="checkout-footer ion-no-border">
   <ion-toolbar>
-    <div class="container px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+    <div class="container px-4 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
       <button
         (click)="validerDon()"
-        class="checkout-confirm-btn w-full bg-orange-500 text-white rounded-2xl py-4 font-bold text-lg shadow-lg transition-all duration-300 hover:bg-orange-600">
+        class="checkout-confirm-btn w-full bg-orange-500 text-white rounded-xl py-2.5 font-semibold text-[15px] shadow-md transition-all duration-300 hover:bg-orange-600">
         <ion-icon name="lock-closed" class="mr-2"></ion-icon>
         Confirmer le don · {{ montantSelectionne | currency:'USD':'symbol':'1.2-2' }}
       </button>

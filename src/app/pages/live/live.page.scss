@@ -9,6 +9,14 @@ ion-header {
 ion-toolbar {
   --background: var(--app-surface);
   --border-color: transparent;
-  --min-height: 80px;
+  --min-height: 52px;
   backdrop-filter: blur(12px);
+}
+
+ion-back-button {
+  --icon-font-size: 18px;
+  --min-height: 32px;
+  --min-width: 32px;
+  --padding-start: 0;
+  --padding-end: 0;
 }

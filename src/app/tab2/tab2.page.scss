@@ -43,7 +43,9 @@ ion-toolbar {
     --background: var(--app-bg);
     --border-color: transparent;
     --min-height: auto;
-    padding: 10px 20px 14px;
+    --padding-start: 0;
+    --padding-end: 0;
+    padding: 10px 16px 14px;
   }
 }
 
@@ -51,6 +53,7 @@ ion-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .topbar h1 {
@@ -71,6 +74,7 @@ ion-toolbar {
 
 .testimony-search {
   position: relative;
+  width: 100%;
   margin: 8px 0 0;
   background: #ffffff;
   border-radius: 13px;
@@ -123,7 +127,6 @@ ion-toolbar {
 // =====================================================
 
 .testimony-page {
-  max-width: 560px;
   margin: 0 auto;
   padding: 7px 16px 100px;
   background: var(--app-bg);
@@ -523,11 +526,13 @@ ion-toolbar {
 
 .now-playing-bar {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  // Au-dessus de la tab bar glassmorphism
+  bottom: calc(66px + env(safe-area-inset-bottom));
+  left: 8px;
+  right: 8px;
   background: #ffffff;
-  border-radius: 16px 16px 0 0;
+  border-radius: 16px;
+  overflow: hidden;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   padding: 0 16px 12px;
   z-index: 9999;
@@ -1033,6 +1038,10 @@ ion-toolbar {
 // =====================================================
 
 @media (max-width: 640px) {
+  .testimony-header ion-toolbar {
+    padding: 10px 12px 14px;
+  }
+
   .testimony-page {
     padding: 7px 12px 90px;
   }
@@ -1448,4 +1457,244 @@ ion-toolbar {
       border-color: var(--app-border);
     }
   }
+}
+
+// =====================================================
+// MINI-LECTEUR : ouvre le lecteur plein écran au toucher
+// =====================================================
+
+.now-playing-bar__art,
+.now-playing-bar__info {
+  cursor: pointer;
+}
+
+// Laisse la place au mini-lecteur sous la liste
+.testimony-page.testimony-page--with-player {
+  padding-bottom: 110px;
+}
+
+// =====================================================
+// LECTEUR PLEIN ÉCRAN
+// =====================================================
+
+.player-modal {
+  --height: 100%;
+  --border-radius: 0;
+  --background: #0f172a;
+}
+
+.player {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  color: #fff;
+  background: #0f172a;
+}
+
+.player__backdrop {
+  position: absolute;
+  inset: -40px;
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  object-fit: cover;
+  filter: blur(40px) saturate(140%);
+  transform: scale(1.1);
+}
+
+.player__backdrop-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.92));
+}
+
+.player__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 28px);
+}
+
+.player__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.player__top-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+
+  span {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  strong {
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.player__icon-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 22px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.player__cover {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 28px 0;
+
+  img {
+    width: 100%;
+    max-width: 340px;
+    max-height: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    transition: transform 0.35s ease;
+  }
+
+  &--paused img {
+    transform: scale(0.9);
+  }
+}
+
+.player__meta {
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  p {
+    margin: 6px 0 0;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+// Curseurs (progression + volume)
+.player__progress input,
+.player__volume input {
+  --progress: 0%;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  margin: 0;
+  border-radius: 999px;
+  background: linear-gradient(to right, #f97316 var(--progress), rgba(255, 255, 255, 0.25) var(--progress));
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+  }
+}
+
+.player__progress {
+  margin-top: 24px;
+}
+
+.player__times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.player__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  margin-top: 18px;
+}
+
+.player__seek {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  color: #fff;
+  font-size: 26px;
+  background: transparent;
+
+  span {
+    position: absolute;
+    bottom: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+.player__play {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 32px;
+  background: linear-gradient(135deg, #ff9800, #ff6f00);
+  box-shadow: 0 12px 28px rgba(249, 115, 22, 0.45);
+
+  ion-icon[name='play'] {
+    margin-left: 4px;
+  }
+}
+
+.player__volume {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
 }

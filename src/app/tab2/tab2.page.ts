@@ -55,6 +55,10 @@ export class Tab2Page implements OnInit, OnDestroy {
   currentTime = '0:00';
   totalDuration = '0:00';
   durationInSeconds = 0;
+  currentSeconds = 0;
+
+  // Lecteur plein écran
+  playerOpen = false;
   
   // Variables pour le volume
   volume = 0.8;
@@ -215,6 +219,10 @@ export class Tab2Page implements OnInit, OnDestroy {
 
     this.currentAudio = audio;
     this.featuredAudio = audio;
+    this.currentSeconds = 0;
+    this.audioProgress = 0;
+    this.currentTime = '0:00';
+    this.playerOpen = true;
     this.audioElement = new Audio(audio.fichierAudio);
     
     this.audioElement.volume = this.volume;
@@ -280,6 +288,7 @@ export class Tab2Page implements OnInit, OnDestroy {
       const duration = this.audioElement.duration;
       if (duration > 0) {
         this.audioProgress = (current / duration) * 100;
+        this.currentSeconds = current;
         this.currentTime = this.formatTime(current);
         this.totalDuration = this.formatTime(duration);
         this.durationInSeconds = duration;
@@ -348,6 +357,31 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
 
+  /** Curseur de progression du lecteur plein écran */
+  seekToValue(event: Event) {
+    if (!this.audioElement) return;
+    const value = parseFloat((event.target as HTMLInputElement).value);
+    const duration = this.audioElement.duration;
+    if (duration > 0 && !isNaN(value)) {
+      this.audioElement.currentTime = Math.max(0, Math.min(value, duration));
+      this.updateProgress();
+    }
+  }
+
+  // =====================================================
+  // LECTEUR PLEIN ÉCRAN
+  // =====================================================
+
+  openPlayer() {
+    if (this.currentAudio) {
+      this.playerOpen = true;
+    }
+  }
+
+  minimizePlayer() {
+    this.playerOpen = false;
+  }
+
   // =====================================================
   // GESTION DU VOLUME
   // =====================================================
@@ -381,7 +415,9 @@ export class Tab2Page implements OnInit, OnDestroy {
     this.currentTime = '0:00';
     this.totalDuration = '0:00';
     this.durationInSeconds = 0;
+    this.currentSeconds = 0;
     this.showVolumeSlider = false;
+    this.playerOpen = false;
   }
 
   cleanupAudio() {

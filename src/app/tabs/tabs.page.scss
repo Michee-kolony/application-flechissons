@@ -1,10 +1,20 @@
-/* Barre de navigation */
+/* Barre de navigation — glassmorphism flottante */
 .custom-tab-bar {
-  --background: white;
+  --background: rgba(255, 255, 255, 0.55);
   --border: none;
-  padding: 8px 12px;
-  height: 75px;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  height: calc(58px + env(safe-area-inset-bottom));
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 -4px 24px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 /* Container pour chaque bouton */
@@ -14,14 +24,14 @@
   --background-focused: transparent;
   --ripple-color: transparent;
   border-radius: 30px;
-  margin: 0 4px;
-  padding: 0 12px;
-  height: 54px;
-  min-height: 54px;
+  margin: 0 2px;
+  padding: 0 10px;
+  height: 42px;
+  min-height: 42px;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex: 0 1 auto;
-  min-width: 56px;
+  min-width: 44px;
 }
 
 /* Contenu du bouton */
@@ -29,7 +39,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
   height: 100%;
   position: relative;
@@ -37,8 +47,8 @@
 
 /* Icônes */
 .custom-tab-bar ion-tab-button ion-icon {
-  font-size: 24px;
-  min-width: 24px;
+  font-size: 20px;
+  min-width: 20px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #777;
   position: relative;
@@ -48,8 +58,8 @@
 
 /* Labels (titres) - cachés par défaut */
 .custom-tab-bar ion-tab-button .tab-label {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   color: #777;
   opacity: 0;
   max-width: 0;
@@ -66,10 +76,10 @@
 /* --- ÉTAT ACTIF --- */
 .custom-tab-bar ion-tab-button.tab-selected {
   background: linear-gradient(135deg, #ff9800, #ff6f00);
-  padding: 0 20px;
+  padding: 0 14px;
   min-width: auto;
   flex: 0 1 auto;
-  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+  box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
 }
 
 /* Icône active */
@@ -84,7 +94,7 @@
   max-width: 200px; /* Augmenté pour permettre l'affichage complet */
   transform: scale(1) translateX(0);
   color: #fff;
-  margin-left: 6px;
+  margin-left: 4px;
   overflow: visible;
   white-space: nowrap;
 }
@@ -124,62 +134,54 @@
 /* Responsive - petits écrans */
 @media (max-width: 480px) {
   .custom-tab-bar {
-    padding: 6px 8px;
-    height: 68px;
+    padding: 5px 6px calc(5px + env(safe-area-inset-bottom));
+    height: calc(54px + env(safe-area-inset-bottom));
   }
-  
+
   .custom-tab-bar ion-tab-button {
     padding: 0 8px;
-    height: 48px;
-    min-height: 48px;
-    min-width: 48px;
+    height: 40px;
+    min-height: 40px;
+    min-width: 40px;
   }
-  
+
   .custom-tab-bar ion-tab-button ion-icon {
-    font-size: 22px;
-    min-width: 22px;
+    font-size: 19px;
+    min-width: 19px;
   }
-  
-  .custom-tab-bar ion-tab-button .tab-label {
-    font-size: 12px;
-  }
-  
-  .custom-tab-bar ion-tab-button.tab-selected {
-    padding: 0 14px;
-    min-width: auto;
-  }
-  
+
+  .custom-tab-bar ion-tab-button .tab-label,
   .custom-tab-bar ion-tab-button.tab-selected .tab-label {
-    max-width: 150px;
-    font-size: 12px;
+    font-size: 11px;
+  }
+
+  .custom-tab-bar ion-tab-button.tab-selected {
+    padding: 0 12px;
+    min-width: auto;
   }
 }
 
 /* Pour les très petits écrans */
 @media (max-width: 360px) {
-  .custom-tab-bar {
-    padding: 6px 4px;
-    height: 64px;
-  }
-  
   .custom-tab-bar ion-tab-button {
     padding: 0 6px;
-    height: 44px;
-    min-height: 44px;
-    min-width: 40px;
+    height: 38px;
+    min-height: 38px;
+    min-width: 36px;
   }
-  
+
+  .custom-tab-bar ion-tab-button ion-icon {
+    font-size: 18px;
+    min-width: 18px;
+  }
+
+  .custom-tab-bar ion-tab-button .tab-label,
+  .custom-tab-bar ion-tab-button.tab-selected .tab-label {
+    font-size: 10px;
+  }
+
   .custom-tab-bar ion-tab-button.tab-selected {
     padding: 0 10px;
-  }
-  
-  .custom-tab-bar ion-tab-button .tab-label {
-    font-size: 11px;
-  }
-  
-  .custom-tab-bar ion-tab-button.tab-selected .tab-label {
-    max-width: 120px;
-    font-size: 11px;
   }
 }
 
@@ -190,7 +192,7 @@
 
 /* Option: si vous voulez que le texte s'adapte à la longueur réelle */
 .custom-tab-bar ion-tab-button.tab-selected {
-  padding: 0 20px;
+  padding: 0 14px;
 }
 
 .custom-tab-bar ion-tab-button.tab-selected .tab-label {
@@ -203,8 +205,11 @@
    ===================================================== */
 :host-context(.dark) {
   .custom-tab-bar {
-    --background: var(--app-surface);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+    --background: rgba(30, 41, 59, 0.55);
+    border-top-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 -4px 24px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .custom-tab-bar ion-tab-button {

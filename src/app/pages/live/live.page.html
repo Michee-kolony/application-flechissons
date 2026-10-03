@@ -1,10 +1,10 @@
 <ion-header class="ion-no-border">
 
-  <ion-toolbar class="px-4 py-3 !bg-gray-50 dark:!bg-slate-900 !shadow-sm">
+  <ion-toolbar class="px-3 py-1 !bg-gray-50 dark:!bg-slate-900 !shadow-sm">
 
-    <div class="flex items-center gap-4 w-full">
+    <div class="flex items-center gap-3 w-full">
 
-      <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+      <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
 
         <ion-back-button
           defaultHref="/tabs/tab1"
@@ -17,11 +17,11 @@
 
       <div>
 
-        <h1 class="text-xl font-bold text-gray-900 dark:text-slate-100">
+        <h1 class="text-base font-bold leading-tight text-gray-900 dark:text-slate-100">
           Nos directs
         </h1>
 
-        <p class="text-xs text-gray-500 dark:text-slate-400">
+        <p class="text-[11px] text-gray-500 dark:text-slate-400">
           Cultes et moments spirituels en direct
         </p>
 
@@ -41,18 +41,18 @@
 <ion-content [fullscreen]="true" class="!bg-gray-50 dark:!bg-slate-900">
 
 
-<div class="pt-6 px-4 pb-10 space-y-6">
+<div class="pt-4 px-4 pb-8 space-y-3">
 
 
 
 <div>
 
-<h2 class="text-2xl font-bold text-gray-900 dark:text-slate-100">
+<h2 class="text-lg font-bold text-gray-900 dark:text-slate-100">
 Nos plateformes
 </h2>
 
 
-<p class="text-gray-500 dark:text-slate-400 mt-1 text-sm">
+<p class="text-gray-500 dark:text-slate-400 mt-0.5 text-xs">
 Suivez nos cultes et enseignements où que vous soyez.
 </p>
 
@@ -67,7 +67,7 @@ Suivez nos cultes et enseignements où que vous soyez.
 
 <!-- TikTok -->
 
-<div class="relative h-56 rounded-3xl overflow-hidden shadow-xl group">
+<div class="relative h-36 rounded-2xl overflow-hidden shadow-md group">
 
 
 <img
@@ -79,35 +79,35 @@ class="absolute inset-0 w-full h-full object-cover transition duration-700 group
 
 
 
-<div class="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
+<div class="absolute top-2.5 right-2.5 bg-red-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5">
 
-<span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
 LIVE
 
 </div>
 
 
 
-<div class="absolute bottom-5 left-5 right-5 flex items-end justify-between">
+<div class="absolute bottom-3 left-3 right-3 flex items-end justify-between">
 
 
-<div class="flex items-center gap-4 text-white">
+<div class="flex items-center gap-2.5 text-white">
 
 
-<div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
+<div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
 
-<i class="fa-brands fa-tiktok text-3xl"></i>
+<i class="fa-brands fa-tiktok text-xl"></i>
 
 </div>
 
 
 <div>
 
-<h3 class="text-xl font-bold">
+<h3 class="text-base font-bold leading-tight">
 TikTok
 </h3>
 
-<p class="text-sm text-gray-200">
+<p class="text-xs text-gray-200">
 Suivez le culte en direct
 </p>
 
@@ -118,7 +118,7 @@ Suivez le culte en direct
 
 
 
-<button class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-xl active:scale-90 transition">
+<button class="w-10 h-10 rounded-full bg-orange-500 text-white text-sm flex items-center justify-center shadow-lg active:scale-90 transition">
 
 <i class="fa-solid fa-play ml-1"></i>
 
@@ -140,7 +140,7 @@ Suivez le culte en direct
 
 <!-- YouTube -->
 
-<div class="relative h-56 rounded-3xl overflow-hidden shadow-xl group">
+<div class="relative h-36 rounded-2xl overflow-hidden shadow-md group">
 
 
 <img
@@ -151,24 +151,24 @@ class="absolute inset-0 w-full h-full object-cover transition duration-700 group
 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20"></div>
 
 
-<div class="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
+<div class="absolute top-2.5 right-2.5 bg-red-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5">
 
-<span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
 LIVE
 
 </div>
 
 
 
-<div class="absolute bottom-5 left-5 right-5 flex items-end justify-between">
+<div class="absolute bottom-3 left-3 right-3 flex items-end justify-between">
 
 
-<div class="flex items-center gap-4 text-white">
+<div class="flex items-center gap-2.5 text-white">
 
 
-<div class="w-14 h-14 rounded-2xl bg-red-600/80 backdrop-blur flex items-center justify-center">
+<div class="w-10 h-10 rounded-xl bg-red-600/80 backdrop-blur flex items-center justify-center">
 
-<i class="fa-brands fa-youtube text-3xl"></i>
+<i class="fa-brands fa-youtube text-xl"></i>
 
 </div>
 
@@ -176,11 +176,11 @@ LIVE
 
 <div>
 
-<h3 class="text-xl font-bold">
+<h3 class="text-base font-bold leading-tight">
 YouTube
 </h3>
 
-<p class="text-sm text-gray-200">
+<p class="text-xs text-gray-200">
 Prédications et cultes
 </p>
 
@@ -191,7 +191,7 @@ Prédications et cultes
 
 
 
-<button class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-xl active:scale-90 transition">
+<button class="w-10 h-10 rounded-full bg-orange-500 text-white text-sm flex items-center justify-center shadow-lg active:scale-90 transition">
 
 <i class="fa-solid fa-play ml-1"></i>
 
@@ -213,7 +213,7 @@ Prédications et cultes
 
 <!-- Facebook -->
 
-<div class="relative h-56 rounded-3xl overflow-hidden shadow-xl group">
+<div class="relative h-36 rounded-2xl overflow-hidden shadow-md group">
 
 
 <img
@@ -224,24 +224,24 @@ class="absolute inset-0 w-full h-full object-cover transition duration-700 group
 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20"></div>
 
 
-<div class="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
+<div class="absolute top-2.5 right-2.5 bg-red-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5">
 
-<span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
 LIVE
 
 </div>
 
 
 
-<div class="absolute bottom-5 left-5 right-5 flex items-end justify-between">
+<div class="absolute bottom-3 left-3 right-3 flex items-end justify-between">
 
 
-<div class="flex items-center gap-4 text-white">
+<div class="flex items-center gap-2.5 text-white">
 
 
-<div class="w-14 h-14 rounded-2xl bg-blue-600/80 backdrop-blur flex items-center justify-center">
+<div class="w-10 h-10 rounded-xl bg-blue-600/80 backdrop-blur flex items-center justify-center">
 
-<i class="fa-brands fa-facebook text-3xl"></i>
+<i class="fa-brands fa-facebook text-xl"></i>
 
 </div>
 
@@ -249,11 +249,11 @@ LIVE
 
 <div>
 
-<h3 class="text-xl font-bold">
+<h3 class="text-base font-bold leading-tight">
 Facebook
 </h3>
 
-<p class="text-sm text-gray-200">
+<p class="text-xs text-gray-200">
 Rejoignez notre communauté
 </p>
 
@@ -264,7 +264,7 @@ Rejoignez notre communauté
 
 
 
-<button class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-xl active:scale-90 transition">
+<button class="w-10 h-10 rounded-full bg-orange-500 text-white text-sm flex items-center justify-center shadow-lg active:scale-90 transition">
 
 <i class="fa-solid fa-play ml-1"></i>
 
@@ -286,7 +286,7 @@ Rejoignez notre communauté
 
 <!-- Instagram -->
 
-<div class="relative h-56 rounded-3xl overflow-hidden shadow-xl group">
+<div class="relative h-36 rounded-2xl overflow-hidden shadow-md group">
 
 
 <img
@@ -297,24 +297,24 @@ class="absolute inset-0 w-full h-full object-cover transition duration-700 group
 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20"></div>
 
 
-<div class="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
+<div class="absolute top-2.5 right-2.5 bg-red-600 text-white px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5">
 
-<span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+<span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
 LIVE
 
 </div>
 
 
 
-<div class="absolute bottom-5 left-5 right-5 flex items-end justify-between">
+<div class="absolute bottom-3 left-3 right-3 flex items-end justify-between">
 
 
-<div class="flex items-center gap-4 text-white">
+<div class="flex items-center gap-2.5 text-white">
 
 
-<div class="w-14 h-14 rounded-2xl bg-pink-600/80 backdrop-blur flex items-center justify-center">
+<div class="w-10 h-10 rounded-xl bg-pink-600/80 backdrop-blur flex items-center justify-center">
 
-<i class="fa-brands fa-instagram text-3xl"></i>
+<i class="fa-brands fa-instagram text-xl"></i>
 
 </div>
 
@@ -322,11 +322,11 @@ LIVE
 
 <div>
 
-<h3 class="text-xl font-bold">
+<h3 class="text-base font-bold leading-tight">
 Instagram
 </h3>
 
-<p class="text-sm text-gray-200">
+<p class="text-xs text-gray-200">
 Moments et actualités
 </p>
 
@@ -337,7 +337,7 @@ Moments et actualités
 
 
 
-<button class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-xl active:scale-90 transition">
+<button class="w-10 h-10 rounded-full bg-orange-500 text-white text-sm flex items-center justify-center shadow-lg active:scale-90 transition">
 
 <i class="fa-solid fa-play ml-1"></i>
 

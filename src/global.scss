@@ -95,6 +95,12 @@ ion-content::part(scroll)::-webkit-scrollbar {
   display: none;
 }
 
+/* La tab bar glassmorphism flotte au-dessus du contenu :
+   on réserve sa hauteur en bas pour ne rien masquer. */
+ion-tabs ion-content::part(scroll) {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+}
+
 /* Surface commune des pages internes de l'application. */
 ion-content {
   --background: var(--app-bg);
