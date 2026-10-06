@@ -164,8 +164,15 @@ ion-content {
 }
 
 // Style pour l'input de commentaire
+.comment-input-container .comment-field {
+  color: #111827;
+  -webkit-text-fill-color: #111827;
+  caret-color: #111827;
+}
+
 .comment-input-container input::placeholder {
   color: #9ca3af;
+  -webkit-text-fill-color: #9ca3af;
   font-size: 14px;
 }
 
@@ -206,7 +213,14 @@ ion-content {
     background-color: var(--app-surface-alt);
   }
 
-  .comment-input-container input {
-    color: var(--app-text);
+  .comment-input-container .comment-field {
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+    caret-color: #ffffff;
+  }
+
+  .comment-input-container .comment-field::placeholder {
+    color: #94a3b8;
+    -webkit-text-fill-color: #94a3b8;
   }
 }

@@ -10,7 +10,7 @@ import { AlertController } from '@ionic/angular';
 })
 export class ContactPage implements OnInit {
 
-  private urlContact = "https://backend-flechissons.onrender.com/requete";
+  private urlContact = "https://flechissons.com/requete";
 
   formData = {
     nom: '',

@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { IonInfiniteScroll } from '@ionic/angular';
 import { Subscription, interval } from 'rxjs';
 import Splide from '@splidejs/splide';
+import { ArticleEvent, ArticleRealtimeService } from '../services/article-realtime.service';
 
 interface Article {
   _id: string;
@@ -47,7 +48,7 @@ interface UserData {
 export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
   private urlArticle =
-    'https://backend-flechissons.onrender.com/article';
+    'https://flechissons.com/article';
 
   articles: Article[] = [];
 
@@ -72,6 +73,11 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   private refreshSubscription?: Subscription;
 
   /**
+   * Likes / commentaires en direct
+   */
+  private realtimeSub = new Subscription();
+
+  /**
    * Permet d'éviter de recréer Splide inutilement
    */
   private vuePrete = false;
@@ -92,7 +98,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private realtime: ArticleRealtimeService
   ) {}
 
   ngOnInit(): void {
@@ -111,6 +118,25 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
           this.actualiserArticles();
         }
       });
+
+    this.realtimeSub.add(this.realtime.events$.subscribe(event => this.appliquerEvenement(event)));
+    this.realtimeSub.add(this.realtime.resync$.subscribe(() => this.actualiserArticles()));
+  }
+
+  /**
+   * Met à jour les compteurs d'un article quand quelqu'un like / commente
+   */
+  private appliquerEvenement(event: ArticleEvent): void {
+    const article = this.articles.find(a => a._id === event.articleId);
+    if (!article) {
+      return;
+    }
+
+    if (event.type === 'like') {
+      article.likes = event.likes;
+    } else if (!article.commentaires?.some(c => c._id === event.commentaire._id)) {
+      article.commentaires = [...(article.commentaires ?? []), event.commentaire];
+    }
   }
 
   ngAfterViewInit(): void {
@@ -131,6 +157,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
      * Arrêter le rafraîchissement automatique
      */
     this.refreshSubscription?.unsubscribe();
+    this.realtimeSub.unsubscribe();
 
     /**
      * Détruire Splide
@@ -238,6 +265,18 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
    * NAVIGATION VERS LE PROFIL
    * ========================================================
    */
+
+  /**
+   * Ouvre la prédication dans le flux vidéo (onglet Prédications),
+   * ou sur sa page article si elle n'a pas de vidéo
+   */
+  ouvrirPredication(predication: Article): void {
+    if (predication.youtube) {
+      this.router.navigate(['/tabs/tab3'], { queryParams: { video: predication._id } });
+    } else {
+      this.router.navigate(['/article', predication._id]);
+    }
+  }
 
   goToProfile(): void {
     this.router.navigate(['/tabs/profil']);

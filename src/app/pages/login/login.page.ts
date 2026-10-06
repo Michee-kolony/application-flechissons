@@ -67,7 +67,7 @@ export class LoginPage {
   // API
   // =====================================================
 
-  private apiUrl = 'https://backend-flechissons.onrender.com/user';
+  private apiUrl = 'https://flechissons.com/user';
 
   // =====================================================
   // CONSTRUCTEUR

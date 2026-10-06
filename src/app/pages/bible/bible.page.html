@@ -34,7 +34,7 @@
           placeholder="Choisir un livre"
           interface="action-sheet"
           cancelText="Annuler"
-          [interfaceOptions]="{ header: 'Choisir un livre', subHeader: 'Sélectionnez un livre biblique' }"
+          [interfaceOptions]="{ header: 'Choisir un livre', subHeader: 'Sélectionnez un livre biblique', cssClass: 'bible-book-sheet' }"
           [disabled]="loading">
           <ion-select-option *ngFor="let book of books" [value]="book.value">
             {{ book.name }}

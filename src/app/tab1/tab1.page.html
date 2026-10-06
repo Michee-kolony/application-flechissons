@@ -79,7 +79,7 @@
             <li
               *ngFor="let predication of predications"
               class="splide__slide"
-              [routerLink]="['/article', predication._id]">
+              (click)="ouvrirPredication(predication)">
               <div class="predication-card">
                 <img
                   [src]="getImage(predication)"

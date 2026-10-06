@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 
+type Devise = 'USD' | 'CDF';
+
 @Component({
   selector: 'app-checkout',
   templateUrl: './checkout.page.html',
@@ -9,10 +11,18 @@ import { AlertController } from '@ionic/angular';
 })
 export class CheckoutPage implements OnInit {
 
+  devise: Devise = 'USD';
+
+  // Montants proposés pour chaque devise
+  private readonly montantsParDevise: Record<Devise, number[]> = {
+    USD: [5, 10, 25, 50, 100, 200],
+    CDF: [5000, 10000, 25000, 50000, 100000, 200000]
+  };
+
+  montants = this.montantsParDevise.USD;
+
   montantSelectionne = 10;
   montantPersonnalise: number | null = 10;
-
-  montants = [5, 10, 25, 50, 100];
 
   // Informations de paiement
   numeroTelephone: string = '';
@@ -25,6 +35,29 @@ export class CheckoutPage implements OnInit {
   constructor(private alertController: AlertController) {}
 
   ngOnInit(): void {}
+
+  choisirDevise(devise: Devise) {
+    if (devise === this.devise) {
+      return;
+    }
+    // On garde la même position dans la liste (ex. 2e montant en USD -> 2e montant en CDF)
+    const index = this.montants.indexOf(this.montantSelectionne);
+    this.devise = devise;
+    this.montants = this.montantsParDevise[devise];
+    this.choisirMontant(this.montants[index >= 0 ? index : 1]);
+  }
+
+  /** "$10.00" en USD, "10 000 FC" en CDF */
+  formaterMontant(montant: number | null | undefined, decimales = true): string {
+    const valeur = montant ?? 0;
+    if (this.devise === 'CDF') {
+      return `${Math.round(valeur).toLocaleString('fr-FR')} FC`;
+    }
+    return '$' + valeur.toLocaleString('en-US', {
+      minimumFractionDigits: decimales ? 2 : 0,
+      maximumFractionDigits: decimales ? 2 : 0
+    });
+  }
 
   choisirMontant(montant: number) {
     this.montantSelectionne = montant;
@@ -121,7 +154,7 @@ export class CheckoutPage implements OnInit {
       header: 'Confirmation',
       message: `
         <div style="text-align: left;">
-          <p><strong>Montant :</strong> $${this.montantSelectionne.toFixed(2)} USD</p>
+          <p><strong>Montant :</strong> ${this.formaterMontant(this.montantSelectionne)} (${this.devise})</p>
           <p><strong>Moyen de paiement :</strong> ${this.getNomMoyenPaiement()}</p>
           <p><strong>Référence :</strong> DON-${Date.now().toString().slice(-6)}</p>
           <br>

@@ -204,4 +204,22 @@
       <button type="button" class="photo-sheet__cancel" (click)="closePhotoPicker()">Annuler</button>
     </section>
   </div>
+
+  <div class="upload-error-backdrop" *ngIf="uploadError" (click)="closeUploadError()">
+    <section class="upload-error" role="alertdialog" aria-modal="true" aria-labelledby="upload-error-title" aria-describedby="upload-error-message" (click)="$event.stopPropagation()">
+      <div class="upload-error__icon">
+        <ion-icon [name]="uploadError.icon"></ion-icon>
+      </div>
+      <h2 id="upload-error-title">{{ uploadError.title }}</h2>
+      <p id="upload-error-message">{{ uploadError.message }}</p>
+      <p class="upload-error__hint">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>{{ uploadError.hint }}</span>
+      </p>
+      <button type="button" class="upload-error__primary" (click)="chooseAnotherPhoto()">
+        <ion-icon name="images-outline"></ion-icon> Choisir une autre photo
+      </button>
+      <button type="button" class="upload-error__secondary" (click)="closeUploadError()">Fermer</button>
+    </section>
+  </div>
 </ion-content>

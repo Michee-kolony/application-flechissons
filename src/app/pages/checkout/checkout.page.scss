@@ -210,3 +210,13 @@ input:focus {
     font-size: 0.9rem;
   }
 }
+
+// Texte des champs de saisie : suit le thème (noir en clair, blanc en sombre).
+// Pas de .text-black ici : la version Bootstrap est en !important et bloque dark:text-white
+.checkout-field {
+  color: var(--app-text);
+
+  &::placeholder {
+    color: var(--app-text-secondary);
+  }
+}

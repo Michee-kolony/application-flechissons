@@ -26,6 +26,25 @@
       <p class="text-orange-100 text-sm mt-2">Merci de soutenir la mission de Fléchissons.</p>
     </div>
 
+    <!-- Choix devise -->
+    <div class="mt-7">
+      <h3 class="font-bold text-lg text-gray-800 dark:text-slate-100">Devise</h3>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <button
+          (click)="choisirDevise('USD')"
+          class="amount-option h-14 rounded-xl font-bold transition-all duration-300"
+          [class.is-selected]="devise==='USD'">
+          Dollar · USD
+        </button>
+        <button
+          (click)="choisirDevise('CDF')"
+          class="amount-option h-14 rounded-xl font-bold transition-all duration-300"
+          [class.is-selected]="devise==='CDF'">
+          Franc · CDF
+        </button>
+      </div>
+    </div>
+
     <!-- Choix montant -->
     <div class="mt-7">
       <h3 class="font-bold text-lg text-gray-800 dark:text-slate-100">Choisir un montant</h3>
@@ -35,7 +54,7 @@
           (click)="choisirMontant(montant)"
           class="amount-option h-14 rounded-xl font-bold transition-all duration-300 transform hover:scale-105"
           [class.is-selected]="montantSelectionne===montant">
-          {{ montant | currency:'USD':'symbol':'1.0-0' }}
+          {{ formaterMontant(montant, false) }}
         </button>
       </div>
     </div>
@@ -48,10 +67,10 @@
           #montantInput
           [(ngModel)]="montantPersonnalise"
           type="number"
-          placeholder="Ex : 25"
+          [placeholder]="devise === 'CDF' ? 'Ex : 25000' : 'Ex : 25'"
           (input)="onMontantPersonnaliseChange(montantInput.value)"
-          class="flex-1 outline-none bg-transparent text-black dark:text-white text-lg">
-        <span class="font-bold text-orange-500">USD</span>
+          class="flex-1 outline-none bg-transparent checkout-field text-lg">
+        <span class="font-bold text-orange-500">{{ devise }}</span>
       </div>
     </div>
 
@@ -151,7 +170,7 @@
             [(ngModel)]="numeroTelephone"
             type="tel"
             placeholder="Ex: 812345678"
-            class="flex-1 outline-none bg-transparent text-black dark:text-white text-lg"
+            class="flex-1 outline-none bg-transparent checkout-field text-lg"
             maxlength="9">
         </div>
         <p class="text-xs text-gray-400 dark:text-slate-500 mt-1">Entrez votre numéro sans l'indicateur +243</p>
@@ -167,7 +186,7 @@
               [(ngModel)]="numeroCarte"
               type="text"
               placeholder="1234 5678 9012 3456"
-              class="flex-1 outline-none bg-transparent text-black dark:text-white text-lg"
+              class="flex-1 outline-none bg-transparent checkout-field text-lg"
               maxlength="19"
               (input)="formaterNumeroCarte($event)">
           </div>
@@ -181,7 +200,7 @@
                 [(ngModel)]="dateExpiration"
                 type="text"
                 placeholder="MM/AA"
-                class="flex-1 outline-none bg-transparent text-black dark:text-white text-lg"
+                class="flex-1 outline-none bg-transparent checkout-field text-lg"
                 maxlength="5"
                 (input)="formaterDateExpiration($event)">
             </div>
@@ -193,7 +212,7 @@
                 [(ngModel)]="cvv"
                 type="password"
                 placeholder="***"
-                class="flex-1 outline-none bg-transparent text-black dark:text-white text-lg"
+                class="flex-1 outline-none bg-transparent checkout-field text-lg"
                 maxlength="4">
             </div>
           </div>
@@ -206,7 +225,7 @@
       <div class="flex justify-between items-center">
         <div>
           <p class="text-sm text-gray-600 dark:text-slate-400">Montant du don</p>
-          <p class="text-2xl font-bold text-orange-500">{{ montantSelectionne | currency:'USD':'symbol':'1.2-2' }}</p>
+          <p class="text-2xl font-bold text-orange-500">{{ formaterMontant(montantSelectionne) }}</p>
         </div>
         <div class="text-right">
           <p class="text-sm text-gray-600 dark:text-slate-400">Moyen de paiement</p>
@@ -225,7 +244,7 @@
         (click)="validerDon()"
         class="checkout-confirm-btn w-full bg-orange-500 text-white rounded-xl py-2.5 font-semibold text-[15px] shadow-md transition-all duration-300 hover:bg-orange-600">
         <ion-icon name="lock-closed" class="mr-2"></ion-icon>
-        Confirmer le don · {{ montantSelectionne | currency:'USD':'symbol':'1.2-2' }}
+        Confirmer le don · {{ formaterMontant(montantSelectionne) }}
       </button>
       <p class="secure-note"><ion-icon name="shield-checkmark-outline"></ion-icon> Paiement sécurisé</p>
     </div>

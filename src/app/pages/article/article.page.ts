@@ -4,6 +4,8 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AuthService } from '../../services/auth.service';
+import { ArticleEvent, ArticleRealtimeService } from '../../services/article-realtime.service';
+import { Subscription } from 'rxjs';
 
 export interface CommentaireBackend {
   _id?: string;
@@ -61,7 +63,7 @@ interface UserData {
 })
 export class ArticlePage implements OnInit, OnDestroy {
 
-  private urlArticle = 'https://backend-flechissons.onrender.com/article';
+  private urlArticle = 'https://flechissons.com/article';
 
   article: Article | null = null;
   isLoading: boolean = true;
@@ -81,21 +83,63 @@ export class ArticlePage implements OnInit, OnDestroy {
 
   @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
 
+  private realtimeSub = new Subscription();
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private http: HttpClient,
     private sanitizer: DomSanitizer,
-    private authService: AuthService
+    private authService: AuthService,
+    private realtime: ArticleRealtimeService
   ) {}
 
   ngOnInit() {
     this.loadUserData();
     this.loadArticle();
+
+    // Likes et commentaires des autres utilisateurs, en direct
+    this.realtimeSub.add(this.realtime.events$.subscribe(event => this.appliquerEvenement(event)));
+    this.realtimeSub.add(this.realtime.resync$.subscribe(() => this.loadArticle(false)));
   }
 
   ngOnDestroy() {
     this.stopVideo();
+    this.realtimeSub.unsubscribe();
+  }
+
+  private appliquerEvenement(event: ArticleEvent): void {
+    if (!this.article || event.articleId !== this.article._id) {
+      return;
+    }
+
+    if (event.type === 'like') {
+      this.article.likes = event.likes;
+      this.likeCount = event.likes.length;
+      this.isLiked = !!this.userId && event.likes.includes(this.userId);
+    } else {
+      this.ajouterCommentaireLocal(this.versCommentaireFront(event.commentaire as CommentaireBackend));
+    }
+  }
+
+  private versCommentaireFront(comment: CommentaireBackend): CommentaireFront {
+    return {
+      id: comment._id || '',
+      utilisateurId: comment.utilisateurId,
+      nom: comment.nom || 'Utilisateur',
+      prenom: comment.prenom || '',
+      photo: comment.photo || 'assets/avatar-default.png',
+      contenu: comment.contenu,
+      date: this.getTimeAgo(comment.createdAt)
+    };
+  }
+
+  /** Ajoute un commentaire s'il n'est pas déjà présent (réponse HTTP + temps réel) */
+  private ajouterCommentaireLocal(comment: CommentaireFront): void {
+    if (comment.id && this.commentaires.some(c => c.id === comment.id)) {
+      return;
+    }
+    this.commentaires.push(comment);
   }
 
   private loadUserData(): void {
@@ -122,7 +166,8 @@ export class ArticlePage implements OnInit, OnDestroy {
     }
   }
 
-  loadArticle(): void {
+  /** afficherChargement = false : rechargement discret (après une coupure réseau) */
+  loadArticle(afficherChargement = true): void {
     const id = this.route.snapshot.paramMap.get('id');
     
     if (!id) {
@@ -131,7 +176,7 @@ export class ArticlePage implements OnInit, OnDestroy {
       return;
     }
 
-    this.isLoading = true;
+    this.isLoading = afficherChargement;
     
     this.http.get(`${this.urlArticle}/${id}`).subscribe({
       next: (response: any) => {
@@ -150,15 +195,7 @@ export class ArticlePage implements OnInit, OnDestroy {
           }
           
           if (this.article && this.article.commentaires) {
-            this.commentaires = this.article.commentaires.map((comment: CommentaireBackend) => ({
-              id: comment._id || '',
-              utilisateurId: comment.utilisateurId,
-              nom: comment.nom || 'Utilisateur',
-              prenom: comment.prenom || '',
-              photo: comment.photo || 'assets/avatar-default.png',
-              contenu: comment.contenu,
-              date: this.getTimeAgo(comment.createdAt)
-            }));
+            this.commentaires = this.article.commentaires.map(comment => this.versCommentaireFront(comment));
           } else {
             this.commentaires = [];
           }
@@ -292,7 +329,7 @@ export class ArticlePage implements OnInit, OnDestroy {
             date: 'A l\'instant'
           };
           
-          this.commentaires.push(newComment);
+          this.ajouterCommentaireLocal(newComment);
           this.nouveauCommentaire = '';
           
           console.log('Commentaire ajoute:', response.message);
@@ -320,15 +357,16 @@ export class ArticlePage implements OnInit, OnDestroy {
 
     const url = `${this.urlArticle}/${this.article._id}/like`;
     const body = { utilisateurId: this.userId };
-    
+    // Capturé avant l'envoi : l'événement temps réel peut arriver avant la réponse
+    const wasLiked = this.isLiked;
+
     this.http.put(url, body).subscribe({
       next: (response: any) => {
         if (response.success) {
-          const wasLiked = this.isLiked;
-          this.isLiked = !this.isLiked;
+          this.isLiked = !wasLiked;
           this.likeCount = response.likes;
 
-          if (!wasLiked && this.isLiked) {
+          if (!wasLiked) {
             this.triggerLikeFeedback();
           }
 
@@ -336,9 +374,8 @@ export class ArticlePage implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
+        // Aucun changement local avant la réponse : rien à annuler
         console.error('Erreur like:', error);
-        this.isLiked = !this.isLiked;
-        this.likeCount = this.isLiked ? this.likeCount + 1 : this.likeCount - 1;
       }
     });
   }

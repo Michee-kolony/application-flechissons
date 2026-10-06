@@ -7,40 +7,6 @@
   --accent-deep: #ea580c;
 }
 
-// =====================================================
-// MODE SOMBRE (BLEU DE NUIT)
-// =====================================================
-:host-context(.dark) {
-  --ink: #e2e8f0;
-  --muted: #94a3b8;
-  --paper: #0f172a;
-  --line: #334155;
-
-  .reader-panel {
-    background: #1e293b;
-    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.35);
-  }
-
-  .reader-field {
-    --background: #16213a;
-    --border-color: #334155;
-  }
-
-  .loading-mark, .empty-icon {
-    background: rgba(249, 115, 22, 0.15);
-  }
-
-  .verse-row p {
-    color: var(--ink);
-  }
-
-  .message-error {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #fca5a5;
-  }
-}
-
 .bible-header ion-toolbar {
   --background: var(--paper);
   --color: var(--ink);
@@ -190,4 +156,64 @@
   .reading-section { padding-top: 36px; }
   .verse-row { gap: 13px; }
   .verse-row p { font-size: 17px; }
+}
+
+// =====================================================
+// MODE SOMBRE (BLEU DE NUIT)
+// Placé en fin de fichier pour passer après les styles de base
+// =====================================================
+:host-context(.dark) {
+  --ink: #ffffff;
+  --muted: #cbd5e1;
+  --paper: #0f172a;
+  --line: #334155;
+
+  .bible-header ion-toolbar,
+  .bible-header ion-back-button {
+    --color: #ffffff;
+  }
+
+  .intro-block h1,
+  .reading-heading h2,
+  .verse-count strong,
+  .loading-state h2,
+  .empty-state h2,
+  .welcome-state h2,
+  .welcome-art ion-icon {
+    color: #ffffff;
+  }
+
+  .intro-block p,
+  .verse-count,
+  .loading-state p,
+  .empty-state p,
+  .welcome-state p {
+    color: #cbd5e1;
+  }
+
+  .verse-row p {
+    color: #ffffff;
+  }
+
+  .reader-panel {
+    background: #1e293b;
+    box-shadow: 0 18px 35px rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+  }
+
+  .reader-field {
+    --background: #16213a;
+    --border-color: #334155;
+    --color: #ffffff;
+  }
+
+  .loading-mark, .empty-icon {
+    background: rgba(249, 115, 22, 0.15);
+  }
+
+  .message-error {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+  }
 }

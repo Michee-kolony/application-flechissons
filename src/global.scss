@@ -116,3 +116,45 @@ body {
   background: var(--app-bg);
   color: var(--app-text);
 }
+
+// =====================================================
+// MODE SOMBRE — Action sheet « Choisir un livre » (page Bible)
+// Rendu hors de la page par Ionic : doit être stylé en global
+// =====================================================
+html.dark ion-action-sheet.bible-book-sheet {
+  --background: #1e293b;
+  --button-background: #1e293b;
+  --button-background-hover: #273549;
+  --button-background-activated: #273549;
+  --button-background-selected: rgba(249, 115, 22, 0.15);
+  --button-color: #ffffff;
+  --button-color-hover: #ffffff;
+  --button-color-activated: #ffffff;
+  --button-color-selected: #fdba74;
+  --color: #ffffff;
+
+  .action-sheet-title {
+    color: #ffffff;
+    background: #1e293b;
+  }
+
+  .action-sheet-sub-title {
+    color: #cbd5e1;
+  }
+
+  .action-sheet-group {
+    background: #1e293b;
+  }
+
+  .action-sheet-button {
+    color: #ffffff;
+  }
+
+  .action-sheet-selected {
+    color: #fdba74;
+  }
+
+  .action-sheet-group-cancel .action-sheet-button {
+    color: #f97316;
+  }
+}

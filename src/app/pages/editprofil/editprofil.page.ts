@@ -28,6 +28,18 @@ interface ProfileUser {
   updatedAt?: string;
 }
 
+interface UploadError {
+  icon: string;
+  title: string;
+  message: string;
+  hint: string;
+}
+
+// Mêmes règles que le backend (middlewares/upload.js)
+const PHOTO_MAX_SIZE = 5 * 1024 * 1024;
+const PHOTO_FORMATS = ['image/jpeg', 'image/png', 'image/webp'];
+const PHOTO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
 @Component({
   selector: 'app-editprofil',
   templateUrl: './editprofil.page.html',
@@ -46,6 +58,7 @@ export class EditprofilPage implements OnInit {
   
   isSaving = false;
   isPhotoSheetOpen = false;
+  uploadError: UploadError | null = null;
   photoPreview = '';
   selectedCategories: string[] = [];
   private selectedFile: File | null = null; // Stocker le fichier sélectionné
@@ -54,7 +67,7 @@ export class EditprofilPage implements OnInit {
   // API - LOCALHOST
   // =====================================================
   
-  private apiUrl = 'https://backend-flechissons.onrender.com/user';
+  private apiUrl = 'https://flechissons.com/user';
 
   // =====================================================
   // CATÉGORIES
@@ -176,7 +189,16 @@ export class EditprofilPage implements OnInit {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
+    // Permet de re-sélectionner le même fichier après une erreur
+    input.value = '';
+
     if (!file) {
+      return;
+    }
+
+    const error = this.validatePhoto(file);
+    if (error) {
+      this.uploadError = error;
       return;
     }
 
@@ -189,6 +211,67 @@ export class EditprofilPage implements OnInit {
       this.photoPreview = reader.result as string;
     };
     reader.readAsDataURL(file);
+  }
+
+  // =====================================================
+  // ERREURS PHOTO (MODAL)
+  // =====================================================
+
+  private validatePhoto(file: File): UploadError | null {
+    // Certains Android ne renseignent pas le type MIME : on regarde l'extension
+    const extension = file.name.split('.').pop()?.toLowerCase() || '';
+    const formatOk = file.type
+      ? PHOTO_FORMATS.includes(file.type)
+      : PHOTO_EXTENSIONS.includes(extension);
+
+    if (!formatOk) {
+      return this.formatError(extension || file.type);
+    }
+    if (file.size > PHOTO_MAX_SIZE) {
+      return this.sizeError(file.size);
+    }
+    return null;
+  }
+
+  private sizeError(size?: number): UploadError {
+    const mo = size ? ` (${(size / 1024 / 1024).toFixed(1).replace('.', ',')} Mo)` : '';
+    return {
+      icon: 'resize-outline',
+      title: 'Photo trop lourde',
+      message: `Votre photo${mo} dépasse la taille maximale autorisée de 5 Mo.`,
+      hint: 'Choisissez une autre photo, ou réduisez-la avant de l\'envoyer (une capture d\'écran de la photo suffit souvent).'
+    };
+  }
+
+  private formatError(format?: string): UploadError {
+    const detail = format ? ` (.${format.replace(/^image\//, '')})` : '';
+    return {
+      icon: 'image-outline',
+      title: 'Format non accepté',
+      message: `Ce type de fichier${detail} n'est pas accepté pour la photo de profil.`,
+      hint: 'Formats acceptés : JPG, PNG ou WEBP. Sur iPhone, les photos HEIC ne sont pas acceptées.'
+    };
+  }
+
+  /** Traduit une erreur d'upload du serveur, ou null si ce n'est pas une erreur de photo */
+  private photoErrorFromResponse(error: any): UploadError | null {
+    const code = error?.error?.code;
+    if (code === 'LIMIT_FILE_SIZE' || error?.status === 413) {
+      return this.sizeError(this.selectedFile?.size);
+    }
+    if (code === 'INVALID_IMAGE_FORMAT') {
+      return this.formatError(this.selectedFile?.name.split('.').pop()?.toLowerCase());
+    }
+    return null;
+  }
+
+  closeUploadError(): void {
+    this.uploadError = null;
+  }
+
+  chooseAnotherPhoto(): void {
+    this.uploadError = null;
+    this.openPhotoPicker();
   }
 
   // =====================================================
@@ -332,7 +415,17 @@ export class EditprofilPage implements OnInit {
       // =================================================
       // GESTION DES ERREURS
       // =================================================
-      
+
+      const photoError = this.photoErrorFromResponse(error);
+      if (photoError) {
+        // La photo refusée ne doit pas être renvoyée au prochain enregistrement
+        this.selectedFile = null;
+        this.photoPreview = this.user.photo || '';
+        this.uploadError = photoError;
+        this.isSaving = false;
+        return;
+      }
+
       let errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
       
       if (error?.error?.message) {

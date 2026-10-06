@@ -31,7 +31,7 @@ interface AudioResponse {
 })
 export class Tab2Page implements OnInit, OnDestroy {
   
-  private urlAudio = "https://backend-flechissons.onrender.com/audio";
+  private urlAudio = "https://flechissons.com/audio";
 
   searchTerm = '';
   selectedCategory = 'tous';

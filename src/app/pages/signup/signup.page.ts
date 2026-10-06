@@ -47,7 +47,7 @@ export class SignupPage {
   // API
   // =====================================================
 
-  private apiUrl = 'https://backend-flechissons.onrender.com/user';
+  private apiUrl = 'https://flechissons.com/user';
 
 
   // =====================================================

@@ -12,9 +12,11 @@ import {
   ViewChildren
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AuthService } from '../services/auth.service';
+import { ArticleEvent, ArticleRealtimeService } from '../services/article-realtime.service';
+import { Subscription } from 'rxjs';
 
 export interface Commentaire {
   _id?: string;
@@ -62,7 +64,7 @@ interface UserData {
 })
 export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
 
-  private urlArticle = 'https://backend-flechissons.onrender.com/article';
+  private urlArticle = 'https://flechissons.com/article';
 
   @ViewChild('feed') feedRef?: ElementRef<HTMLElement>;
   @ViewChildren('slide') slideRefs!: QueryList<ElementRef<HTMLElement>>;
@@ -101,29 +103,110 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   private slidesSub?: { unsubscribe(): void };
   private progressFrame?: number;
   private playTimer?: ReturnType<typeof setTimeout>;
+  private realtimeSub = new Subscription();
+  private scrollTimer?: ReturnType<typeof setTimeout>;
+  private removeScrollListener?: () => void;
+
+  /** Vidéo demandée depuis l'accueil (?video=<id>), en attente d'affichage */
+  private videoCible: string | null = null;
 
   constructor(
     private http: HttpClient,
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService,
     private zone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private realtime: ArticleRealtimeService
   ) {}
 
   ngOnInit() {
     this.loadUserData();
     this.chargerDepuisCache();
     this.chargerPredications();
+
+    // Likes et commentaires des autres utilisateurs, en direct
+    this.realtimeSub.add(this.realtime.events$.subscribe(event => this.appliquerEvenement(event)));
+    this.realtimeSub.add(this.realtime.resync$.subscribe(() => this.chargerPredications()));
+
+    // Ouverture directe d'une vidéo depuis l'accueil
+    this.realtimeSub.add(this.route.queryParamMap.subscribe(params => {
+      const id = params.get('video');
+      if (id) {
+        this.videoCible = id;
+        this.allerVersVideoCible();
+      }
+    }));
+  }
+
+  /**
+   * Place le flux sur la vidéo demandée. Reste en attente tant que la liste
+   * n'est pas chargée ou que la page n'est pas affichée (hauteur nulle).
+   */
+  private allerVersVideoCible(): void {
+    const feed = this.feedRef?.nativeElement;
+    if (!this.videoCible || !feed || !feed.clientHeight) {
+      return;
+    }
+
+    // La recherche pourrait masquer la vidéo
+    if (this.searchText) {
+      this.searchText = '';
+      this.showSearch = false;
+      this.predicationsFiltrees = [...this.predications];
+      this.cdr.detectChanges();
+    }
+
+    const index = this.predicationsFiltrees.findIndex(a => a._id === this.videoCible);
+    if (index === -1) {
+      return;
+    }
+
+    this.videoCible = null;
+    // Retire ?video= de l'URL : un nouveau clic sur la même vidéo fonctionnera
+    this.router.navigate([], { relativeTo: this.route, queryParams: { video: null }, replaceUrl: true });
+
+    feed.scrollTop = index * feed.clientHeight;
+    this.setActive(index, true);
   }
 
   ngAfterViewInit() {
     // Les slides sont recréées à chaque chargement / recherche
     this.slidesSub = this.slideRefs.changes.subscribe(() => setTimeout(() => this.observeSlides()));
+    this.ecouterFinDeScroll();
+  }
+
+  /**
+   * Filet de sécurité de l'IntersectionObserver : quand le scroll s'arrête,
+   * la vidéo qui occupe l'écran devient la vidéo active (utile après un scroll rapide)
+   */
+  private ecouterFinDeScroll(): void {
+    const feed = this.feedRef?.nativeElement;
+    if (!feed) {
+      return;
+    }
+    const onScroll = () => {
+      clearTimeout(this.scrollTimer);
+      this.scrollTimer = setTimeout(() => {
+        if (!feed.clientHeight) {
+          return;
+        }
+        const index = Math.round(feed.scrollTop / feed.clientHeight);
+        if (index !== this.activeIndex && index < this.predicationsFiltrees.length) {
+          this.zone.run(() => this.setActive(index));
+        }
+      }, 120);
+    };
+    this.zone.runOutsideAngular(() => feed.addEventListener('scroll', onScroll, { passive: true }));
+    this.removeScrollListener = () => feed.removeEventListener('scroll', onScroll);
   }
 
   ngOnDestroy() {
     this.observer?.disconnect();
     this.slidesSub?.unsubscribe();
+    this.realtimeSub.unsubscribe();
+    this.removeScrollListener?.();
+    clearTimeout(this.scrollTimer);
     this.stopProgressLoop();
     clearTimeout(this.playTimer);
     this.pauseAll();
@@ -132,6 +215,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   ionViewDidEnter() {
     this.pageVisible = true;
     this.loadUserData();
+    this.allerVersVideoCible();
 
     // Les lecteurs vidéo ne sont créés qu'une fois la navigation terminée,
     // et on laisse l'écran s'afficher avant de lancer le décodage
@@ -206,6 +290,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
           this.appliquerPredications(liste);
+          setTimeout(() => this.allerVersVideoCible());
           try {
             localStorage.setItem(this.cacheKey, JSON.stringify(liste));
           } catch {
@@ -305,18 +390,49 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
 
   private playActive(): void {
     const active = this.getVideo(this.activeIndex);
+
+    // Une seule vidéo joue à la fois : toutes les autres sont arrêtées
+    this.feedRef?.nativeElement.querySelectorAll('video').forEach(video => {
+      if (video !== active) {
+        video.pause();
+      }
+    });
+
     if (!active || !this.pageVisible || this.isPaused) {
       return;
     }
 
     active.muted = this.isMuted;
-    active.play().catch(() => {
-      // Le navigateur bloque l'autoplay avec son : on relance en muet
-      this.isMuted = true;
-      active.muted = true;
-      active.play().catch(() => (this.isPaused = true));
-    });
+    active.play()
+      .then(() => this.pauseSiInactive(active))
+      .catch(error => {
+        // play() interrompu par un pause() (on a déjà changé de vidéo) : ne rien relancer
+        if (error?.name !== 'NotAllowedError' || !this.estVideoActive(active)) {
+          return;
+        }
+        // Le navigateur bloque l'autoplay avec son : on relance en muet
+        this.isMuted = true;
+        active.muted = true;
+        active.play()
+          .then(() => this.pauseSiInactive(active))
+          .catch(() => {
+            if (this.estVideoActive(active)) {
+              this.isPaused = true;
+            }
+          });
+      });
     this.startProgressLoop();
+  }
+
+  private estVideoActive(video: HTMLVideoElement): boolean {
+    return this.pageVisible && !this.isPaused && this.getVideo(this.activeIndex) === video;
+  }
+
+  /** La lecture a pu démarrer après qu'on a scrollé ailleurs : on la coupe */
+  private pauseSiInactive(video: HTMLVideoElement): void {
+    if (!this.estVideoActive(video)) {
+      video.pause();
+    }
   }
 
   private pauseAll(): void {
@@ -502,7 +618,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
             ...body,
             createdAt: new Date().toISOString()
           };
-          article.commentaires = [...(article.commentaires ?? []), comment];
+          this.ajouterCommentaireLocal(article, comment);
           this.nouveauCommentaire = '';
         }
         this.isSendingComment = false;
@@ -513,6 +629,31 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
         alert('Erreur lors de l\'ajout du commentaire');
       }
     });
+  }
+
+  /** Ajoute un commentaire s'il n'est pas déjà présent (réponse HTTP + temps réel) */
+  private ajouterCommentaireLocal(article: Article, comment: Commentaire): void {
+    if (comment._id && article.commentaires?.some(c => c._id === comment._id)) {
+      return;
+    }
+    article.commentaires = [...(article.commentaires ?? []), comment];
+  }
+
+  // =====================================================
+  // TEMPS RÉEL
+  // =====================================================
+
+  private appliquerEvenement(event: ArticleEvent): void {
+    const article = this.predications.find(a => a._id === event.articleId);
+    if (!article) {
+      return;
+    }
+
+    if (event.type === 'like') {
+      article.likes = event.likes;
+    } else {
+      this.ajouterCommentaireLocal(article, event.commentaire);
+    }
   }
 
   getInitiale(nom: string, prenom: string): string {
