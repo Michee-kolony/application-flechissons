@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, NgZone } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 
-interface StoredUser {
+export interface StoredUser {
   id: string;
   nom?: string;
   prenom?: string;
@@ -19,6 +19,23 @@ export class AuthService {
   private loginModalOpenSubject = new BehaviorSubject<boolean>(false);
   loginModalOpen$ = this.loginModalOpenSubject.asObservable();
 
+  private userSubject = new BehaviorSubject<StoredUser | null>(this.readStoredUser());
+
+  /**
+   * Utilisateur connecté, mis à jour en direct (connexion, modification du profil,
+   * déconnexion). Les pages s'y abonnent pour ne jamais afficher un profil périmé.
+   */
+  readonly user$: Observable<StoredUser | null> = this.userSubject.asObservable();
+
+  constructor(zone: NgZone) {
+    // Version web : garde les autres onglets du navigateur synchronisés
+    window.addEventListener('storage', event => {
+      if (event.key === USER_KEY || event.key === TOKEN_KEY || event.key === null) {
+        zone.run(() => this.userSubject.next(this.readStoredUser()));
+      }
+    });
+  }
+
   get isLoggedIn(): boolean {
     return !!localStorage.getItem(TOKEN_KEY);
   }
@@ -28,12 +45,23 @@ export class AuthService {
   }
 
   get currentUser(): StoredUser | null {
-    try {
-      const raw = localStorage.getItem(USER_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
+    return this.userSubject.value;
+  }
+
+  /** Après la connexion : enregistre la session et prévient toutes les pages */
+  setSession(token: string, user: StoredUser): void {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_ID_KEY, user.id);
+    this.saveUser(user);
+  }
+
+  /** Après une modification du profil : fusionne les nouveaux champs et prévient toutes les pages */
+  updateUser(changes: Partial<StoredUser>): void {
+    const current = this.userSubject.value;
+    if (!current) {
+      return;
     }
+    this.saveUser({ ...current, ...changes });
   }
 
   /**
@@ -60,5 +88,20 @@ export class AuthService {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(USER_ID_KEY);
+    this.userSubject.next(null);
+  }
+
+  private saveUser(user: StoredUser): void {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    this.userSubject.next(user);
+  }
+
+  private readStoredUser(): StoredUser | null {
+    try {
+      const raw = localStorage.getItem(USER_KEY);
+      return raw && localStorage.getItem(TOKEN_KEY) ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
   }
 }

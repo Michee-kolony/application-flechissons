@@ -4,8 +4,18 @@
   <!-- Barre du haut (superposée) -->
   <div class="reels-topbar">
     <div class="topbar-title" *ngIf="!showSearch">
-      <span class="kicker">PAROLE DE VIE</span>
-      <h1>Prédications</h1>
+      <span class="kicker">{{ flux.kicker }}</span>
+      <h1 class="sr-only">{{ flux.titre }}</h1>
+      <nav class="flux-switch" aria-label="Type de vidéos">
+        <a routerLink="/tabs/tab3"
+           routerDirection="root"
+           [class.active]="flux.type === 'predications'"
+           [attr.aria-current]="flux.type === 'predications' ? 'page' : null">Prédications</a>
+        <a routerLink="/tabs/tab3/exhortations"
+           routerDirection="root"
+           [class.active]="flux.type === 'exhortations'"
+           [attr.aria-current]="flux.type === 'exhortations' ? 'page' : null">Exhortations</a>
+      </nav>
     </div>
 
     <div class="reels-search" *ngIf="showSearch">
@@ -14,8 +24,8 @@
         [(ngModel)]="searchText"
         (input)="rechercher()"
         type="search"
-        placeholder="Rechercher une prédication..."
-        aria-label="Rechercher une prédication">
+        [placeholder]="'Rechercher une ' + flux.singulier + '...'"
+        [attr.aria-label]="'Rechercher une ' + flux.singulier">
     </div>
 
     <button class="topbar-btn" (click)="toggleSearch()" [attr.aria-label]="showSearch ? 'Fermer la recherche' : 'Rechercher'">
@@ -38,7 +48,7 @@
   <!-- Aucun résultat -->
   <div *ngIf="!isLoading && !errorMessage && predicationsFiltrees.length === 0" class="reels-state">
     <ion-icon name="videocam-outline" class="state-icon"></ion-icon>
-    <p>Aucune prédication trouvée</p>
+    <p>Aucune {{ flux.singulier }} trouvée</p>
   </div>
 
   <!-- Flux vertical -->
@@ -183,9 +193,50 @@
           <div class="comment-body">
             <div class="comment-meta">
               <strong>{{ getNomComplet(commentaire.prenom, commentaire.nom) }}</strong>
-              <span>{{ getTimeAgo(commentaire.createdAt) }}</span>
+              <span>{{ getTimeAgo(commentaire.createdAt) }}<em *ngIf="estModifie(commentaire)"> (modifié)</em></span>
+              <button
+                *ngIf="peutModifier(commentaire) && editionId !== commentaire._id"
+                type="button"
+                class="comment-edit-btn"
+                (click)="commencerEdition(commentaire)"
+                aria-label="Modifier le commentaire">
+                <ion-icon name="create-outline"></ion-icon>
+              </button>
             </div>
-            <p>{{ commentaire.contenu }}</p>
+
+            <p *ngIf="editionId !== commentaire._id">{{ commentaire.contenu }}</p>
+
+            <!-- Mode édition -->
+            <div *ngIf="editionId === commentaire._id" class="comment-edit">
+              <textarea
+                id="edition-commentaire-reel"
+                [(ngModel)]="editionTexte"
+                [disabled]="isSavingEdition"
+                (keydown.escape)="$event.stopPropagation(); annulerEdition()"
+                (keydown.control.enter)="enregistrerEdition()"
+                (keydown.meta.enter)="enregistrerEdition()"
+                rows="3"
+                aria-label="Modifier le commentaire"></textarea>
+
+              <span class="comment-edit__count" [class.comment-edit__count--over]="editionTexte.trim().length > commentaireMax">
+                {{ editionTexte.trim().length }}/{{ commentaireMax }}
+              </span>
+
+              <p *ngIf="editionErreur" class="comment-edit__error" role="alert">
+                <ion-icon name="alert-circle-outline"></ion-icon>
+                <span>{{ editionErreur }}</span>
+              </p>
+
+              <div class="comment-edit__actions">
+                <button type="button" class="comment-edit__cancel" (click)="annulerEdition()" [disabled]="isSavingEdition">
+                  Annuler
+                </button>
+                <button type="button" class="comment-edit__save" (click)="enregistrerEdition()" [disabled]="isSavingEdition || !editionValide">
+                  <ion-spinner *ngIf="isSavingEdition" name="crescent"></ion-spinner>
+                  {{ isSavingEdition ? 'Enregistrement...' : 'Enregistrer' }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </ion-content>

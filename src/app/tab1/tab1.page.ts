@@ -12,6 +12,7 @@ import { IonInfiniteScroll } from '@ionic/angular';
 import { Subscription, interval } from 'rxjs';
 import Splide from '@splidejs/splide';
 import { ArticleEvent, ArticleRealtimeService } from '../services/article-realtime.service';
+import { AuthService } from '../services/auth.service';
 
 interface Article {
   _id: string;
@@ -99,13 +100,14 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private realtime: ArticleRealtimeService
+    private realtime: ArticleRealtimeService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    // Charger les données de l'utilisateur depuis le localStorage
-    this.loadUserData();
-    
+    // Utilisateur connecté, mis à jour en direct (profil modifié, connexion, déconnexion)
+    this.realtimeSub.add(this.authService.user$.subscribe(() => this.loadUserData()));
+
     this.chargerArticles();
 
     /**
@@ -134,6 +136,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
     if (event.type === 'like') {
       article.likes = event.likes;
+    } else if (event.type === 'commentaire-modifie') {
+      article.commentaires = article.commentaires?.map(c => c._id === event.commentaire._id ? event.commentaire : c);
     } else if (!article.commentaires?.some(c => c._id === event.commentaire._id)) {
       article.commentaires = [...(article.commentaires ?? []), event.commentaire];
     }
@@ -176,30 +180,32 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
   private loadUserData(): void {
     try {
-      const userDataStr = localStorage.getItem('user');
-      
-      if (userDataStr) {
-        this.userData = JSON.parse(userDataStr);
-        
-        // Déterminer le nom à afficher
-        if (this.userData) {
-          if (this.userData.prenom && this.userData.nom) {
-            this.userNom = `${this.userData.prenom} ${this.userData.nom}`;
-          } else if (this.userData.prenom) {
-            this.userNom = this.userData.prenom;
-          } else if (this.userData.nom) {
-            this.userNom = this.userData.nom;
-          } else {
-            this.userNom = 'Invité';
-          }
-          
-          // Récupérer la photo
-          this.userPhoto = this.userData.photo || '';
-          this.userId = this.userData.id || '';
+      this.userData = this.authService.currentUser as UserData | null;
 
-          // Calculer l'initiale à afficher
-          this.calculerInitiale();
+      if (!this.userData) {
+        // Déconnecté : on n'affiche plus l'ancien profil
+        this.userNom = 'Invité';
+        this.userPhoto = '';
+        this.userId = '';
+        this.calculerInitiale();
+      } else {
+        // Déterminer le nom à afficher
+        if (this.userData.prenom && this.userData.nom) {
+          this.userNom = `${this.userData.prenom} ${this.userData.nom}`;
+        } else if (this.userData.prenom) {
+          this.userNom = this.userData.prenom;
+        } else if (this.userData.nom) {
+          this.userNom = this.userData.nom;
+        } else {
+          this.userNom = 'Invité';
         }
+
+        // Récupérer la photo
+        this.userPhoto = this.userData.photo || '';
+        this.userId = this.userData.id || '';
+
+        // Calculer l'initiale à afficher
+        this.calculerInitiale();
       }
     } catch (error) {
       console.error('Erreur lors du chargement des données utilisateur:', error);

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 interface LoginResponse {
   success: boolean;
@@ -75,7 +76,8 @@ export class LoginPage {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   // =====================================================
@@ -223,30 +225,12 @@ export class LoginPage {
         }
 
         // -----------------------------------------------
-        // STOCKER TOKEN
+        // STOCKER TOKEN + UTILISATEUR (prévient toutes les pages)
         // -----------------------------------------------
 
-        localStorage.setItem(
-          'token',
-          response.token
-        );
-
-        // -----------------------------------------------
-        // STOCKER UTILISATEUR
-        // -----------------------------------------------
-
-        localStorage.setItem(
-          'user',
-          JSON.stringify(response.user)
-        );
-
-        // -----------------------------------------------
-        // STOCKER ID UTILISATEUR
-        // -----------------------------------------------
-
-        localStorage.setItem(
-          'userId',
-          response.user.id
+        this.authService.setSession(
+          response.token,
+          response.user
         );
 
         // -----------------------------------------------

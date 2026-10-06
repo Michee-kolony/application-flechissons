@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ThemeMode, ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
+import { Subscription } from 'rxjs';
 
 interface User {
   id?: string;
@@ -32,7 +33,7 @@ interface User {
   styleUrls: ['./profil.page.scss'],
   standalone: false
 })
-export class ProfilPage implements OnInit {
+export class ProfilPage implements OnInit, OnDestroy {
 
   // =====================================================
   // UTILISATEUR
@@ -45,6 +46,8 @@ export class ProfilPage implements OnInit {
   // =====================================================
 
   isLoading = false;
+
+  private userSub?: Subscription;
 
   // =====================================================
   // CONSTRUCTEUR
@@ -62,37 +65,32 @@ export class ProfilPage implements OnInit {
   // =====================================================
 
   ngOnInit() {
-    this.loadUserData();
+    // Mis à jour en direct (ex. après modification du profil), sans recharger la page
+    this.userSub = this.authService.user$.subscribe(user => {
+      this.user = { ...(user as User | null) };
+    });
+  }
+
+  ionViewWillEnter() {
+    this.verifierConnexion();
+  }
+
+  ngOnDestroy() {
+    this.userSub?.unsubscribe();
   }
 
   // =====================================================
-  // CHARGER LES DONNÉES DE L'UTILISATEUR
+  // ACCÈS RÉSERVÉ AUX UTILISATEURS CONNECTÉS
   // =====================================================
 
-  loadUserData() {
+  private verifierConnexion() {
     // Le profil est reserve aux utilisateurs connectes : si ce n'est
     // pas le cas, on affiche la modal de connexion discrete et on
     // renvoie l'utilisateur vers l'accueil (pas de redirection forcee
     // vers /login, l'app reste en libre acces).
     if (!this.authService.isLoggedIn) {
-      this.user = {};
       this.authService.requireAuth();
       this.navCtrl.navigateRoot('/tabs/tab1');
-      return;
-    }
-
-    try {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        this.user = JSON.parse(userData);
-        console.log('✅ Utilisateur chargé:', this.user);
-        console.log('📸 Photo:', this.user.photo);
-      } else {
-        this.user = {};
-      }
-    } catch (error) {
-      console.error('❌ Erreur lors du chargement de l\'utilisateur:', error);
-      this.user = {};
     }
   }
 
@@ -140,11 +138,7 @@ export class ProfilPage implements OnInit {
 
   onPhotoError(): void {
     console.warn('⚠️ Erreur de chargement de la photo, suppression de la photo');
-    this.user.photo = '';
-    // Mettre à jour le localStorage
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    currentUser.photo = '';
-    localStorage.setItem('user', JSON.stringify(currentUser));
+    this.authService.updateUser({ photo: '' });
   }
 
   // =====================================================
@@ -157,9 +151,8 @@ export class ProfilPage implements OnInit {
     
     // Simuler un délai de déconnexion
     setTimeout(() => {
-      // Supprimer les données du localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      // Supprimer la session (prévient toutes les pages)
+      this.authService.logout();
       
       this.isLoading = false;
       console.log('✅ Déconnecté avec succès');
@@ -193,15 +186,6 @@ export class ProfilPage implements OnInit {
 
   refreshData() {
     console.log('🔄 Rafraîchissement des données...');
-    this.loadUserData();
-  }
-
-  // =====================================================
-  // ION VIEW WILL ENTER - RECHARGE À CHAQUE RETOUR
-  // =====================================================
-
-  ionViewWillEnter() {
-    console.log('📱 Retour sur la page profil - Rechargement des données');
-    this.loadUserData();
+    this.user = { ...(this.authService.currentUser as User | null) };
   }
 }

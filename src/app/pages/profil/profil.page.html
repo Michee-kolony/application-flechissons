@@ -103,7 +103,19 @@
     <!-- ================================================= -->
     <div class="menu-options">
 
-      <!-- Carte 1 : Faire un don -->
+      <!-- Carte 1 : Lire la Bible -->
+      <div [routerLink]="['/bible']" class="menu-card">
+        <div class="menu-card-icon">
+          <ion-icon name="book-outline"></ion-icon>
+        </div>
+        <div class="menu-card-content">
+          <h3>Lire la Bible</h3>
+          <p>La parole de Dieu</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
+      </div>
+
+      <!-- Carte 2 : Faire un don -->
       <div [routerLink]="['/checkout']" class="menu-card">
         <div class="menu-card-icon">
           <ion-icon name="heart-outline"></ion-icon>
@@ -115,7 +127,7 @@
         <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
 
-      <!-- Carte 2 : FAQ -->
+      <!-- Carte 3 : FAQ -->
       <div [routerLink]="['/faq']" class="menu-card">
         <div class="menu-card-icon">
           <ion-icon name="help-circle-outline"></ion-icon>
@@ -123,18 +135,6 @@
         <div class="menu-card-content">
           <h3>FAQ</h3>
           <p>Questions fréquentes</p>
-        </div>
-        <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
-      </div>
-
-      <!-- Carte 3 : Lire la Bible -->
-      <div [routerLink]="['/bible']" class="menu-card">
-        <div class="menu-card-icon">
-          <ion-icon name="book-outline"></ion-icon>
-        </div>
-        <div class="menu-card-content">
-          <h3>Lire la Bible</h3>
-          <p>La parole de Dieu</p>
         </div>
         <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>

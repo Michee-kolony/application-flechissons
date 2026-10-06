@@ -55,6 +55,52 @@ $tabbar-offset: calc(60px + env(safe-area-inset-bottom));
   }
 }
 
+// Titre de la page pour les lecteurs d'écran (le sélecteur l'affiche visuellement)
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// Sélecteur Prédications / Exhortations
+.flux-switch {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 2px;
+
+  a {
+    position: relative;
+    padding-bottom: 4px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    text-decoration: none;
+    transition: color 0.2s ease, font-size 0.2s ease;
+
+    &.active {
+      color: #fff;
+      font-size: 17px;
+      font-weight: 800;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 18px;
+        height: 3px;
+        background: $color-secondary;
+        border-radius: 3px;
+      }
+    }
+  }
+}
+
 .kicker {
   color: $color-secondary;
   font-size: 9px;
@@ -573,6 +619,121 @@ $tabbar-offset: calc(60px + env(safe-area-inset-bottom));
   span {
     color: $color-text-muted;
   }
+
+  em {
+    font-style: italic;
+  }
+}
+
+.comment-edit-btn {
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  padding: 2px;
+  color: $color-text-muted;
+  background: transparent;
+  border: 0;
+  font-size: 16px;
+  transition: color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: $color-secondary;
+  }
+}
+
+.comment-edit {
+  margin-top: 6px;
+
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    color: var(--app-text, $color-primary);
+    background: var(--app-surface-alt, #f5f5f4);
+    border: 1px solid var(--app-border, #f0e3d7);
+    border-radius: 12px;
+    outline: 0;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.45;
+    resize: none;
+
+    &:focus {
+      border-color: $color-secondary;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+}
+
+.comment-edit__count {
+  display: block;
+  margin-top: 2px;
+  color: $color-text-muted;
+  font-size: 11px;
+  text-align: right;
+
+  &--over {
+    color: #dc2626;
+  }
+}
+
+.comment-edit .comment-edit__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 4px 0 0;
+  color: #dc2626;
+  font-size: 12px;
+
+  ion-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 14px;
+  }
+}
+
+.comment-edit__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: 20px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    transition: opacity 0.2s ease;
+
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+
+  ion-spinner {
+    --color: #fff;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.comment-edit__cancel {
+  color: var(--app-text-secondary, $color-text-light);
+  background: var(--app-surface-alt, #f5f5f4);
+}
+
+.comment-edit__save {
+  color: #fff;
+  background: $color-secondary;
 }
 
 .comments-footer {

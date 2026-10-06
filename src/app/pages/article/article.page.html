@@ -163,7 +163,8 @@
       </div>
 
       <!-- COMMENTAIRES -->
-      <div class="space-y-3 pb-4">
+      <!-- pb-24 : place pour la barre de saisie fixée en bas -->
+      <div class="space-y-3 pb-24">
         <h3 class="font-bold text-base text-gray-900 dark:text-slate-100">
           <i class="fas fa-comments mr-2 text-orange-500"></i>
           Commentaires ({{ commentaires.length }})
@@ -189,14 +190,74 @@
             </span>
           </div>
 
-          <div class="flex-1">
-            <div class="flex items-center justify-between">
-              <h4 class="font-bold text-sm text-gray-900 dark:text-slate-100">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <h4 class="font-bold text-sm text-gray-900 dark:text-slate-100 truncate">
                 {{ getNomComplet(commentaire.prenom, commentaire.nom) }}
               </h4>
-              <span class="text-xs text-gray-400 dark:text-slate-500">{{ commentaire.date }}</span>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-xs text-gray-400 dark:text-slate-500">
+                  {{ commentaire.date }}<span *ngIf="commentaire.modifie" class="italic"> (modifié)</span>
+                </span>
+                <button
+                  *ngIf="peutModifier(commentaire) && editionId !== commentaire.id"
+                  type="button"
+                  (click)="commencerEdition(commentaire)"
+                  class="w-7 h-7 -my-1 rounded-full flex items-center justify-center text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:text-slate-500 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Modifier le commentaire"
+                  title="Modifier">
+                  <i class="fas fa-pen text-xs"></i>
+                </button>
+              </div>
             </div>
-            <p class="text-sm text-gray-600 dark:text-slate-300 mt-0.5">{{ commentaire.contenu }}</p>
+
+            <p *ngIf="editionId !== commentaire.id" class="text-sm text-gray-600 dark:text-slate-300 mt-0.5 whitespace-pre-line break-words">{{ commentaire.contenu }}</p>
+
+            <!-- Mode édition -->
+            <div *ngIf="editionId === commentaire.id" class="mt-2">
+              <textarea
+                [(ngModel)]="editionTexte"
+                [disabled]="isSavingEdition"
+                (keydown.escape)="annulerEdition()"
+                (keydown.control.enter)="enregistrerEdition()"
+                (keydown.meta.enter)="enregistrerEdition()"
+                rows="3"
+                id="edition-commentaire"
+                class="w-full text-sm rounded-xl px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-orange-500/50 resize-none disabled:opacity-60"
+                aria-label="Modifier le commentaire"></textarea>
+
+              <div class="flex items-center justify-between mt-1">
+                <span class="text-xs"
+                      [class.text-red-500]="editionTexte.trim().length > commentaireMax"
+                      [class.text-gray-400]="editionTexte.trim().length <= commentaireMax">
+                  {{ editionTexte.trim().length }}/{{ commentaireMax }}
+                </span>
+                <span class="text-[10px] text-gray-400 dark:text-slate-500 hidden sm:inline">Échap pour annuler · Ctrl+Entrée pour enregistrer</span>
+              </div>
+
+              <p *ngIf="editionErreur" class="mt-1 text-xs text-red-500 flex items-start gap-1" role="alert">
+                <i class="fas fa-exclamation-circle mt-0.5"></i>
+                <span>{{ editionErreur }}</span>
+              </p>
+
+              <div class="flex justify-end gap-2 mt-2">
+                <button
+                  type="button"
+                  (click)="annulerEdition()"
+                  [disabled]="isSavingEdition"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-full text-gray-600 dark:text-slate-300 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50">
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  (click)="enregistrerEdition()"
+                  [disabled]="isSavingEdition || !editionValide"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-full text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 flex items-center gap-1.5">
+                  <i *ngIf="isSavingEdition" class="fas fa-spinner fa-spin"></i>
+                  {{ isSavingEdition ? 'Enregistrement...' : 'Enregistrer' }}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

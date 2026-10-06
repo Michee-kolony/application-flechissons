@@ -11,11 +11,12 @@ import {
   ViewChild,
   ViewChildren
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AuthService } from '../services/auth.service';
 import { ArticleEvent, ArticleRealtimeService } from '../services/article-realtime.service';
+import { COMMENTAIRE_MAX, CommentaireService } from '../services/commentaire.service';
 import { Subscription } from 'rxjs';
 
 export interface Commentaire {
@@ -45,6 +46,14 @@ export interface Article {
   __v: number;
 }
 
+/** Type d'articles affiché par le flux vidéo (défini dans tab3-routing.module.ts) */
+export interface FluxVideoConfig {
+  type: string;
+  titre: string;
+  kicker: string;
+  singulier: string;
+}
+
 interface UserData {
   id: string;
   firebaseUid: string;
@@ -69,7 +78,9 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('feed') feedRef?: ElementRef<HTMLElement>;
   @ViewChildren('slide') slideRefs!: QueryList<ElementRef<HTMLElement>>;
 
-  private readonly cacheKey = 'predications_cache';
+  /** Prédications ou exhortations, selon la route */
+  readonly flux: FluxVideoConfig;
+  private readonly cacheKey: string;
 
   searchText = '';
   showSearch = false;
@@ -96,6 +107,13 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   nouveauCommentaire = '';
   isSendingComment = false;
 
+  // Modification d'un commentaire (un seul à la fois)
+  readonly commentaireMax = COMMENTAIRE_MAX;
+  editionId: string | null = null;
+  editionTexte = '';
+  editionErreur = '';
+  isSavingEdition = false;
+
   private observer?: IntersectionObserver;
   private pageVisible = false;
   private lastTap = 0;
@@ -117,11 +135,16 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
     private authService: AuthService,
     private zone: NgZone,
     private cdr: ChangeDetectorRef,
-    private realtime: ArticleRealtimeService
-  ) {}
+    private realtime: ArticleRealtimeService,
+    private commentaireService: CommentaireService
+  ) {
+    this.flux = this.route.snapshot.data['flux'];
+    this.cacheKey = `${this.flux.type}_cache`;
+  }
 
   ngOnInit() {
-    this.loadUserData();
+    // Utilisateur connecté, mis à jour en direct (profil modifié, connexion, déconnexion)
+    this.realtimeSub.add(this.authService.user$.subscribe(() => this.loadUserData()));
     this.chargerDepuisCache();
     this.chargerPredications();
 
@@ -214,7 +237,6 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
 
   ionViewDidEnter() {
     this.pageVisible = true;
-    this.loadUserData();
     this.allerVersVideoCible();
 
     // Les lecteurs vidéo ne sont créés qu'une fois la navigation terminée,
@@ -239,13 +261,8 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   // =====================================================
 
   private loadUserData(): void {
-    try {
-      const userDataStr = localStorage.getItem('user');
-      this.userData = userDataStr ? JSON.parse(userDataStr) : null;
-      this.userId = this.userData?.id || '';
-    } catch (error) {
-      console.error('Erreur lors du chargement des données utilisateur:', error);
-    }
+    this.userData = this.authService.currentUser as UserData | null;
+    this.userId = this.userData?.id || '';
   }
 
   goToProfile(): void {
@@ -285,7 +302,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
       next: (response) => {
         if (response && response.success && Array.isArray(response.articles)) {
           const liste: Article[] = response.articles
-            .filter((article: Article) => article.type?.toLowerCase() === 'predications' && !!article.youtube)
+            .filter((article: Article) => article.type?.toLowerCase() === this.flux.type && !!article.youtube)
             .sort((a: Article, b: Article) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
@@ -297,17 +314,17 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
             // Stockage plein : le cache est facultatif
           }
         } else if (!hasCache) {
-          this.errorMessage = 'Aucune prédication trouvée';
+          this.errorMessage = `Aucune ${this.flux.singulier} trouvée`;
           this.predications = [];
           this.predicationsFiltrees = [];
         }
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('❌ Erreur lors du chargement des prédications:', error);
+        console.error(`❌ Erreur lors du chargement des ${this.flux.type}:`, error);
         this.isLoading = false;
         if (!hasCache) {
-          this.errorMessage = 'Erreur lors du chargement des prédications';
+          this.errorMessage = `Erreur lors du chargement des ${this.flux.singulier}s`;
           this.predications = [];
           this.predicationsFiltrees = [];
         }
@@ -585,6 +602,8 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   closeComments(): void {
     this.commentsOpen = false;
     this.nouveauCommentaire = '';
+    this.isSavingEdition = false;
+    this.annulerEdition();
   }
 
   ajouterCommentaire(): void {
@@ -639,6 +658,84 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
     article.commentaires = [...(article.commentaires ?? []), comment];
   }
 
+  /** Remplace un commentaire par sa version modifiée (réponse HTTP + temps réel, sans doublon) */
+  private remplacerCommentaireLocal(article: Article, comment: Commentaire): void {
+    article.commentaires = article.commentaires?.map(c => c._id === comment._id ? comment : c);
+  }
+
+  // =====================================================
+  // MODIFIER UN COMMENTAIRE
+  // =====================================================
+
+  peutModifier(commentaire: Commentaire): boolean {
+    return !!commentaire._id && this.commentaireService.estAuteur(commentaire, this.userId);
+  }
+
+  estModifie(commentaire: Commentaire): boolean {
+    return this.commentaireService.estModifie(commentaire);
+  }
+
+  commencerEdition(commentaire: Commentaire): void {
+    this.editionId = commentaire._id ?? null;
+    this.editionTexte = commentaire.contenu;
+    this.editionErreur = '';
+    this.isSavingEdition = false;
+
+    // Place le curseur à la fin du texte une fois le champ affiché
+    setTimeout(() => {
+      const champ = document.getElementById('edition-commentaire-reel') as HTMLTextAreaElement | null;
+      champ?.focus();
+      champ?.setSelectionRange(champ.value.length, champ.value.length);
+    });
+  }
+
+  annulerEdition(): void {
+    if (this.isSavingEdition) {
+      return;
+    }
+    this.editionId = null;
+    this.editionTexte = '';
+    this.editionErreur = '';
+  }
+
+  get editionValide(): boolean {
+    const contenu = this.editionTexte.trim();
+    return !!contenu && contenu.length <= this.commentaireMax;
+  }
+
+  enregistrerEdition(): void {
+    const article = this.commentsArticle;
+    if (!article || !this.editionId || this.isSavingEdition) {
+      return;
+    }
+
+    const contenu = this.editionTexte.trim();
+    if (!contenu) {
+      this.editionErreur = 'Le commentaire ne peut pas être vide.';
+      return;
+    }
+    if (contenu.length > this.commentaireMax) {
+      this.editionErreur = `Le commentaire ne peut pas dépasser ${this.commentaireMax} caractères.`;
+      return;
+    }
+
+    this.isSavingEdition = true;
+    this.editionErreur = '';
+
+    this.commentaireService.modifier(article._id, this.editionId, this.userId, contenu).subscribe({
+      next: (commentaire) => {
+        this.remplacerCommentaireLocal(article, commentaire);
+        this.isSavingEdition = false;
+        this.annulerEdition();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Erreur modification commentaire:', error);
+        this.isSavingEdition = false;
+        this.editionErreur = this.commentaireService.messageErreur(error);
+      }
+    });
+  }
+
   // =====================================================
   // TEMPS RÉEL
   // =====================================================
@@ -651,6 +748,8 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
 
     if (event.type === 'like') {
       article.likes = event.likes;
+    } else if (event.type === 'commentaire-modifie') {
+      this.remplacerCommentaireLocal(article, event.commentaire);
     } else {
       this.ajouterCommentaireLocal(article, event.commentaire);
     }

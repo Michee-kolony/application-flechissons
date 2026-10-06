@@ -5,6 +5,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { AuthService } from '../../services/auth.service';
 import { ArticleEvent, ArticleRealtimeService } from '../../services/article-realtime.service';
+import { COMMENTAIRE_MAX, CommentaireService } from '../../services/commentaire.service';
 import { Subscription } from 'rxjs';
 
 export interface CommentaireBackend {
@@ -26,6 +27,7 @@ export interface CommentaireFront {
   contenu: string;
   date: string;
   utilisateurId: string;
+  modifie: boolean;
 }
 
 export interface Article {
@@ -81,6 +83,13 @@ export class ArticlePage implements OnInit, OnDestroy {
   nouveauCommentaire: string = '';
   @ViewChild('commentInput') commentInput!: ElementRef;
 
+  // Modification d'un commentaire (un seul à la fois)
+  readonly commentaireMax = COMMENTAIRE_MAX;
+  editionId: string | null = null;
+  editionTexte = '';
+  editionErreur = '';
+  isSavingEdition = false;
+
   @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
 
   private realtimeSub = new Subscription();
@@ -91,11 +100,13 @@ export class ArticlePage implements OnInit, OnDestroy {
     private http: HttpClient,
     private sanitizer: DomSanitizer,
     private authService: AuthService,
-    private realtime: ArticleRealtimeService
+    private realtime: ArticleRealtimeService,
+    private commentaireService: CommentaireService
   ) {}
 
   ngOnInit() {
-    this.loadUserData();
+    // Utilisateur connecté, mis à jour en direct (profil modifié, connexion, déconnexion)
+    this.realtimeSub.add(this.authService.user$.subscribe(() => this.loadUserData()));
     this.loadArticle();
 
     // Likes et commentaires des autres utilisateurs, en direct
@@ -117,6 +128,8 @@ export class ArticlePage implements OnInit, OnDestroy {
       this.article.likes = event.likes;
       this.likeCount = event.likes.length;
       this.isLiked = !!this.userId && event.likes.includes(this.userId);
+    } else if (event.type === 'commentaire-modifie') {
+      this.remplacerCommentaireLocal(event.commentaire as CommentaireBackend);
     } else {
       this.ajouterCommentaireLocal(this.versCommentaireFront(event.commentaire as CommentaireBackend));
     }
@@ -130,7 +143,8 @@ export class ArticlePage implements OnInit, OnDestroy {
       prenom: comment.prenom || '',
       photo: comment.photo || 'assets/avatar-default.png',
       contenu: comment.contenu,
-      date: this.getTimeAgo(comment.createdAt)
+      date: this.getTimeAgo(comment.createdAt),
+      modifie: this.commentaireService.estModifie(comment)
     };
   }
 
@@ -142,18 +156,86 @@ export class ArticlePage implements OnInit, OnDestroy {
     this.commentaires.push(comment);
   }
 
-  private loadUserData(): void {
-    try {
-      const userDataStr = localStorage.getItem('user');
-      
-      if (userDataStr) {
-        this.userData = JSON.parse(userDataStr);
-        this.userPhoto = this.userData?.photo || '';
-        this.userId = this.userData?.id || '';
-      }
-    } catch (error) {
-      console.error('Erreur chargement donnees utilisateur:', error);
+  /** Remplace un commentaire par sa version modifiée (réponse HTTP + temps réel, sans doublon) */
+  private remplacerCommentaireLocal(comment: CommentaireBackend): void {
+    const index = this.commentaires.findIndex(c => c.id === comment._id);
+    if (index !== -1) {
+      this.commentaires[index] = this.versCommentaireFront(comment);
     }
+  }
+
+  // =====================================================
+  // MODIFIER UN COMMENTAIRE
+  // =====================================================
+
+  peutModifier(commentaire: CommentaireFront): boolean {
+    return !!commentaire.id && this.commentaireService.estAuteur(commentaire, this.userId);
+  }
+
+  commencerEdition(commentaire: CommentaireFront): void {
+    this.editionId = commentaire.id;
+    this.editionTexte = commentaire.contenu;
+    this.editionErreur = '';
+    this.isSavingEdition = false;
+
+    // Place le curseur à la fin du texte une fois le champ affiché
+    setTimeout(() => {
+      const champ = document.getElementById('edition-commentaire') as HTMLTextAreaElement | null;
+      champ?.focus();
+      champ?.setSelectionRange(champ.value.length, champ.value.length);
+    });
+  }
+
+  annulerEdition(): void {
+    if (this.isSavingEdition) {
+      return;
+    }
+    this.editionId = null;
+    this.editionTexte = '';
+    this.editionErreur = '';
+  }
+
+  get editionValide(): boolean {
+    const contenu = this.editionTexte.trim();
+    return !!contenu && contenu.length <= this.commentaireMax;
+  }
+
+  enregistrerEdition(): void {
+    if (!this.article || !this.editionId || this.isSavingEdition) {
+      return;
+    }
+
+    const contenu = this.editionTexte.trim();
+    if (!contenu) {
+      this.editionErreur = 'Le commentaire ne peut pas être vide.';
+      return;
+    }
+    if (contenu.length > this.commentaireMax) {
+      this.editionErreur = `Le commentaire ne peut pas dépasser ${this.commentaireMax} caractères.`;
+      return;
+    }
+
+    this.isSavingEdition = true;
+    this.editionErreur = '';
+
+    this.commentaireService.modifier(this.article._id, this.editionId, this.userId, contenu).subscribe({
+      next: (commentaire) => {
+        this.remplacerCommentaireLocal(commentaire as CommentaireBackend);
+        this.isSavingEdition = false;
+        this.annulerEdition();
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Erreur modification commentaire:', error);
+        this.isSavingEdition = false;
+        this.editionErreur = this.commentaireService.messageErreur(error);
+      }
+    });
+  }
+
+  private loadUserData(): void {
+    this.userData = this.authService.currentUser as UserData | null;
+    this.userPhoto = this.userData?.photo || '';
+    this.userId = this.userData?.id || '';
   }
 
   private stopVideo(): void {
@@ -326,7 +408,8 @@ export class ArticlePage implements OnInit, OnDestroy {
             prenom: comment.prenom || this.userData?.prenom || '',
             photo: commentPhoto,
             contenu: comment.contenu || this.nouveauCommentaire.trim(),
-            date: 'A l\'instant'
+            date: 'A l\'instant',
+            modifie: false
           };
           
           this.ajouterCommentaireLocal(newComment);

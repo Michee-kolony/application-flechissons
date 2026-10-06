@@ -23,6 +23,21 @@ interface AudioResponse {
   audios: Audio[];
 }
 
+interface CategorieAudio {
+  value: string;
+  label: string;
+  icon: string;
+}
+
+// Mêmes valeurs que l'enum `categorie` du modèle Audio côté backend
+const CATEGORIES_AUDIO: CategorieAudio[] = [
+  { value: 'priere', label: 'Prière', icon: 'heart-outline' },
+  { value: 'miracles', label: 'Miracles', icon: 'sparkles-outline' },
+  { value: 'esperances', label: 'Espérances', icon: 'sunny-outline' },
+  { value: 'temoignages', label: 'Témoignages', icon: 'chatbubble-ellipses-outline' },
+  { value: 'autres', label: 'Autres', icon: 'albums-outline' }
+];
+
 @Component({
   selector: 'app-tab2',
   templateUrl: './tab2.page.html',
@@ -47,7 +62,9 @@ export class Tab2Page implements OnInit, OnDestroy {
   isPlaying = false;
   isLoading = true;
   isRefreshing = false;
-  categories: string[] = [];
+  readonly categories = CATEGORIES_AUDIO;
+  /** Nombre d'audios par catégorie, pour les filtres */
+  categoryCounts: { [categorie: string]: number } = {};
   audioDurations: { [key: string]: string } = {};
   
   // Variables pour le lecteur
@@ -154,17 +171,44 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   extractCategories() {
-    const uniqueCategories = new Set<string>();
+    this.categoryCounts = {};
     this.audios.forEach(audio => {
-      if (audio.categorie) {
-        uniqueCategories.add(audio.categorie.toLowerCase());
+      const categorie = audio.categorie?.toLowerCase();
+      if (categorie) {
+        this.categoryCounts[categorie] = (this.categoryCounts[categorie] || 0) + 1;
       }
     });
-    this.categories = Array.from(uniqueCategories);
   }
 
   filterByCategory(category: string) {
     this.selectedCategory = category;
+  }
+
+  /** Libellé affiché d'une catégorie (avec accents) */
+  getCategoryLabel(categorie: string | null | undefined): string {
+    const value = categorie?.toLowerCase() || '';
+    const connue = this.categories.find(c => c.value === value);
+    if (connue) {
+      return connue.label;
+    }
+    return value ? value.charAt(0).toUpperCase() + value.slice(1) : '';
+  }
+
+  /** Titre de la liste selon le filtre actif */
+  get listTitle(): string {
+    return this.selectedCategory === 'tous'
+      ? 'Tous les audios'
+      : this.getCategoryLabel(this.selectedCategory);
+  }
+
+  get emptyMessage(): string {
+    if (this.searchTerm.trim()) {
+      return 'Aucun audio ne correspond à votre recherche.';
+    }
+    if (this.selectedCategory !== 'tous') {
+      return `Aucun audio dans « ${this.getCategoryLabel(this.selectedCategory)} » pour le moment.`;
+    }
+    return 'Aucun audio disponible pour le moment.';
   }
 
   loadDurations() {
@@ -192,15 +236,16 @@ export class Tab2Page implements OnInit, OnDestroy {
     const query = this.searchTerm.trim().toLocaleLowerCase();
     if (query) {
       filtered = filtered.filter((audio) =>
-        audio.nom.toLocaleLowerCase().includes(query) ||
-        audio.personne.toLocaleLowerCase().includes(query) ||
-        audio.categorie.toLocaleLowerCase().includes(query)
+        audio.nom?.toLocaleLowerCase().includes(query) ||
+        audio.personne?.toLocaleLowerCase().includes(query) ||
+        audio.categorie?.toLocaleLowerCase().includes(query) ||
+        this.getCategoryLabel(audio.categorie).toLocaleLowerCase().includes(query)
       );
     }
 
     if (this.selectedCategory !== 'tous') {
       filtered = filtered.filter((audio) =>
-        audio.categorie.toLowerCase() === this.selectedCategory
+        audio.categorie?.toLowerCase() === this.selectedCategory
       );
     }
 
@@ -436,7 +481,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   async showErrorAlert() {
     const alert = await this.alertController.create({
       header: 'Erreur',
-      message: 'Impossible de charger les témoignages audio.',
+      message: 'Impossible de charger les audios.',
       buttons: ['OK']
     });
     await alert.present();
@@ -454,7 +499,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   async showAudioErrorAlert() {
     const alert = await this.alertController.create({
       header: 'Erreur de lecture',
-      message: 'Impossible de lire ce témoignage.',
+      message: 'Impossible de lire cet audio.',
       buttons: ['OK']
     });
     await alert.present();

@@ -1,11 +1,11 @@
 <ion-header class="testimony-header ion-no-border">
   <ion-toolbar>
     <div class="topbar">
-      <div><span class="kicker">FLÉCHISSONS AUDIO</span><h1>Témoignages</h1></div>
+      <div><span class="kicker">FLÉCHISSONS AUDIO</span><h1>Audios</h1></div>
     </div>
     <div class="testimony-search">
       <ion-icon name="search-outline" class="search-icon" aria-hidden="true"></ion-icon>
-      <input [(ngModel)]="searchTerm" type="search" placeholder="Que souhaitez-vous écouter ?" aria-label="Rechercher un témoignage">
+      <input [(ngModel)]="searchTerm" type="search" placeholder="Que souhaitez-vous écouter ?" aria-label="Rechercher un audio">
       <ion-icon *ngIf="searchTerm" name="close-circle" class="clear-icon" (click)="searchTerm = ''" aria-label="Effacer la recherche"></ion-icon>
     </div>
   </ion-toolbar>
@@ -54,27 +54,33 @@
 
     <!-- Contenu chargé -->
     <ng-container *ngIf="!isLoading">
-      <!-- Catégories dynamiques avec filtrage -->
-      <div class="category-scroll" aria-label="Catégories">
-        <button 
-          type="button" 
-          class="category-pill" 
+      <!-- Filtres par catégorie (enum du modèle Audio) -->
+      <div class="category-scroll" role="group" aria-label="Catégories">
+        <button
+          type="button"
+          class="category-pill"
           [class.category-pill--active]="selectedCategory === 'tous'"
+          [attr.aria-pressed]="selectedCategory === 'tous'"
           (click)="filterByCategory('tous')">
           Tous
+          <span class="category-pill__count">{{ audios.length }}</span>
         </button>
-        <button 
-          *ngFor="let categorie of categories" 
-          type="button" 
-          class="category-pill" 
-          [class.category-pill--active]="selectedCategory === categorie"
-          (click)="filterByCategory(categorie)">
-          {{ categorie | titlecase }}
+        <button
+          *ngFor="let categorie of categories"
+          type="button"
+          class="category-pill"
+          [class.category-pill--active]="selectedCategory === categorie.value"
+          [class.category-pill--empty]="!categoryCounts[categorie.value]"
+          [attr.aria-pressed]="selectedCategory === categorie.value"
+          (click)="filterByCategory(categorie.value)">
+          <ion-icon [name]="categorie.icon" aria-hidden="true"></ion-icon>
+          {{ categorie.label }}
+          <span class="category-pill__count">{{ categoryCounts[categorie.value] || 0 }}</span>
         </button>
       </div>
 
       <section class="featured-player">
-        <img [src]="featuredAudio ? featuredAudio.photoCouverture : 'https://picsum.photos/800/500?random=1'" [alt]="featuredAudio ? featuredAudio.nom : 'Témoignage'">
+        <img [src]="featuredAudio ? featuredAudio.photoCouverture : 'https://picsum.photos/800/500?random=1'" [alt]="featuredAudio ? featuredAudio.nom : 'Audio'">
         <div class="featured-player__shade"></div>
         <div class="featured-player__content">
           <span class="featured-player__label">
@@ -83,21 +89,21 @@
           </span>
           <h2>{{ featuredAudio ? featuredAudio.nom : 'Dieu a changé ma vie' }}</h2>
           <div class="featured-player__meta">
-            <span>{{ featuredAudio ? featuredAudio.personne : 'Témoignage' }}</span>
+            <span>{{ featuredAudio ? featuredAudio.personne : 'Fléchissons' }}</span>
             <span>•</span>
-            <span>{{ featuredAudio ? (featuredAudio.categorie | titlecase) : 'Témoignage' }}</span>
+            <span>{{ featuredAudio ? getCategoryLabel(featuredAudio.categorie) : 'Audio' }}</span>
             <span>•</span>
             <span>{{ featuredAudio ? (audioDurations[featuredAudio._id] || 'Chargement...') : '18 min' }}</span>
           </div>
-          <button type="button" class="play-button" (click)="playAudio(featuredAudio)" aria-label="Lire le témoignage à la une">
+          <button type="button" class="play-button" (click)="playAudio(featuredAudio)" aria-label="Lire l'audio à la une">
             <ion-icon [name]="isPlaying && currentAudio && featuredAudio && currentAudio._id === featuredAudio._id ? 'pause' : 'play'"></ion-icon>
           </button>
         </div>
       </section>
 
       <div class="section-title">
-        <div><span class="section-kicker">À écouter maintenant</span><h3>Vos témoignages</h3></div>
-        <button type="button" aria-label="Afficher tous les témoignages"><ion-icon name="chevron-forward-outline"></ion-icon></button>
+        <div><span class="section-kicker">À écouter maintenant</span><h3>{{ listTitle }}</h3></div>
+        <button type="button" aria-label="Afficher tous les audios" (click)="filterByCategory('tous')"><ion-icon name="chevron-forward-outline"></ion-icon></button>
       </div>
 
       <section class="episode-list">
@@ -115,7 +121,7 @@
               <ion-icon name="headset-outline"></ion-icon>
               <span>{{ item.personne }}</span>
               <span>•</span>
-              <span>{{ item.categorie | titlecase }}</span>
+              <span>{{ getCategoryLabel(item.categorie) }}</span>
               <span>•</span>
               <span>{{ audioDurations[item._id] || 'Chargement...' }}</span>
             </div>
@@ -126,13 +132,13 @@
             class="episode-play" 
             [class.episode-play--playing]="currentAudio && currentAudio._id === item._id && isPlaying"
             (click)="playAudio(item)" 
-            aria-label="Lire le témoignage">
+            [attr.aria-label]="'Lire ' + item.nom">
             <ion-icon [name]="isPlaying && currentAudio && currentAudio._id === item._id ? 'pause' : 'play'"></ion-icon>
           </button>
         </article>
       </section>
       
-      <p *ngIf="!filteredAudios.length" class="empty-state">Aucun témoignage ne correspond à votre recherche.</p>
+      <p *ngIf="!filteredAudios.length" class="empty-state">{{ emptyMessage }}</p>
     </ng-container>
   </main>
 </ion-content>
@@ -221,7 +227,7 @@
           </button>
           <div class="player__top-label">
             <span>EN COURS DE LECTURE</span>
-            <strong>{{ currentAudio.categorie | titlecase }}</strong>
+            <strong>{{ getCategoryLabel(currentAudio.categorie) }}</strong>
           </div>
           <button type="button" class="player__icon-btn" (click)="closeNowPlaying()" aria-label="Arrêter la lecture">
             <ion-icon name="close"></ion-icon>

@@ -10,11 +10,13 @@ export interface CommentaireTempsReel {
   photo: string | null;
   contenu: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export type ArticleEvent =
   | { type: 'like'; articleId: string; likes: string[] }
-  | { type: 'commentaire'; articleId: string; commentaire: CommentaireTempsReel };
+  | { type: 'commentaire'; articleId: string; commentaire: CommentaireTempsReel }
+  | { type: 'commentaire-modifie'; articleId: string; commentaire: CommentaireTempsReel };
 
 /**
  * Connexion temps réel (Server-Sent Events) aux likes et commentaires.
@@ -32,7 +34,7 @@ export class ArticleRealtimeService {
   private eventsSubject = new Subject<ArticleEvent>();
   private resyncSubject = new Subject<void>();
 
-  /** Like / commentaire reçu en direct */
+  /** Like / commentaire (ajouté ou modifié) reçu en direct */
   readonly events$: Observable<ArticleEvent> = this.eventsSubject.asObservable();
 
   /**
@@ -66,6 +68,7 @@ export class ArticleRealtimeService {
 
     source.addEventListener('like', e => this.emettre('like', e as MessageEvent));
     source.addEventListener('commentaire', e => this.emettre('commentaire', e as MessageEvent));
+    source.addEventListener('commentaire-modifie', e => this.emettre('commentaire-modifie', e as MessageEvent));
 
     source.onerror = () => {
       // EventSource se reconnecte seul, sauf si la connexion est fermée définitivement

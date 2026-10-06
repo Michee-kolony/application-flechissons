@@ -40,6 +40,10 @@ const PHOTO_MAX_SIZE = 5 * 1024 * 1024;
 const PHOTO_FORMATS = ['image/jpeg', 'image/png', 'image/webp'];
 const PHOTO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
+// Compression avant envoi : largement suffisant pour un avatar
+const PHOTO_MAX_DIMENSION = 1080;
+const PHOTO_JPEG_QUALITY = 0.85;
+
 @Component({
   selector: 'app-editprofil',
   templateUrl: './editprofil.page.html',
@@ -57,6 +61,11 @@ export class EditprofilPage implements OnInit {
   };
   
   isSaving = false;
+  isPreparingPhoto = false;
+
+  // Nom : obligatoire, 50 caractères max (mêmes règles que le backend)
+  readonly nomMaxLength = 50;
+  nomError = '';
   isPhotoSheetOpen = false;
   uploadError: UploadError | null = null;
   photoPreview = '';
@@ -114,17 +123,15 @@ export class EditprofilPage implements OnInit {
       return;
     }
 
-    const savedUser = localStorage.getItem('user');
+    const parsedUser = this.authService.currentUser as ProfileUser | null;
 
-    if (!savedUser) {
+    if (!parsedUser) {
       this.authService.requireAuth();
       this.navCtrl.navigateRoot('/tabs/tab1');
       return;
     }
 
     try {
-      const parsedUser = JSON.parse(savedUser);
-      
       // Initialiser l'utilisateur avec des préférences par défaut
       this.user = {
         ...parsedUser,
@@ -202,15 +209,67 @@ export class EditprofilPage implements OnInit {
       return;
     }
 
-    // Stocker le fichier pour l'upload
-    this.selectedFile = file;
+    // Compression avant l'envoi : upload plus rapide et plus léger
+    this.isPreparingPhoto = true;
+    this.compressPhoto(file)
+      .then(compressed => {
+        // Stocker le fichier pour l'upload
+        this.selectedFile = compressed;
+        this.photoPreview = URL.createObjectURL(compressed);
+      })
+      .finally(() => this.isPreparingPhoto = false);
+  }
 
-    // Aperçu local
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.photoPreview = reader.result as string;
-    };
-    reader.readAsDataURL(file);
+  /**
+   * Redimensionne la photo (1080 px max) et la ré-encode en JPEG.
+   * En cas d'échec, ou si le résultat n'est pas plus léger, on garde l'original.
+   */
+  private async compressPhoto(file: File): Promise<File> {
+    try {
+      const image = await this.loadImage(file);
+      const scale = Math.min(1, PHOTO_MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
+      const width = Math.round(image.naturalWidth * scale);
+      const height = Math.round(image.naturalHeight * scale);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext('2d');
+      if (!context) {
+        return file;
+      }
+      // Fond blanc : le JPEG ne gère pas la transparence des PNG
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', PHOTO_JPEG_QUALITY));
+      if (!blob || blob.size >= file.size) {
+        return file;
+      }
+
+      const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+      return new File([blob], name, { type: 'image/jpeg' });
+    } catch (error) {
+      console.warn('Compression de la photo impossible, envoi de l\'original :', error);
+      return file;
+    }
+  }
+
+  private loadImage(file: File): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(image);
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Image illisible'));
+      };
+      image.src = url;
+    });
   }
 
   // =====================================================
@@ -279,6 +338,23 @@ export class EditprofilPage implements OnInit {
   // =====================================================
 
   async saveProfile(): Promise<void> {
+    // La photo est encore en cours de compression
+    if (this.isPreparingPhoto || this.isSaving) {
+      return;
+    }
+
+    const nom = (this.user.nom || '').trim();
+    if (!nom || nom.length > this.nomMaxLength) {
+      this.nomError = !nom
+        ? 'Le nom ne peut pas être vide.'
+        : `Le nom ne peut pas dépasser ${this.nomMaxLength} caractères.`;
+      // Le bouton est en bas de page : on ramène l'utilisateur sur le champ
+      const champ = document.querySelector<HTMLInputElement>('app-editprofil input[name="nom"]');
+      champ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      champ?.focus({ preventScroll: true });
+      return;
+    }
+
     this.isSaving = true;
 
     try {
@@ -299,6 +375,7 @@ export class EditprofilPage implements OnInit {
       const formData = new FormData();
 
       // Ajouter les champs textes
+      formData.append('nom', nom);
       formData.append('prenom', this.user.prenom || '');
       formData.append('sexe', this.user.sexe || '');
       
@@ -358,15 +435,11 @@ export class EditprofilPage implements OnInit {
       }
 
       // =================================================
-      // METTRE À JOUR LOCALSTORAGE
+      // METTRE À JOUR L'UTILISATEUR (TOUTES LES PAGES)
       // =================================================
-      
-      // Conserver les champs qui ne sont pas dans la réponse
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      
-      // Fusionner avec les nouvelles données
-      const updatedUser = {
-        ...currentUser,
+
+      // Les champs absents de la réponse sont conservés par updateUser
+      this.authService.updateUser({
         ...response.user,
         // S'assurer que les préférences sont bien à jour
         preferences: {
@@ -374,11 +447,9 @@ export class EditprofilPage implements OnInit {
           notifications: this.user.preferences?.notifications ?? true,
           langue: this.user.preferences?.langue || 'fr'
         }
-      };
+      });
+      const updatedUser = this.authService.currentUser as ProfileUser;
 
-      // Sauvegarder dans localStorage
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
       // Mettre à jour l'user local
       this.user = updatedUser;
       

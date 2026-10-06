@@ -124,9 +124,7 @@ export class AuthInterceptor implements HttpInterceptor {
         ) {
 
           // Supprimer les données locales (session expirée/invalide)
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('userId');
+          this.authService.logout();
 
           // L'app reste en libre accès : on affiche la modal de connexion
           // discrète plutôt que de forcer une redirection vers /login.

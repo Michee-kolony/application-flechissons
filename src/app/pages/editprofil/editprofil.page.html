@@ -7,7 +7,7 @@
     <ion-buttons slot="end">
       <ion-button fill="clear" 
                   aria-label="Enregistrer"
-                  [disabled]="isSaving"
+                  [disabled]="isSaving || isPreparingPhoto"
                   (click)="saveProfile()">
         <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
       </ion-button>
@@ -78,15 +78,18 @@
           
           <label class="field">
             <span>Nom</span>
-            <div class="input-shell input-shell--muted">
+            <div class="input-shell" [class.input-shell--error]="nomError">
               <ion-icon name="person-outline"></ion-icon>
-              <input type="text" 
-                     placeholder="Votre nom" 
+              <input type="text"
+                     placeholder="Votre nom"
                      autocomplete="family-name"
-                     [ngModel]="user.nom"
+                     [(ngModel)]="user.nom"
+                     (ngModelChange)="nomError = ''"
+                     [maxlength]="nomMaxLength"
                      name="nom"
-                     readonly>
+                     required>
             </div>
+            <small *ngIf="nomError" class="field-error" role="alert">{{ nomError }}</small>
           </label>
           
           <label class="field">
@@ -170,8 +173,9 @@
 
       <button class="save-button" 
               type="submit"
-              [disabled]="isSaving">
-        <span *ngIf="!isSaving">Enregistrer mon profil</span>
+              [disabled]="isSaving || isPreparingPhoto">
+        <span *ngIf="!isSaving && !isPreparingPhoto">Enregistrer mon profil</span>
+        <span *ngIf="isPreparingPhoto && !isSaving">Préparation de la photo...</span>
         <span *ngIf="isSaving">Enregistrement...</span>
         <ion-icon name="arrow-forward-outline"></ion-icon>
       </button>

@@ -160,10 +160,45 @@ ion-toolbar {
         border-color: #d5c8b8;
       }
 
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+
+      ion-icon {
+        font-size: 14px;
+        color: #f97316;
+      }
+
+      &__count {
+        min-width: 18px;
+        padding: 1px 5px;
+        border-radius: 10px;
+        background: rgba(249, 115, 22, 0.12);
+        color: #c2410c;
+        font-size: 10px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      // Catégorie sans audio : reste cliquable mais en retrait
+      &--empty {
+        opacity: 0.55;
+      }
+
       &--active {
         background: #f97316;
         border-color: #f97316;
         color: #ffffff;
+        opacity: 1;
+
+        ion-icon {
+          color: #ffffff;
+        }
+
+        .category-pill__count {
+          background: rgba(255, 255, 255, 0.25);
+          color: #ffffff;
+        }
 
         &:hover {
           background: #ea580c;
