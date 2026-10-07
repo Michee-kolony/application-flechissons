@@ -98,6 +98,8 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   isMuted = false;
   isPaused = false;
   feedReady = false;
+  /** La vidéo active charge (spinner affiché jusqu'à la lecture) */
+  videoBuffering = true;
   expandedDescription: string | null = null;
   likeBurstId: string | null = null;
 
@@ -145,8 +147,10 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     // Utilisateur connecté, mis à jour en direct (profil modifié, connexion, déconnexion)
     this.realtimeSub.add(this.authService.user$.subscribe(() => this.loadUserData()));
-    this.chargerDepuisCache();
     this.chargerPredications();
+    // Le flux (potentiellement long) n'est construit qu'après le premier affichage :
+    // on bascule tout de suite sur la page, avec le spinner
+    requestAnimationFrame(() => setTimeout(() => this.chargerDepuisCache()));
 
     // Likes et commentaires des autres utilisateurs, en direct
     this.realtimeSub.add(this.realtime.events$.subscribe(event => this.appliquerEvenement(event)));
@@ -282,11 +286,17 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
    * Affiche immédiatement la dernière liste connue, le réseau la rafraîchit ensuite
    */
   private chargerDepuisCache(): void {
+    // Le réseau a déjà répondu : le cache serait plus ancien
+    if (this.predications.length) {
+      return;
+    }
     try {
       const cache = localStorage.getItem(this.cacheKey);
       if (cache) {
         this.appliquerPredications(JSON.parse(cache));
         this.isLoading = false;
+        this.errorMessage = '';
+        setTimeout(() => this.allerVersVideoCible());
       }
     } catch {
       localStorage.removeItem(this.cacheKey);
@@ -294,8 +304,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   }
 
   chargerPredications(): void {
-    const hasCache = this.predications.length > 0;
-    this.isLoading = !hasCache;
+    this.isLoading = this.predications.length === 0;
     this.errorMessage = '';
 
     this.http.get<any>(this.urlArticle).subscribe({
@@ -313,7 +322,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
           } catch {
             // Stockage plein : le cache est facultatif
           }
-        } else if (!hasCache) {
+        } else if (!this.predications.length) {
           this.errorMessage = `Aucune ${this.flux.singulier} trouvée`;
           this.predications = [];
           this.predicationsFiltrees = [];
@@ -323,7 +332,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
       error: (error) => {
         console.error(`❌ Erreur lors du chargement des ${this.flux.type}:`, error);
         this.isLoading = false;
-        if (!hasCache) {
+        if (!this.predications.length) {
           this.errorMessage = `Erreur lors du chargement des ${this.flux.singulier}s`;
           this.predications = [];
           this.predicationsFiltrees = [];
@@ -387,6 +396,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
     }
     this.activeIndex = index;
     this.isPaused = false;
+    this.videoBuffering = true;
     this.expandedDescription = null;
     // Crée le <video> de la nouvelle slide avant de le lancer
     this.cdr.detectChanges();
@@ -399,6 +409,27 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
    */
   isVideoMounted(index: number): boolean {
     return this.feedReady && Math.abs(index - this.activeIndex) <= 1;
+  }
+
+  /**
+   * Seules les slides proches de la vidéo active ont un contenu (image, textes, boutons) :
+   * les autres restent des blocs vides de la hauteur de l'écran, le DOM reste léger
+   */
+  isSlideRendered(index: number): boolean {
+    return Math.abs(index - this.activeIndex) <= 3;
+  }
+
+  // Spinner de la vidéo active : visible tant qu'elle n'a pas commencé à jouer
+  onVideoWaiting(index: number): void {
+    if (index === this.activeIndex) {
+      this.videoBuffering = true;
+    }
+  }
+
+  onVideoPlaying(index: number): void {
+    if (index === this.activeIndex) {
+      this.videoBuffering = false;
+    }
   }
 
   private getVideo(index: number): HTMLVideoElement | null {

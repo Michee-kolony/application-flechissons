@@ -925,10 +925,126 @@ h1 {
 }
 
 // =====================================================
+// VERSET DU JOUR
+// =====================================================
+
+.verset-card {
+  position: relative;
+  margin: 0;
+  padding: 22px 20px 16px;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(135deg, $color-primary, $color-primary-light);
+  border-radius: 22px;
+  box-shadow: 0 10px 24px rgba(38, 53, 47, 0.18);
+}
+
+.verset-deco {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  color: $color-secondary;
+  font-size: 22px;
+  opacity: .9;
+}
+
+.verset-texte {
+  margin: 0 28px 0 0;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.6;
+  // Les psaumes et proverbes sont découpés en lignes poétiques
+  white-space: pre-line;
+}
+
+.verset-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.verset-reference {
+  color: $color-secondary-light;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.verset-share {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 0;
+  border-radius: 50%;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.verset-card--loading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.skeleton-verset {
+  height: 14px;
+  border-radius: 7px;
+
+  &--short {
+    width: 45%;
+  }
+}
+
+.verset-card--error {
+  color: $color-text-light;
+  text-align: center;
+  background: #fff;
+  box-shadow: none;
+
+  p {
+    margin: 0 0 12px;
+    font-size: 14px;
+  }
+}
+
+.verset-retry {
+  padding: 8px 18px;
+  color: #fff;
+  background: $color-secondary;
+  border: 0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+// =====================================================
 // MODE SOMBRE (BLEU DE NUIT)
 // =====================================================
 
 :host-context(.dark) {
+  .verset-card {
+    background: linear-gradient(135deg, var(--app-surface), var(--app-surface-alt));
+    box-shadow: none;
+  }
+
+  .verset-card--loading,
+  .verset-card--error {
+    background: var(--app-surface);
+  }
+
+  .verset-card--error {
+    color: var(--app-text-secondary);
+  }
   ion-content,
   ion-toolbar,
   .accueil-header ion-toolbar {

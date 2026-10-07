@@ -1733,3 +1733,15 @@ ion-toolbar {
   font-size: 18px;
   color: rgba(255, 255, 255, 0.7);
 }
+
+// Spinner affiché dans les boutons lecture pendant le chargement de l'audio
+.play-button,
+.episode-play,
+.now-playing-bar__btn,
+.player__play {
+  ion-spinner {
+    width: 22px;
+    height: 22px;
+    color: currentColor;
+  }
+}

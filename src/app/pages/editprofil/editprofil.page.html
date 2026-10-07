@@ -193,13 +193,13 @@
       <h2 id="photo-sheet-title">Modifier votre photo</h2>
       <p>Choisissez comment vous souhaitez ajouter votre photo.</p>
       
-      <button type="button" (click)="cameraInput.click(); closePhotoPicker()">
+      <button type="button" (click)="takePhoto(cameraInput)">
         <ion-icon name="camera-outline"></ion-icon>
         <span>Prendre une photo</span>
         <ion-icon class="photo-sheet__arrow" name="chevron-forward-outline"></ion-icon>
       </button>
       
-      <button type="button" (click)="galleryInput.click(); closePhotoPicker()">
+      <button type="button" (click)="pickFromGallery(galleryInput)">
         <ion-icon name="images-outline"></ion-icon>
         <span>Choisir dans la galerie</span>
         <ion-icon class="photo-sheet__arrow" name="chevron-forward-outline"></ion-icon>

@@ -2,6 +2,7 @@
 import {
   AfterViewInit,
   Component,
+  ElementRef,
   OnDestroy,
   OnInit
 } from '@angular/core';
@@ -13,6 +14,7 @@ import { Subscription, interval } from 'rxjs';
 import Splide from '@splidejs/splide';
 import { ArticleEvent, ArticleRealtimeService } from '../services/article-realtime.service';
 import { AuthService } from '../services/auth.service';
+import { BibleService, VersetDuJour } from '../services/bible';
 
 interface Article {
   _id: string;
@@ -84,6 +86,18 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   private vuePrete = false;
 
   /**
+   * La page est affichée (Ionic garde l'onglet en mémoire, caché, quand on en change)
+   */
+  private pageVisible = false;
+
+  /**
+   * Les prédications ont changé pendant que la page était cachée :
+   * le carrousel sera reconstruit au retour sur l'onglet
+   */
+  private splideAReconstruire = false;
+  private splideTimer?: ReturnType<typeof setTimeout>;
+
+  /**
    * État du rafraîchissement
    */
   isRefreshing = false;
@@ -97,11 +111,21 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   userInitiale: string = '';
   userId: string = '';
 
+  /**
+   * Verset du jour (API Bible, un verset différent chaque jour)
+   */
+  versetDuJour: VersetDuJour | null = null;
+  chargementVerset = true;
+  erreurVerset = false;
+  private versetEnCours = false;
+
   constructor(
     private http: HttpClient,
     private router: Router,
     private realtime: ArticleRealtimeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private host: ElementRef<HTMLElement>,
+    private bibleService: BibleService
   ) {}
 
   ngOnInit(): void {
@@ -109,6 +133,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     this.realtimeSub.add(this.authService.user$.subscribe(() => this.loadUserData()));
 
     this.chargerArticles();
+    this.chargerVersetDuJour();
 
     /**
      * Actualisation automatique toutes les 30 secondes
@@ -150,10 +175,30 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
      * Si les données sont déjà disponibles
      */
     if (this.predications.length > 0) {
-      setTimeout(() => {
-        this.initialiserSplide();
-      }, 100);
+      this.planifierSplide();
     }
+  }
+
+  ionViewDidEnter(): void {
+    this.pageVisible = true;
+
+    // L'appli peut rester ouverte après minuit : on passe au verset du nouveau jour
+    if (this.versetDuJour && this.versetDuJour.date !== this.dateDuJour()) {
+      this.chargerVersetDuJour();
+    }
+
+    if (this.splideAReconstruire || (!this.splide && this.predications.length > 0)) {
+      this.planifierSplide();
+    } else if (this.splide) {
+      // Recalcule les tailles (la page était cachée) et relance le défilement
+      this.splide.refresh();
+      this.splide.Components.Autoplay?.play();
+    }
+  }
+
+  ionViewWillLeave(): void {
+    this.pageVisible = false;
+    this.splide?.Components.Autoplay?.pause();
   }
 
   ngOnDestroy(): void {
@@ -162,6 +207,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
      */
     this.refreshSubscription?.unsubscribe();
     this.realtimeSub.unsubscribe();
+    clearTimeout(this.splideTimer);
 
     /**
      * Détruire Splide
@@ -262,7 +308,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     if (!this.userId || !annonce || !annonce.likes) {
       return false;
     }
-    
+
     return annonce.likes.some(id => id === this.userId);
   }
 
@@ -281,6 +327,67 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
       this.router.navigate(['/tabs/tab3'], { queryParams: { video: predication._id } });
     } else {
       this.router.navigate(['/article', predication._id]);
+    }
+  }
+
+  /**
+   * ========================================================
+   * VERSET DU JOUR
+   * ========================================================
+   */
+
+  chargerVersetDuJour(): void {
+    if (this.versetEnCours) {
+      return;
+    }
+    this.versetEnCours = true;
+    this.erreurVerset = false;
+
+    // Hors connexion, on garde le dernier verset connu plutôt qu'une erreur
+    const dernier = this.bibleService.lireVersetEnCache();
+    if (!this.versetDuJour && dernier) {
+      this.versetDuJour = dernier;
+    }
+    this.chargementVerset = !this.versetDuJour;
+
+    this.bibleService.getVersetDuJour().subscribe({
+      next: (verset) => {
+        this.versetDuJour = verset;
+        this.chargementVerset = false;
+        this.versetEnCours = false;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement du verset du jour :', error);
+        this.chargementVerset = false;
+        this.erreurVerset = !this.versetDuJour;
+        this.versetEnCours = false;
+      }
+    });
+  }
+
+  private dateDuJour(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  async partagerVerset(): Promise<void> {
+    if (!this.versetDuJour) {
+      return;
+    }
+    const texte = `« ${this.versetDuJour.texte.replace(/\s*\n\s*/g, ' ')} »\n— ${this.versetDuJour.reference}\n\nVerset du jour sur Fléchissons`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Verset du jour', text: texte });
+      } catch {
+        // Partage annulé
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(texte);
+      } catch (error) {
+        console.error('Impossible de copier le verset :', error);
+      }
     }
   }
 
@@ -323,11 +430,6 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
           // Terminer le rafraîchissement
           this.isRefreshing = false;
           event.target.complete();
-
-          // Re-initialiser Splide après le rafraîchissement
-          setTimeout(() => {
-            this.initialiserSplide();
-          }, 100);
         },
         error: (error) => {
           console.error('❌ Erreur lors du rafraîchissement :', error);
@@ -377,9 +479,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
           this.chargementPredications = false;
           this.chargementAnnonces = false;
 
-          setTimeout(() => {
-            this.initialiserSplide();
-          }, 100);
+          // Le carrousel n'existe dans le DOM qu'une fois le chargement terminé
+          this.planifierSplide();
         },
         error: (error) => {
           console.error(
@@ -454,7 +555,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
      * ======================================================
      */
 
-    this.predications = [...this.articles]
+    const predications = [...this.articles]
       .filter(
         article =>
           article.type?.toLowerCase() === 'predications'
@@ -465,6 +566,24 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
           new Date(a.createdAt).getTime()
       )
       .slice(0, 3);
+
+    /**
+     * Mêmes prédications, même ordre (cas de l'actualisation toutes les 30 s) :
+     * on met juste à jour leurs textes, sans toucher au carrousel.
+     * Avant, il était détruit puis recréé à chaque fois, ce qui le faisait sauter.
+     */
+    const memesPredications =
+      predications.length === this.predications.length &&
+      predications.every((p, i) => p._id === this.predications[i]._id);
+
+    if (memesPredications) {
+      predications.forEach((p, i) => Object.assign(this.predications[i], p));
+    } else {
+      // Splide doit retirer ses clones avant qu'Angular ne modifie les slides
+      this.detruireSplide();
+      this.predications = predications;
+      this.splideAReconstruire = true;
+    }
 
     /**
      * ======================================================
@@ -495,10 +614,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
      * Mettre à jour Splide
      */
 
-    if (this.vuePrete) {
-      setTimeout(() => {
-        this.initialiserSplide();
-      }, 50);
+    if (this.vuePrete && this.splideAReconstruire) {
+      this.planifierSplide();
     }
   }
 
@@ -552,28 +669,61 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
    * ========================================================
    */
 
-  private initialiserSplide(): void {
+  /**
+   * Monte le carrousel une fois le DOM à jour, et seulement si la page est affichée :
+   * monté dans un onglet caché, Splide mesure des largeurs nulles et s'affiche cassé
+   */
+  private planifierSplide(): void {
+    clearTimeout(this.splideTimer);
+
+    if (!this.pageVisible) {
+      this.splideAReconstruire = true;
+      return;
+    }
+
+    this.splideTimer = setTimeout(() => this.initialiserSplide(), 50);
+  }
+
+  private detruireSplide(): void {
+    clearTimeout(this.splideTimer);
     if (this.splide) {
-      this.splide.destroy();
+      this.splide.destroy(true);
       this.splide = null;
     }
+  }
+
+  trackById(_: number, article: Article): string {
+    return article._id;
+  }
+
+  private initialiserSplide(): void {
+    this.detruireSplide();
 
     if (this.predications.length === 0) {
       return;
     }
 
+    // Recherché dans cette page uniquement (et non dans tout le document)
     const carousel =
-      document.querySelector('#image-carousel');
+      this.host.nativeElement.querySelector<HTMLElement>('#image-carousel');
 
-    if (!carousel) {
+    if (!carousel || !carousel.offsetWidth) {
+      // Pas encore affiché : nouvel essai au prochain retour sur la page
+      this.splideAReconstruire = true;
       return;
     }
 
+    this.splideAReconstruire = false;
+
+    // Le mode boucle avec une seule slide fait des sauts : on le désactive
+    const plusieurs = this.predications.length > 1;
+
     this.splide = new Splide(
-      '#image-carousel',
+      carousel,
       {
-        type: 'loop',
-        autoplay: true,
+        type: plusieurs ? 'loop' : 'slide',
+        drag: plusieurs,
+        autoplay: plusieurs,
         interval: 4000,
         pauseOnHover: true,
         pauseOnFocus: true,

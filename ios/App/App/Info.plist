@@ -158,5 +158,17 @@
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <true/>
 
+
+    <!-- ===================================================== -->
+    <!-- CAMÉRA / PHOTOS (photo de profil) -->
+    <!-- ===================================================== -->
+
+    <key>NSCameraUsageDescription</key>
+    <string>Fléchissons utilise l'appareil photo pour prendre votre photo de profil.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Fléchissons accède à vos photos pour choisir votre photo de profil.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Fléchissons peut enregistrer des photos dans votre galerie.</string>
+
 </dict>
 </plist>

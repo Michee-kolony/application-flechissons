@@ -58,6 +58,7 @@
       *ngFor="let predication of predicationsFiltrees; let i = index; trackBy: trackById"
       class="reel"
       [attr.data-index]="i">
+      <ng-container *ngIf="isSlideRendered(i)">
 
       <div class="reel-media" (click)="onVideoTap(predication, i)">
         <img
@@ -76,8 +77,17 @@
           [attr.preload]="i === activeIndex ? 'auto' : 'metadata'"
           playsinline
           webkit-playsinline
-          loop>
+          loop
+          (loadstart)="onVideoWaiting(i)"
+          (waiting)="onVideoWaiting(i)"
+          (playing)="onVideoPlaying(i)"
+          (error)="onVideoPlaying(i)">
         </video>
+      </div>
+
+      <!-- Chargement de la vidéo -->
+      <div *ngIf="i === activeIndex && (!feedReady || videoBuffering) && !isPaused" class="reel-loading" aria-label="Chargement de la vidéo">
+        <ion-spinner name="crescent"></ion-spinner>
       </div>
 
       <div class="reel-shade" aria-hidden="true"></div>
@@ -152,6 +162,7 @@
       <div class="reel-progress" (click)="seek(i, $event)">
         <div class="reel-progress-bar"></div>
       </div>
+      </ng-container>
     </section>
   </div>
 

@@ -84,7 +84,7 @@
         <div class="featured-player__shade"></div>
         <div class="featured-player__content">
           <span class="featured-player__label">
-            <ion-icon name="sparkles-outline"></ion-icon> 
+            <ion-icon name="sparkles-outline"></ion-icon>
             {{ isPlaying && currentAudio && featuredAudio && currentAudio._id === featuredAudio._id ? 'En cours de lecture' : 'À la une' }}
           </span>
           <h2>{{ featuredAudio ? featuredAudio.nom : 'Dieu a changé ma vie' }}</h2>
@@ -96,7 +96,10 @@
             <span>{{ featuredAudio ? (audioDurations[featuredAudio._id] || 'Chargement...') : '18 min' }}</span>
           </div>
           <button type="button" class="play-button" (click)="playAudio(featuredAudio)" aria-label="Lire l'audio à la une">
-            <ion-icon [name]="isPlaying && currentAudio && featuredAudio && currentAudio._id === featuredAudio._id ? 'pause' : 'play'"></ion-icon>
+            <ion-spinner *ngIf="isBuffering && currentAudio && featuredAudio && currentAudio._id === featuredAudio._id; else featuredIcon" name="crescent"></ion-spinner>
+            <ng-template #featuredIcon>
+              <ion-icon [name]="isPlaying && currentAudio && featuredAudio && currentAudio._id === featuredAudio._id ? 'pause' : 'play'"></ion-icon>
+            </ng-template>
           </button>
         </div>
       </section>
@@ -107,12 +110,12 @@
       </div>
 
       <section class="episode-list">
-        <article 
-          *ngFor="let item of filteredAudios; let index = index" 
+        <article
+          *ngFor="let item of filteredAudios; let index = index; trackBy: trackById"
           class="episode-row"
           [class.episode-row--playing]="currentAudio && currentAudio._id === item._id && isPlaying">
           <div class="episode-art">
-            <img [src]="item.photoCouverture" [alt]="item.nom">
+            <img [src]="item.photoCouverture" [alt]="item.nom" loading="lazy" decoding="async">
             <span>{{ index + 1 }}</span>
           </div>
           <div class="episode-copy">
@@ -127,17 +130,20 @@
             </div>
           </div>
           <button type="button" class="episode-more" aria-label="Options"><ion-icon name="ellipsis-vertical"></ion-icon></button>
-          <button 
-            type="button" 
-            class="episode-play" 
+          <button
+            type="button"
+            class="episode-play"
             [class.episode-play--playing]="currentAudio && currentAudio._id === item._id && isPlaying"
-            (click)="playAudio(item)" 
+            (click)="playAudio(item)"
             [attr.aria-label]="'Lire ' + item.nom">
-            <ion-icon [name]="isPlaying && currentAudio && currentAudio._id === item._id ? 'pause' : 'play'"></ion-icon>
+            <ion-spinner *ngIf="isBuffering && currentAudio?._id === item._id; else itemIcon" name="crescent"></ion-spinner>
+            <ng-template #itemIcon>
+              <ion-icon [name]="isPlaying && currentAudio && currentAudio._id === item._id ? 'pause' : 'play'"></ion-icon>
+            </ng-template>
           </button>
         </article>
       </section>
-      
+
       <p *ngIf="!filteredAudios.length" class="empty-state">{{ emptyMessage }}</p>
     </ng-container>
   </main>
@@ -149,7 +155,7 @@
   <div class="now-playing-bar__progress" (click)="seekTo($event)">
     <div class="now-playing-bar__progress-fill" [style.width]="audioProgress + '%'"></div>
   </div>
-  
+
   <div class="now-playing-bar__content">
     <div class="now-playing-bar__art" (click)="openPlayer()">
       <img [src]="currentAudio.photoCouverture" [alt]="currentAudio.nom">
@@ -157,51 +163,54 @@
         <ion-icon name="radio-outline"></ion-icon>
       </div>
     </div>
-    
+
     <div class="now-playing-bar__info" (click)="openPlayer()" role="button" aria-label="Ouvrir le lecteur">
       <strong>{{ currentAudio.nom }}</strong>
       <span>{{ currentAudio.personne }}</span>
     </div>
-    
+
     <div class="now-playing-bar__controls">
       <!-- Bouton Volume -->
       <button type="button" class="now-playing-bar__btn now-playing-bar__btn--volume" (click)="toggleVolumeSlider()" aria-label="Volume">
         <ion-icon [name]="volumeIcon"></ion-icon>
       </button>
-      
+
       <!-- Slider Volume -->
       <div class="now-playing-bar__volume-wrapper" *ngIf="showVolumeSlider">
-        <input 
-          type="range" 
-          class="now-playing-bar__volume-slider" 
-          min="0" 
-          max="1" 
-          step="0.01" 
-          [value]="volume" 
+        <input
+          type="range"
+          class="now-playing-bar__volume-slider"
+          min="0"
+          max="1"
+          step="0.01"
+          [value]="volume"
           (input)="setVolume($event)">
       </div>
-      
+
       <!-- Contrôles de lecture -->
       <button type="button" class="now-playing-bar__btn now-playing-bar__btn--seek" (click)="seek(-10)" aria-label="Reculer de 10 secondes">
         <ion-icon name="play-back-outline"></ion-icon>
         <span class="seek-label">-10</span>
       </button>
-      
+
       <button type="button" class="now-playing-bar__btn" (click)="togglePlayPause()" aria-label="Lecture/Pause">
-        <ion-icon [name]="isPlaying ? 'pause' : 'play'"></ion-icon>
+        <ion-spinner *ngIf="isBuffering; else barIcon" name="crescent"></ion-spinner>
+        <ng-template #barIcon>
+          <ion-icon [name]="isPlaying ? 'pause' : 'play'"></ion-icon>
+        </ng-template>
       </button>
-      
+
       <button type="button" class="now-playing-bar__btn now-playing-bar__btn--seek" (click)="seek(10)" aria-label="Avancer de 10 secondes">
         <ion-icon name="play-forward-outline"></ion-icon>
         <span class="seek-label">+10</span>
       </button>
-      
+
       <button type="button" class="now-playing-bar__btn now-playing-bar__btn--close" (click)="closeNowPlaying()" aria-label="Fermer">
         <ion-icon name="close-outline"></ion-icon>
       </button>
     </div>
   </div>
-  
+
   <div class="now-playing-bar__time">
     <span>{{ currentTime }}</span>
     <span>{{ totalDuration }}</span>
@@ -265,7 +274,10 @@
             <span>10</span>
           </button>
           <button type="button" class="player__play" (click)="togglePlayPause()" [attr.aria-label]="isPlaying ? 'Pause' : 'Lecture'">
-            <ion-icon [name]="isPlaying ? 'pause' : 'play'"></ion-icon>
+            <ion-spinner *ngIf="isBuffering; else playerIcon" name="crescent"></ion-spinner>
+            <ng-template #playerIcon>
+              <ion-icon [name]="isPlaying ? 'pause' : 'play'"></ion-icon>
+            </ng-template>
           </button>
           <button type="button" class="player__seek" (click)="seek(10)" aria-label="Avancer de 10 secondes">
             <ion-icon name="play-forward"></ion-icon>

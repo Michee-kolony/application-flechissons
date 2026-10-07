@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { NavController, ToastController } from '@ionic/angular';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
+import { Camera, CameraDirection, MediaResult } from '@capacitor/camera';
 import { AuthService } from '../../services/auth.service';
 
 interface ProfilePreferences {
@@ -43,6 +45,11 @@ const PHOTO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 // Compression avant envoi : largement suffisant pour un avatar
 const PHOTO_MAX_DIMENSION = 1080;
 const PHOTO_JPEG_QUALITY = 0.85;
+
+// Codes d'erreur du plugin @capacitor/camera (Android / iOS)
+const CAMERA_CANCEL_CODES = ['OS-PLUG-CAMR-0006', 'OS-PLUG-CAMR-0020'];
+const CAMERA_PERMISSION_CODES = ['OS-PLUG-CAMR-0003', 'OS-PLUG-CAMR-0005'];
+const CAMERA_UNAVAILABLE_CODE = 'OS-PLUG-CAMR-0007';
 
 @Component({
   selector: 'app-editprofil',
@@ -189,7 +196,121 @@ export class EditprofilPage implements OnInit {
   }
 
   // =====================================================
-  // SÉLECTION PHOTO
+  // CAPTURE / GALERIE (CAPACITOR)
+  // =====================================================
+
+  /** Prendre une photo avec l'appareil photo du téléphone */
+  async takePhoto(fallbackInput: HTMLInputElement): Promise<void> {
+    this.closePhotoPicker();
+
+    // Navigateur : l'input file (capture="environment") ouvre déjà la caméra
+    if (!Capacitor.isNativePlatform()) {
+      fallbackInput.click();
+      return;
+    }
+
+    try {
+      const result = await Camera.takePhoto({
+        quality: 90,
+        correctOrientation: true,
+        cameraDirection: CameraDirection.Front
+      });
+      await this.handleNativePhoto(result);
+    } catch (error) {
+      this.handleCameraError(error);
+    }
+  }
+
+  /** Choisir une photo existante dans la galerie du téléphone */
+  async pickFromGallery(fallbackInput: HTMLInputElement): Promise<void> {
+    this.closePhotoPicker();
+
+    if (!Capacitor.isNativePlatform()) {
+      fallbackInput.click();
+      return;
+    }
+
+    try {
+      const { results } = await Camera.chooseFromGallery({
+        quality: 90,
+        correctOrientation: true
+      });
+      if (results?.[0]) {
+        await this.handleNativePhoto(results[0]);
+      }
+    } catch (error) {
+      this.handleCameraError(error);
+    }
+  }
+
+  /** Convertit le résultat du plugin en File puis le traite comme un fichier choisi */
+  private async handleNativePhoto(result: MediaResult): Promise<void> {
+    if (!result.webPath) {
+      return;
+    }
+
+    this.isPreparingPhoto = true;
+    try {
+      const blob = await (await fetch(result.webPath)).blob();
+      const extension = (result.webPath.split('?')[0].split('.').pop() || 'jpg').toLowerCase();
+      const type = blob.type || (extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg');
+      const file = new File([blob], `photo-profil.${extension}`, { type });
+
+      // Une photo prise par la caméra dépasse souvent 5 Mo : on compresse avant de valider
+      const compressed = await this.compressPhoto(file);
+      const error = this.validatePhoto(compressed);
+      if (error) {
+        this.uploadError = error;
+        return;
+      }
+
+      this.selectedFile = compressed;
+      this.photoPreview = URL.createObjectURL(compressed);
+    } catch (error) {
+      console.error('Lecture de la photo impossible :', error);
+      this.uploadError = {
+        icon: 'alert-circle-outline',
+        title: 'Photo illisible',
+        message: 'Impossible de lire cette photo.',
+        hint: 'Réessayez ou choisissez une autre photo.'
+      };
+    } finally {
+      this.isPreparingPhoto = false;
+    }
+  }
+
+  private handleCameraError(error: any): void {
+    const code = error?.code;
+
+    // L'utilisateur a simplement fermé la caméra / la galerie
+    if (CAMERA_CANCEL_CODES.includes(code) || /cancel/i.test(error?.message || '')) {
+      return;
+    }
+
+    console.error('Erreur caméra :', error);
+
+    if (CAMERA_PERMISSION_CODES.includes(code)) {
+      this.uploadError = {
+        icon: 'camera-outline',
+        title: 'Accès refusé',
+        message: 'Fléchissons n\'a pas l\'autorisation d\'accéder à votre appareil photo ou à vos photos.',
+        hint: 'Autorisez l\'accès dans les réglages de votre téléphone (Applications > Fléchissons > Autorisations), puis réessayez.'
+      };
+      return;
+    }
+
+    this.uploadError = {
+      icon: 'camera-outline',
+      title: code === CAMERA_UNAVAILABLE_CODE ? 'Caméra indisponible' : 'Photo impossible',
+      message: code === CAMERA_UNAVAILABLE_CODE
+        ? 'Aucun appareil photo n\'est disponible sur cet appareil.'
+        : 'La photo n\'a pas pu être récupérée.',
+      hint: 'Vous pouvez choisir une photo existante dans votre galerie.'
+    };
+  }
+
+  // =====================================================
+  // SÉLECTION PHOTO (INPUT FILE - NAVIGATEUR)
   // =====================================================
 
   onPhotoSelected(event: Event): void {
