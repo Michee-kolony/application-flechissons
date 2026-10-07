@@ -31,6 +31,7 @@
     "@capacitor/haptics": "8.0.2",
     "@capacitor/ios": "8.5.0",
     "@capacitor/keyboard": "8.0.5",
+    "@capacitor/push-notifications": "^8.1.3",
     "@capacitor/status-bar": "8.0.3",
     "@capawesome/capacitor-google-sign-in": "^0.1.2",
     "@capgo/capacitor-youtube-player": "^8.2.16",

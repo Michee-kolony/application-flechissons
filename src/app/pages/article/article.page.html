@@ -170,7 +170,11 @@
           Commentaires ({{ commentaires.length }})
         </h3>
 
-        <div *ngFor="let commentaire of commentaires" class="bg-gray-50 dark:bg-slate-800 p-3 shadow-lg rounded-xl flex gap-3 transition-all hover:shadow-xl">
+        <div *ngFor="let commentaire of commentaires"
+             [id]="'commentaire-' + commentaire.id"
+             [class.ring-2]="commentaireSurligne === commentaire.id"
+             [class.ring-orange-400]="commentaireSurligne === commentaire.id"
+             class="bg-gray-50 dark:bg-slate-800 p-3 shadow-lg rounded-xl flex gap-3 transition-all hover:shadow-xl">
           <!-- Avatar avec photo ou initiale -->
           <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-orange-200 dark:border-orange-800/50 overflow-hidden"
                [class.bg-white]="commentaire.photo && commentaire.photo !== 'assets/avatar-default.png'"

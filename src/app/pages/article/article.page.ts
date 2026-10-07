@@ -92,6 +92,10 @@ export class ArticlePage implements OnInit, OnDestroy {
 
   @ViewChild('videoPlayer') videoPlayer!: ElementRef<HTMLVideoElement>;
 
+  // Commentaire ouvert depuis une notification (/article/<id>?commentaire=<id>)
+  private commentaireCible: string | null = null;
+  commentaireSurligne: string | null = null;
+
   private realtimeSub = new Subscription();
 
   constructor(
@@ -107,6 +111,7 @@ export class ArticlePage implements OnInit, OnDestroy {
   ngOnInit() {
     // Utilisateur connecté, mis à jour en direct (profil modifié, connexion, déconnexion)
     this.realtimeSub.add(this.authService.user$.subscribe(() => this.loadUserData()));
+    this.commentaireCible = this.route.snapshot.queryParamMap.get('commentaire');
     this.loadArticle();
 
     // Likes et commentaires des autres utilisateurs, en direct
@@ -282,6 +287,8 @@ export class ArticlePage implements OnInit, OnDestroy {
             this.commentaires = [];
           }
 
+          this.allerAuCommentaireCible();
+
         } else {
           this.errorMessage = 'Article non trouve';
         }
@@ -293,6 +300,22 @@ export class ArticlePage implements OnInit, OnDestroy {
         this.errorMessage = error.error?.message || 'Erreur lors du chargement';
       }
     });
+  }
+
+  /** Fait défiler jusqu'au commentaire de la notification et le met en évidence */
+  private allerAuCommentaireCible(): void {
+    const id = this.commentaireCible;
+    if (!id || !this.commentaires.some(c => c.id === id)) {
+      return;
+    }
+    this.commentaireCible = null;
+
+    // Laisse Angular afficher la liste avant de défiler
+    setTimeout(() => {
+      document.getElementById(`commentaire-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.commentaireSurligne = id;
+      setTimeout(() => this.commentaireSurligne = null, 3000);
+    }, 300);
   }
 
   // =====================================================

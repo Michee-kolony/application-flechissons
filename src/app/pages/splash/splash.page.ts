@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavController } from '@ionic/angular';
+import { PushNotificationService } from '../../services/push-notification.service';
 
 @Component({
   selector: 'app-splash',
@@ -23,7 +24,8 @@ export class SplashPage implements OnInit, OnDestroy {
   private redirectTimeout: any;
 
   constructor(
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private pushNotificationService: PushNotificationService
   ) {}
 
   ngOnInit() {
@@ -46,9 +48,16 @@ export class SplashPage implements OnInit, OnDestroy {
      * demandée qu'au moment d'une action qui la requiert, via la
      * modal globale gérée par AuthService).
      */
-    this.redirectTimeout = setTimeout(() => {
+    this.redirectTimeout = setTimeout(async () => {
 
-      this.navCtrl.navigateRoot('/tabs/tab1');
+      await this.navCtrl.navigateRoot('/tabs/tab1');
+
+      // L'app a été lancée par un clic sur une notification :
+      // on ouvre la page concernée par-dessus l'accueil
+      const route = this.pushNotificationService.consommerRouteEnAttente();
+      if (route) {
+        await this.navCtrl.navigateForward(route);
+      }
 
     }, 5000);
 

@@ -1,6 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AlertController } from '@ionic/angular';
+import { ActivatedRoute } from '@angular/router';
+import { AlertController, IonContent } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
 interface Audio {
   _id: string;
@@ -102,12 +104,31 @@ export class Tab2Page implements OnInit, OnDestroy {
   private filteredCache: Audio[] = [];
   private filteredKey: [Audio[], string, string] | null = null;
 
+  @ViewChild(IonContent) private content?: IonContent;
+
+  // Audio demandé par une notification (/tabs/tab2?audio=<id>)
+  private audioDemande: string | null = null;
+  private routeSub?: Subscription;
+
   constructor(
     private http: HttpClient,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
+    this.routeSub = this.route.queryParamMap.subscribe(params => {
+      const id = params.get('audio');
+      if (!id) {
+        return;
+      }
+      this.audioDemande = id;
+      // Audio pas encore dans la liste (tout juste publié) : on recharge
+      if (!this.afficherAudioDemande() && this.audios.length) {
+        this.fetchAudios();
+      }
+    });
+
     this.fetchAudios();
     // Restaurer le volume sauvegardé
     const savedVolume = localStorage.getItem('audioVolume');
@@ -132,6 +153,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.routeSub?.unsubscribe();
     this.destroyed = true;
     this.durationQueue = [];
     this.cleanupAudio();
@@ -161,10 +183,27 @@ export class Tab2Page implements OnInit, OnDestroy {
     if (!this.currentAudio) {
       this.featuredAudio = this.audios[0] ?? null;
     }
+    this.afficherAudioDemande();
     this.extractCategories();
     if (this.durationsStarted) {
       this.loadDurations();
     }
+  }
+
+  /** Met l'audio demandé par la notification « à la une », en haut de la page */
+  private afficherAudioDemande(): boolean {
+    const audio = this.audioDemande
+      ? this.audios.find(a => a._id === this.audioDemande)
+      : undefined;
+    if (!audio) {
+      return false;
+    }
+    this.audioDemande = null;
+    this.searchTerm = '';
+    this.selectedCategory = 'tous';
+    this.featuredAudio = audio;
+    void this.content?.scrollToTop(300);
+    return true;
   }
 
   get volumeIcon(): string {
