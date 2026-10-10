@@ -1,5 +1,7 @@
 import UIKit
 import Capacitor
+import FirebaseCore
+import FirebaseMessaging
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,9 +9,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Firebase is initialized from the web/Angular SDK in this app.
-        // No native FirebaseCore import is required here.
+        // Firebase natif (GoogleService-Info.plist) : nécessaire pour obtenir un token FCM
+        FirebaseApp.configure()
         return true
+    }
+
+    // Le backend envoie via FCM : on échange le token APNs contre un token FCM
+    // avant de le transmettre au plugin @capacitor/push-notifications
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
+        Messaging.messaging().token { token, error in
+            if let error = error {
+                NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
+            } else if let token = token {
+                NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: token)
+            }
+        }
+    }
+
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

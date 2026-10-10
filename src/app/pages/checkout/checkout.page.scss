@@ -139,30 +139,8 @@ ion-content {
   font-size: 0.72rem;
 }
 
-// Styles additionnels pour améliorer l'UX
-.alert-confirmation {
-  --background: var(--app-surface, #ffffff);
-
-  .alert-wrapper {
-    border-radius: 20px;
-    border: 2px solid #f97316;
-  }
-
-  .alert-head {
-    background: linear-gradient(to right, #f97316, #ea580c);
-    color: white;
-    border-radius: 20px 20px 0 0;
-  }
-}
-
-.alert-error {
-  --background: var(--app-surface, #ffffff);
-
-  .alert-wrapper {
-    border-radius: 20px;
-    border: 2px solid #ef4444;
-  }
-}
+// Styles des alertes (.alert-confirmation, .alert-error) : dans global.scss,
+// car les alertes sont rendues hors de la page
 
 // Animation pour le bouton de confirmation
 button {

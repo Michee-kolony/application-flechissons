@@ -68,13 +68,13 @@ h1 {
 .header-icon {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 43px;
+  height: 43px;
   padding: 0;
   color: $color-primary;
   background: #fff;
   border: 1px solid $color-border;
-  border-radius: 13px;
+  border-radius: 50%;
   font-size: 19px;
   cursor: pointer;
   overflow: hidden;
@@ -851,9 +851,9 @@ h1 {
   }
 
   .header-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    width: 39px;
+    height: 39px;
+    border-radius: 50%;
     font-size: 17px;
   }
 

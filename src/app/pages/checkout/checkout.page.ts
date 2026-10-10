@@ -177,16 +177,15 @@ export class CheckoutPage implements OnInit, OnDestroy {
 
     const alert = await this.alertController.create({
       header: 'Confirmer votre don',
-      message: `
-        <div style="text-align: left;">
-          <p><strong>Montant :</strong> ${this.formaterMontant(this.montantSelectionne)} (${this.devise})</p>
-          <p><strong>Objet :</strong> ${this.echapperHtml(this.objet.trim())}</p>
-          <p><strong>Moyen de paiement :</strong> ${this.getNomMoyenPaiement()}</p>
-          <p><strong>Numéro :</strong> +243 ${this.echapperHtml(this.numeroTelephone)}</p>
-          <br>
-          <p>Vous allez recevoir une demande de code PIN sur votre téléphone.</p>
-        </div>
-      `,
+      // Texte brut : Ionic n'interprète pas le HTML dans les alertes (affiché tel quel)
+      message: [
+        `Montant : ${this.formaterMontant(this.montantSelectionne)} (${this.devise})`,
+        `Objet : ${this.objet.trim()}`,
+        `Moyen de paiement : ${this.getNomMoyenPaiement()}`,
+        `Numéro : +243 ${this.numeroTelephone}`,
+        '',
+        'Vous allez recevoir une demande de code PIN sur votre téléphone.'
+      ].join('\n'),
       buttons: [
         { text: 'Annuler', role: 'cancel' },
         { text: 'Payer', handler: () => this.lancerPaiement() }
@@ -302,16 +301,6 @@ export class CheckoutPage implements OnInit, OnDestroy {
     this.description = '';
     this.type = 'don';
     void this.navCtrl.back();
-  }
-
-  /** Évite d'injecter du HTML saisi par l'utilisateur dans le message de l'alerte */
-  private echapperHtml(texte: string): string {
-    return texte
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
   }
 
   async afficherAlerte(header: string, message: string) {

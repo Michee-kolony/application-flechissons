@@ -337,28 +337,12 @@ h1 {
   border: 1px solid #f3f4f6;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   width: 100%;
   text-align: left;
 
-  &:hover {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-    border-color: rgba(249, 115, 22, 0.3);
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
-
   &--danger {
     border-color: rgba(239, 68, 68, 0.15);
-
-    &:hover {
-      border-color: rgba(239, 68, 68, 0.4);
-      box-shadow: 0 12px 24px rgba(239, 68, 68, 0.1);
-    }
   }
 }
 
@@ -371,16 +355,10 @@ h1 {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.3s ease;
 
   ion-icon {
     font-size: 20px;
     color: $color-secondary;
-  }
-
-  .menu-card:hover & {
-    background: linear-gradient(135deg, #ffedd5, #fed7aa);
-    transform: scale(1.05);
   }
 
   .menu-card--danger & {
@@ -389,10 +367,6 @@ h1 {
     ion-icon {
       color: $color-danger;
     }
-  }
-
-  .menu-card--danger:hover & {
-    background: linear-gradient(135deg, #fee2e2, #fecaca);
   }
 }
 
@@ -426,18 +400,6 @@ h1 {
   font-size: 18px;
   color: #d1d5db;
   flex-shrink: 0;
-  transition: all 0.3s ease;
-
-  .menu-card:hover & {
-    color: $color-secondary;
-    transform: translateX(2px);
-  }
-
-  &--danger {
-    .menu-card--danger:hover & {
-      color: $color-danger;
-    }
-  }
 }
 
 // Spinner danger

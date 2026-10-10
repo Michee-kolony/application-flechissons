@@ -158,3 +158,65 @@ html.dark ion-action-sheet.bible-book-sheet {
     color: #f97316;
   }
 }
+
+// =====================================================
+// Alertes de la page Don (checkout) — suivent le thème clair / sombre
+// (en global car les alertes sont rendues hors de la page)
+// =====================================================
+ion-alert.alert-confirmation,
+ion-alert.alert-error {
+  --background: var(--app-surface);
+
+  .alert-wrapper {
+    border-radius: 20px;
+  }
+
+  .alert-title {
+    color: var(--app-text);
+    font-weight: 700;
+  }
+
+  .alert-message {
+    color: var(--app-text-secondary);
+  }
+
+  .alert-button-group {
+    border-color: var(--app-border);
+  }
+
+  .alert-button {
+    color: #f97316;
+    font-weight: 600;
+    border-color: var(--app-border);
+  }
+
+  .alert-button-role-cancel {
+    color: var(--app-text-secondary);
+  }
+}
+
+ion-alert.alert-confirmation {
+  .alert-wrapper {
+    border: 2px solid #f97316;
+  }
+
+  .alert-head {
+    background: linear-gradient(to right, #f97316, #ea580c);
+  }
+
+  .alert-title {
+    color: #ffffff;
+  }
+
+  // Message en texte brut sur plusieurs lignes
+  .alert-message {
+    padding-top: 16px;
+    color: var(--app-text);
+    white-space: pre-line;
+    text-align: left;
+  }
+}
+
+ion-alert.alert-error .alert-wrapper {
+  border: 2px solid #ef4444;
+}
