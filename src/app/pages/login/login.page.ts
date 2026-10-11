@@ -55,14 +55,19 @@ export class LoginPage {
   showPassword = false;
 
   // =====================================================
-  // TOAST
+  // ERREURS (affichées en rouge sous les champs)
   // =====================================================
 
-  showToast = false;
-  toastType: 'success' | 'error' = 'success';
-  toastMessage = '';
+  errors = {
+    email: '',
+    password: ''
+  };
 
-  private toastTimeout: any;
+  // Erreur qui ne concerne pas un champ précis (serveur, réseau…)
+  formError = '';
+
+  // Message après une inscription réussie
+  registeredMessage = '';
 
   // =====================================================
   // API
@@ -78,7 +83,15 @@ export class LoginPage {
     private http: HttpClient,
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) {
+    // Arrivée depuis l'inscription : e-mail pré-rempli
+    const state = this.router.getCurrentNavigation()?.extras.state;
+
+    if (state?.['registered']) {
+      this.loginData.email = state['email'] || '';
+      this.registeredMessage = 'Votre compte a été créé. Connectez-vous pour continuer.';
+    }
+  }
 
   // =====================================================
   // AFFICHER / MASQUER MOT DE PASSE
@@ -89,47 +102,12 @@ export class LoginPage {
   }
 
   // =====================================================
-  // TOAST SUCCESS
+  // EFFACER L'ERREUR D'UN CHAMP QUAND ON LE MODIFIE
   // =====================================================
 
-  showSuccessToast(message: string): void {
-    this.displayToast(message, 'success');
-  }
-
-  // =====================================================
-  // TOAST ERROR
-  // =====================================================
-
-  showErrorToast(message: string): void {
-    this.displayToast(message, 'error');
-  }
-
-  // =====================================================
-  // AFFICHER TOAST
-  // =====================================================
-
-  private displayToast(
-    message: string,
-    type: 'success' | 'error'
-  ): void {
-
-    clearTimeout(this.toastTimeout);
-
-    this.toastMessage = message;
-    this.toastType = type;
-    this.showToast = true;
-
-    this.toastTimeout = setTimeout(() => {
-      this.closeToast();
-    }, 3500);
-  }
-
-  // =====================================================
-  // FERMER TOAST
-  // =====================================================
-
-  closeToast(): void {
-    this.showToast = false;
+  clearError(field: keyof LoginPage['errors']): void {
+    this.errors[field] = '';
+    this.formError = '';
   }
 
   // =====================================================
@@ -137,6 +115,10 @@ export class LoginPage {
   // =====================================================
 
   login(): void {
+
+    if (this.isLoading) {
+      return;
+    }
 
     // ---------------------------------------------------
     // NETTOYAGE
@@ -146,31 +128,22 @@ export class LoginPage {
     const password = this.loginData.password;
 
     // ---------------------------------------------------
-    // VALIDATION EMAIL
+    // VALIDATION
     // ---------------------------------------------------
 
-    if (!email) {
-      this.showErrorToast(
-        'Veuillez saisir votre adresse e-mail.'
-      );
-      return;
-    }
+    this.formError = '';
+    this.errors = {
+      email: !email
+        ? 'Veuillez saisir votre adresse e-mail.'
+        : !this.isValidEmail(email)
+          ? 'Veuillez saisir une adresse e-mail valide.'
+          : '',
+      password: !password
+        ? 'Veuillez saisir votre mot de passe.'
+        : ''
+    };
 
-    if (!this.isValidEmail(email)) {
-      this.showErrorToast(
-        'Veuillez saisir une adresse e-mail valide.'
-      );
-      return;
-    }
-
-    // ---------------------------------------------------
-    // VALIDATION MOT DE PASSE
-    // ---------------------------------------------------
-
-    if (!password) {
-      this.showErrorToast(
-        'Veuillez saisir votre mot de passe.'
-      );
+    if (this.errors.email || this.errors.password) {
       return;
     }
 
@@ -215,12 +188,7 @@ export class LoginPage {
         ) {
 
           this.isLoading = false;
-
-          this.showErrorToast(
-            response.message ||
-            'Connexion impossible.'
-          );
-
+          this.formError = response.message || 'Connexion impossible.';
           return;
         }
 
@@ -233,54 +201,19 @@ export class LoginPage {
           response.user
         );
 
-        // -----------------------------------------------
-        // LOGS
-        // -----------------------------------------------
-
-        console.log(
-          '💾 User enregistré dans localStorage :',
-          response.user
-        );
-
-        console.log(
-          '🔐 Token enregistré dans localStorage'
-        );
-
-        console.log(
-          '🆔 User ID enregistré :',
-          response.user.id
-        );
-
-        // -----------------------------------------------
-        // ARRÊT LOADING
-        // -----------------------------------------------
-
         this.isLoading = false;
-
-        // -----------------------------------------------
-        // TOAST SUCCESS
-        // -----------------------------------------------
-
-        this.showSuccessToast(
-          response.message ||
-          'Connexion réussie !'
-        );
 
         // -----------------------------------------------
         // REDIRECTION
         // /tabs/tab1
         // -----------------------------------------------
 
-        setTimeout(() => {
-
-          this.router.navigateByUrl(
-            '/tabs/tab1',
-            {
-              replaceUrl: true
-            }
-          );
-
-        }, 1000);
+        this.router.navigateByUrl(
+          '/tabs/tab1',
+          {
+            replaceUrl: true
+          }
+        );
       },
 
       // =================================================
@@ -296,29 +229,15 @@ export class LoginPage {
 
         this.isLoading = false;
 
-        let message =
-          'Une erreur est survenue. Veuillez réessayer.';
-
         // -----------------------------------------------
-        // MESSAGE BACKEND
-        // -----------------------------------------------
-
-        if (error?.error?.message) {
-
-          message = error.error.message;
-
-        }
-
-        // -----------------------------------------------
-        // ERREUR 401
+        // IDENTIFIANTS INCORRECTS → sous le mot de passe
         // -----------------------------------------------
 
         if (error?.status === 401) {
-
-          message =
+          this.errors.password =
             error?.error?.message ||
             'E-mail ou mot de passe incorrect.';
-
+          return;
         }
 
         // -----------------------------------------------
@@ -326,17 +245,14 @@ export class LoginPage {
         // -----------------------------------------------
 
         if (error?.status === 0) {
-
-          message =
+          this.formError =
             'Impossible de contacter le serveur. Vérifiez votre connexion.';
-
+          return;
         }
 
-        // -----------------------------------------------
-        // AFFICHER ERREUR
-        // -----------------------------------------------
-
-        this.showErrorToast(message);
+        this.formError =
+          error?.error?.message ||
+          'Une erreur est survenue. Veuillez réessayer.';
       }
 
     });
@@ -353,16 +269,4 @@ export class LoginPage {
 
     return emailRegex.test(email);
   }
-
-  // =====================================================
-  // GOOGLE LOGIN
-  // =====================================================
-
-  googleLogin(): void {
-
-    this.showErrorToast(
-      'La connexion Google sera disponible prochainement.'
-    );
-  }
-
 }

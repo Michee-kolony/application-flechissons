@@ -1,0 +1,226 @@
+/* =====================================================
+   AUTH — Styles communs Connexion / Inscription
+   Fond ardoise, en-tête foncé avec courbe,
+   champs soulignés, bouton orange arrondi.
+===================================================== */
+
+:host {
+  --login-bg: #46515e;
+  --login-hero: #343c47;
+  --login-text: #ffffff;
+  --login-label: #c3cbd4;
+  --login-line: #c3cbd4;
+  --login-accent: #f8893d;
+  --login-error: #ff8a80;
+}
+
+.login-content {
+  --background: var(--login-bg);
+}
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  color: var(--login-text);
+}
+
+
+/* =====================================================
+   EN-TÊTE
+===================================================== */
+
+.login-hero {
+  position: relative;
+  padding: calc(env(safe-area-inset-top) + 22px) 32px 56px;
+  background: var(--login-hero);
+}
+
+.login-back {
+  display: inline-flex;
+  margin-left: -6px;
+  color: var(--login-text);
+  font-size: 28px;
+  text-decoration: none;
+}
+
+.login-title {
+  margin: 52px 0 0;
+  color: var(--login-text);
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+// Courbe qui sépare l'en-tête du formulaire
+.login-curve {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  display: block;
+  width: 100%;
+  height: 72px;
+  fill: var(--login-hero);
+}
+
+
+/* =====================================================
+   FORMULAIRE
+===================================================== */
+
+.login-form {
+  padding: 92px 32px 0;
+}
+
+.login-notice {
+  margin: 0 0 22px;
+  color: #9be7a8;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.login-field {
+  display: block;
+  margin-top: 26px;
+  border-bottom: 1px solid var(--login-line);
+  transition: border-color 0.2s ease;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+
+  ion-input {
+    --color: var(--login-text);
+    --padding-top: 4px;
+    --padding-bottom: 6px;
+    --padding-start: 0;
+    --padding-end: 0;
+    min-height: 0;
+    font-size: 16px;
+  }
+
+  // Champ rempli ou en cours de saisie : texte et trait orange
+  &--active,
+  &:focus-within {
+    border-bottom-color: var(--login-accent);
+
+    ion-input {
+      --color: var(--login-accent);
+    }
+  }
+
+  &--error,
+  &--error:focus-within {
+    border-bottom-color: var(--login-error);
+  }
+}
+
+.login-label {
+  display: block;
+  color: var(--login-label);
+  font-size: 13px;
+}
+
+.login-field__row {
+  display: flex;
+  align-items: center;
+
+  ion-input {
+    flex: 1;
+  }
+}
+
+.login-toggle {
+  display: grid;
+  place-items: center;
+  padding: 0 0 0 8px;
+  color: var(--login-label);
+  background: transparent;
+  border: 0;
+  font-size: 18px;
+}
+
+.login-error {
+  margin: 6px 0 0;
+  color: var(--login-error);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.login-error--form {
+  margin: 0 0 14px;
+  text-align: center;
+}
+
+.login-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin: 16px 0 40px;
+
+  a {
+    color: var(--login-accent);
+    font-size: 13px;
+    text-decoration: none;
+  }
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 52px;
+  color: #ffffff;
+  background: var(--login-accent);
+  border: 0;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.8;
+  }
+}
+
+.login-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: loginSpin 0.8s linear infinite;
+}
+
+
+/* =====================================================
+   INSCRIPTION (bas de page)
+===================================================== */
+
+.login-signup {
+  margin-top: auto;
+  padding: 40px 32px calc(env(safe-area-inset-bottom) + 28px);
+  color: var(--login-text);
+  font-size: 13px;
+  text-align: center;
+
+  a {
+    margin-left: 2px;
+    color: var(--login-accent);
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+}
+
+@keyframes loginSpin {
+  to { transform: rotate(360deg); }
+}

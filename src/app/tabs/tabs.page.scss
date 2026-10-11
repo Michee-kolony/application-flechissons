@@ -1,13 +1,18 @@
-/* Barre de navigation — glassmorphism flottante */
+/* Barre de navigation — glassmorphism flottante
+   Ionic impose box-sizing: content-box : le padding s'ajoute à la hauteur.
+   Total : 40px de boutons + 14px de marge, + 20px sur les 34px de la zone
+   de la barre d'accueil iOS (on ne garde pas toute la zone pour ne pas
+   surélever la barre). */
 .custom-tab-bar {
   --background: rgba(255, 255, 255, 0.55);
   --border: none;
+  --inset-bas: max(calc(env(safe-area-inset-bottom) - 14px), 0px);
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
-  height: calc(58px + env(safe-area-inset-bottom));
+  padding: 7px 10px calc(7px + var(--inset-bas));
+  height: 40px;
   border: none;
   border-top: 1px solid rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(20px) saturate(180%);
@@ -25,13 +30,13 @@
   --ripple-color: transparent;
   border-radius: 30px;
   margin: 0 2px;
-  padding: 0 10px;
-  height: 42px;
-  min-height: 42px;
+  padding: 0 9px;
+  height: 38px;
+  min-height: 38px;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex: 0 1 auto;
-  min-width: 44px;
+  min-width: 40px;
 }
 
 /* Contenu du bouton */
@@ -47,8 +52,8 @@
 
 /* Icônes */
 .custom-tab-bar ion-tab-button ion-icon {
-  font-size: 20px;
-  min-width: 20px;
+  font-size: 19px;
+  min-width: 19px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   color: #777;
   position: relative;
@@ -58,7 +63,7 @@
 
 /* Labels (titres) - cachés par défaut */
 .custom-tab-bar ion-tab-button .tab-label {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #777;
   opacity: 0;
@@ -76,7 +81,7 @@
 /* --- ÉTAT ACTIF --- */
 .custom-tab-bar ion-tab-button.tab-selected {
   background: linear-gradient(135deg, #ff9800, #ff6f00);
-  padding: 0 14px;
+  padding: 0 13px;
   min-width: auto;
   flex: 0 1 auto;
   box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
@@ -91,10 +96,11 @@
 /* Label actif - apparaît complètement sans coupure */
 .custom-tab-bar ion-tab-button.tab-selected .tab-label {
   opacity: 1;
-  max-width: 200px; /* Augmenté pour permettre l'affichage complet */
+  max-width: none;
+  width: auto;
   transform: scale(1) translateX(0);
   color: #fff;
-  margin-left: 4px;
+  margin-left: 3px;
   overflow: visible;
   white-space: nowrap;
 }
@@ -131,42 +137,15 @@
   transition: opacity 0s;
 }
 
-/* Responsive - petits écrans */
-@media (max-width: 480px) {
-  .custom-tab-bar {
-    padding: 5px 6px calc(5px + env(safe-area-inset-bottom));
-    height: calc(54px + env(safe-area-inset-bottom));
-  }
-
-  .custom-tab-bar ion-tab-button {
-    padding: 0 8px;
-    height: 40px;
-    min-height: 40px;
-    min-width: 40px;
-  }
-
-  .custom-tab-bar ion-tab-button ion-icon {
-    font-size: 19px;
-    min-width: 19px;
-  }
-
-  .custom-tab-bar ion-tab-button .tab-label,
-  .custom-tab-bar ion-tab-button.tab-selected .tab-label {
-    font-size: 11px;
-  }
-
-  .custom-tab-bar ion-tab-button.tab-selected {
-    padding: 0 12px;
-    min-width: auto;
-  }
-}
-
-/* Pour les très petits écrans */
+/* Très petits écrans (iPhone SE, etc.) */
 @media (max-width: 360px) {
+  .custom-tab-bar {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
   .custom-tab-bar ion-tab-button {
     padding: 0 6px;
-    height: 38px;
-    min-height: 38px;
     min-width: 36px;
   }
 
@@ -175,9 +154,8 @@
     min-width: 18px;
   }
 
-  .custom-tab-bar ion-tab-button .tab-label,
-  .custom-tab-bar ion-tab-button.tab-selected .tab-label {
-    font-size: 10px;
+  .custom-tab-bar ion-tab-button .tab-label {
+    font-size: 10.5px;
   }
 
   .custom-tab-bar ion-tab-button.tab-selected {
@@ -185,27 +163,12 @@
   }
 }
 
-/* Support pour les très longs textes */
-.custom-tab-bar ion-tab-button.tab-selected .tab-label {
-  max-width: 300px; /* Pour les textes longs */
-}
-
-/* Option: si vous voulez que le texte s'adapte à la longueur réelle */
-.custom-tab-bar ion-tab-button.tab-selected {
-  padding: 0 14px;
-}
-
-.custom-tab-bar ion-tab-button.tab-selected .tab-label {
-  max-width: none; /* Supprime la limite de largeur */
-  width: auto;
-}
-
 /* =====================================================
-   MODE SOMBRE (BLEU DE NUIT)
+   MODE SOMBRE (NOIR)
    ===================================================== */
 :host-context(.dark) {
   .custom-tab-bar {
-    --background: rgba(30, 41, 59, 0.55);
+    --background: rgba(18, 18, 18, 0.55);
     border-top-color: rgba(255, 255, 255, 0.08);
     box-shadow:
       0 -4px 24px rgba(0, 0, 0, 0.35),

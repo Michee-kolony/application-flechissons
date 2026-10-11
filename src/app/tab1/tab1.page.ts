@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Router } from '@angular/router';
 import { IonInfiniteScroll } from '@ionic/angular';
 import { Subscription, interval } from 'rxjs';
@@ -297,9 +298,59 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * ========================================================
-   * GESTION DES LIKES (lecture seule)
+   * GESTION DES LIKES
    * ========================================================
    */
+
+  /**
+   * Annonces dont le like est en cours d'envoi (évite les doubles taps)
+   */
+  likeEnCours = new Set<string>();
+
+  /**
+   * Like / unlike d'une annonce directement depuis l'accueil
+   */
+  toggleLikeAnnonce(annonce: Article, event: Event): void {
+    // La carte entière ouvre l'article : on bloque la navigation
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!annonce || this.likeEnCours.has(annonce._id)) {
+      return;
+    }
+
+    if (!this.authService.requireAuth()) {
+      return;
+    }
+
+    // Mise à jour immédiate, annulée en cas d'erreur
+    const anciensLikes = [...(annonce.likes || [])];
+    const wasLiked = this.isAnnonceLiked(annonce);
+    annonce.likes = wasLiked
+      ? anciensLikes.filter(id => id !== this.userId)
+      : [...anciensLikes, this.userId];
+
+    if (!wasLiked) {
+      void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+    }
+
+    this.likeEnCours.add(annonce._id);
+
+    this.http.put<any>(`${this.urlArticle}/${annonce._id}/like`, { utilisateurId: this.userId })
+      .subscribe({
+        next: (response) => {
+          if (!response?.success) {
+            annonce.likes = anciensLikes;
+          }
+          this.likeEnCours.delete(annonce._id);
+        },
+        error: (error) => {
+          console.error('Erreur like:', error);
+          annonce.likes = anciensLikes;
+          this.likeEnCours.delete(annonce._id);
+        }
+      });
+  }
 
   /**
    * Vérifie si l'utilisateur a liké une annonce

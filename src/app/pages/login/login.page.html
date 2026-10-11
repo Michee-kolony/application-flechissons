@@ -1,353 +1,116 @@
 <ion-content
   [fullscreen]="true"
-  class="login-content"
+  [scrollY]="true"
+  class="login-content no-texture"
 >
 
-  <!-- =====================================================
-       BACKGROUND
-  ====================================================== -->
-
-  <div class="background-image">
-
-    <img
-      src="../../../assets/pasteur.jpeg"
-      alt="Fléchissons"
-      class="bg-img"
-    >
-
-    <!-- OVERLAY NOIR -->
-    <div class="background-overlay"></div>
-
-  </div>
-
-
-  <!-- =====================================================
-       CONTAINER
-  ====================================================== -->
-
-  <div class="login-container">
-
+  <div class="login-page">
 
     <!-- =================================================
-         LOGO / BRAND
+         EN-TÊTE (zone foncée avec courbe)
     ================================================== -->
 
-    <div class="brand">
+    <header class="login-hero">
 
-      <!-- LOGO CIRCULAIRE -->
-      <div class="brand-logo">
+      <a class="login-back" routerLink="/tabs/tab1" aria-label="Retour">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </a>
 
-        <img
-          src="../../../assets/logo.png"
-          alt="Logo Fléchissons"
-        >
+      <h1 class="login-title">Bon<br>retour</h1>
 
-      </div>
+      <svg class="login-curve" viewBox="0 0 390 90" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0 0H390V34C285 78 140 92 0 70Z" />
+      </svg>
 
-
-      <!-- NOM -->
-      <div class="brand-text">
-
-        <h1>Fléchissons</h1>
-
-        <span>Nos genoux</span>
-
-      </div>
-
-    </div>
-
-
-    <!-- =================================================
-         HEADER
-    ================================================== -->
-
-    <div class="login-header">
-
-      <div class="welcome-badge">
-
-      
-
-        <span>Prions ensemble</span>
-
-      </div>
-
-
-      <h2>
-        Connexion
-      </h2>
-
-
-      <p>
-        Connectez-vous pour continuer votre parcours
-        avec Fléchissons.
-      </p>
-
-    </div>
+    </header>
 
 
     <!-- =================================================
          FORMULAIRE
     ================================================== -->
 
-    <div class="login-form">
+    <main class="login-form">
 
+      <p *ngIf="registeredMessage" class="login-notice">
+        {{ registeredMessage }}
+      </p>
 
-      <!-- =================================================
-           EMAIL
-      ================================================== -->
+      <!-- EMAIL -->
+      <label
+        class="login-field"
+        [class.login-field--active]="loginData.email"
+        [class.login-field--error]="errors.email"
+      >
+        <span class="login-label">E-mail</span>
+        <ion-input
+          [(ngModel)]="loginData.email"
+          (ngModelChange)="clearError('email')"
+          type="email"
+          inputmode="email"
+          autocomplete="email"
+          [disabled]="isLoading"
+        ></ion-input>
+      </label>
+      <p *ngIf="errors.email" class="login-error">{{ errors.email }}</p>
 
-      <div class="input-wrapper">
-
-        <i
-          class="input-icon fa-solid fa-envelope -mt-[2%]"
-        ></i>
-
-        <ion-item
-          lines="none"
-          class="custom-input"
-        >
-
+      <!-- MOT DE PASSE -->
+      <label
+        class="login-field"
+        [class.login-field--active]="loginData.password"
+        [class.login-field--error]="errors.password"
+      >
+        <span class="login-label">Mot de passe</span>
+        <div class="login-field__row">
           <ion-input
-            placeholder="Adresse e-mail"
-            [(ngModel)]="loginData.email"
-            type="email"
-            autocomplete="email"
-            [disabled]="isLoading"
-          ></ion-input>
-
-        </ion-item>
-
-      </div>
-
-
-      <!-- =================================================
-           PASSWORD
-      ================================================== -->
-
-      <div class="input-wrapper">
-
-        <i
-          class="input-icon fa-solid fa-lock -mt-[2%]"
-        ></i>
-
-        <ion-item
-          lines="none"
-          class="custom-input"
-        >
-
-          <ion-input
-            placeholder="Mot de passe"
             [(ngModel)]="loginData.password"
+            (ngModelChange)="clearError('password')"
             [type]="showPassword ? 'text' : 'password'"
             autocomplete="current-password"
             [disabled]="isLoading"
+            (keyup.enter)="login()"
           ></ion-input>
-
-
-          <ion-icon
-            [name]="
-              showPassword
-                ? 'eye-off-outline'
-                : 'eye-outline'
-            "
-            class="password-toggle"
+          <button
+            *ngIf="loginData.password"
+            type="button"
+            class="login-toggle"
+            [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
             (click)="togglePasswordVisibility()"
-            slot="end"
-          ></ion-icon>
+          >
+            <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </button>
+        </div>
+      </label>
+      <p *ngIf="errors.password" class="login-error">{{ errors.password }}</p>
 
-        </ion-item>
-
+      <div class="login-forgot">
+        <a routerLink="/forgot-password">Mot de passe oublié ?</a>
       </div>
 
+      <!-- ERREUR GÉNÉRALE (serveur, réseau…) -->
+      <p *ngIf="formError" class="login-error login-error--form">{{ formError }}</p>
 
-      <!-- =================================================
-           MOT DE PASSE OUBLIÉ
-      ================================================== -->
-
-      <div class="forgot-password">
-
-        <a routerLink="/forgot-password">
-          Mot de passe oublié ?
-        </a>
-
-      </div>
-
-
-      <!-- =================================================
-           LOGIN BUTTON
-      ================================================== -->
-
-      <ion-button
-        expand="block"
-        class="btn-login"
+      <!-- BOUTON -->
+      <button
+        type="button"
+        class="login-btn"
         (click)="login()"
         [disabled]="isLoading"
       >
-
-        <!-- NORMAL -->
-
-        <ng-container *ngIf="!isLoading">
-
-          <span>
-            Se connecter
-          </span>
-
-          <ion-icon
-            name="arrow-forward-outline"
-          ></ion-icon>
-
-        </ng-container>
-
-
-        <!-- LOADING -->
-
-        <ng-container *ngIf="isLoading">
-
-          <span
-            class="login-spinner"
-          ></span>
-
-          <span>
-            Connexion...
-          </span>
-
-        </ng-container>
-
-      </ion-button>
-
-
-      <!-- =================================================
-           SIGNUP
-      ================================================== -->
-
-      <div class="signup-link">
-
-        <span>
-          Pas encore de compte ?
-        </span>
-
-        <a routerLink="/signup">
-          S'inscrire
-        </a>
-
-      </div>
-
-
-    </div>
-
-  </div>
-
-
-  <!-- =====================================================
-       TOAST
-  ====================================================== -->
-
-  <div
-    *ngIf="showToast"
-    class="
-      fixed
-      top-6
-      left-1/2
-      -translate-x-1/2
-      z-[9999]
-      w-[calc(100%-32px)]
-      max-w-sm
-      animate-toast-in
-    "
-  >
-
-    <div
-      class="
-        flex
-        items-center
-        gap-3
-        rounded-2xl
-        bg-gray-50
-        dark:bg-slate-800
-        px-4
-        py-3
-        shadow-2xl
-        border
-      "
-      [ngClass]="
-        toastType === 'success'
-          ? 'border-green-100 dark:border-green-500/40'
-          : 'border-red-100 dark:border-red-500/40'
-      "
-    >
-
-      <!-- ICON -->
-
-      <div
-        class="
-          flex
-          h-9
-          w-9
-          shrink-0
-          items-center
-          justify-center
-          rounded-full
-        "
-        [ngClass]="
-          toastType === 'success'
-            ? 'bg-green-50 text-green-500 dark:bg-green-500/15 dark:text-green-400'
-            : 'bg-red-50 text-red-500 dark:bg-red-500/15 dark:text-red-400'
-        "
-      >
-
-        <ion-icon
-          [name]="
-            toastType === 'success'
-              ? 'checkmark-outline'
-              : 'alert-circle-outline'
-          "
-          class="text-xl"
-        ></ion-icon>
-
-      </div>
-
-
-      <!-- MESSAGE -->
-
-      <div class="flex-1">
-
-        <p
-          class="
-            text-[13px]
-            font-semibold
-            leading-5
-            text-gray-800
-            dark:text-white
-          "
-        >
-          {{ toastMessage }}
-        </p>
-
-      </div>
-
-
-      <!-- CLOSE -->
-
-      <button
-        type="button"
-        class="
-          text-gray-400
-          transition
-          hover:text-gray-700
-          dark:text-slate-400
-          dark:hover:text-white
-        "
-        (click)="closeToast()"
-      >
-
-        <ion-icon
-          name="close-outline"
-          class="text-xl"
-        ></ion-icon>
-
+        <span *ngIf="isLoading" class="login-spinner"></span>
+        {{ isLoading ? 'Connexion...' : 'Se connecter' }}
       </button>
 
-    </div>
+    </main>
+
+
+    <!-- =================================================
+         INSCRIPTION
+    ================================================== -->
+
+    <footer class="login-signup">
+      Pas encore de compte ?
+      <a routerLink="/signup">S'inscrire</a>
+    </footer>
 
   </div>
 

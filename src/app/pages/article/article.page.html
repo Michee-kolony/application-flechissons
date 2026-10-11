@@ -1,5 +1,5 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="container !bg-gray-50 dark:!bg-slate-900">
+  <ion-toolbar class="container !bg-gray-50 dark:!bg-black">
     <div class="flex py-2 items-center gap-3">
       <ion-back-button
         defaultHref="/tabs/tab1"
@@ -16,20 +16,20 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="false" class="!bg-gray-50 dark:!bg-slate-900" id="main-content">
+<ion-content [fullscreen]="false" class="!bg-gray-50 dark:!bg-black" id="main-content">
 
   <!-- SKELETONS ANIMES -->
   <div *ngIf="isLoading" class="p-4 space-y-4">
-    <div class="w-full bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 animate-pulse" style="aspect-ratio: 16/9;">
+    <div class="w-full bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 animate-pulse" style="aspect-ratio: 16/9;">
       <div class="w-full h-full flex items-center justify-center">
-        <i class="fas fa-video text-4xl text-gray-300 dark:text-slate-600"></i>
+        <i class="fas fa-video text-4xl text-gray-300 dark:text-neutral-600"></i>
       </div>
     </div>
     <div class="space-y-3">
-      <div class="h-8 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 rounded-lg animate-pulse w-3/4"></div>
-      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 rounded-lg animate-pulse w-full"></div>
-      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 rounded-lg animate-pulse w-5/6"></div>
-      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 rounded-lg animate-pulse w-2/3"></div>
+      <div class="h-8 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 rounded-lg animate-pulse w-3/4"></div>
+      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 rounded-lg animate-pulse w-full"></div>
+      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 rounded-lg animate-pulse w-5/6"></div>
+      <div class="h-4 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 rounded-lg animate-pulse w-2/3"></div>
     </div>
   </div>
 
@@ -37,8 +37,8 @@
   <div *ngIf="!isLoading && errorMessage" class="flex items-center justify-center min-h-[60vh]">
     <div class="text-center p-8">
       <i class="fas fa-exclamation-circle text-6xl text-red-500"></i>
-      <h2 class="text-xl font-bold text-gray-800 dark:text-slate-100 mt-4">Erreur</h2>
-      <p class="text-gray-500 dark:text-slate-400 mt-2">{{ errorMessage }}</p>
+      <h2 class="text-xl font-bold text-gray-800 dark:text-neutral-100 mt-4">Erreur</h2>
+      <p class="text-gray-500 dark:text-neutral-400 mt-2">{{ errorMessage }}</p>
       <ion-button (click)="goBack()" class="mt-4" color="orange">
         Retourner
       </ion-button>
@@ -48,7 +48,7 @@
   <!-- CONTENU -->
   <div *ngIf="!isLoading && article && !errorMessage" class="pb-24">
 
-    <div class="sticky top-0 z-10 bg-gray-50 dark:bg-slate-900">
+    <div class="sticky top-0 z-10 bg-gray-50 dark:bg-black">
 
       <!-- VIDEO -->
       <div *ngIf="isPredication() && article.youtube" class="w-full overflow-hidden bg-black">
@@ -66,7 +66,7 @@
       </div>
 
       <!-- IMAGES -->
-      <div *ngIf="!isPredication()" class="relative w-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-900" style="aspect-ratio: 16/9;">
+      <div *ngIf="!isPredication()" class="relative w-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-black" style="aspect-ratio: 16/9;">
         <img
           *ngIf="hasImages()"
           [src]="getImageUrl()"
@@ -74,10 +74,10 @@
           (error)="onImageError($event)"
           class="w-full h-full object-contain">
 
-        <div *ngIf="!hasImages()" class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-gray-100 dark:from-slate-800 dark:to-slate-900">
+        <div *ngIf="!hasImages()" class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-50 to-gray-100 dark:from-neutral-900 dark:to-black">
           <div class="text-center">
-            <i class="fas fa-image text-6xl text-gray-300 dark:text-slate-600"></i>
-            <p class="text-gray-400 dark:text-slate-500 mt-2">Aucune image</p>
+            <i class="fas fa-image text-6xl text-gray-300 dark:text-neutral-600"></i>
+            <p class="text-gray-400 dark:text-neutral-500 mt-2">Aucune image</p>
           </div>
         </div>
 
@@ -117,9 +117,9 @@
       </div>
 
       <!-- TITRE -->
-      <div class="px-4 py-3 bg-gray-50 dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700 shadow-sm">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 leading-tight">{{ article.titre }}</h2>
-        <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400 dark:text-slate-500">
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-b border-gray-100 dark:border-neutral-800 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-neutral-100 leading-tight">{{ article.titre }}</h2>
+        <div class="flex items-center gap-3 mt-1.5 text-xs text-gray-400 dark:text-neutral-500">
           <span class="inline-flex items-center gap-1">
             <i class="fas fa-clock"></i>
             {{ getTimeAgo(article.createdAt) }}
@@ -133,7 +133,7 @@
 
     <div class="px-4 pt-3 space-y-4">
       <div>
-        <p class="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{{ article.description }}</p>
+        <p class="text-sm text-gray-600 dark:text-neutral-300 leading-relaxed">{{ article.description }}</p>
       </div>
 
       <div *ngIf="article.theme" class="p-3 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 border border-orange-200 dark:border-orange-800/50 rounded-lg">
@@ -144,28 +144,28 @@
       </div>
 
       <!-- ACTIONS -->
-      <div class="bg-gray-50 dark:bg-slate-800 shadow-lg rounded-xl p-3 flex justify-around items-center">
+      <div class="bg-gray-50 dark:bg-neutral-900 shadow-lg rounded-xl p-3 flex justify-around items-center">
         <button (click)="toggleLike()" class="like-action flex flex-col items-center gap-0.5 transition-transform hover:scale-110" aria-label="Aimer la publication">
           <span *ngIf="showLikeBurst" class="floating-heart" aria-hidden="true">&#10084;</span>
-          <i class="text-xl" [class]="isLiked ? 'fas fa-heart text-orange-500' : 'far fa-heart text-gray-500 dark:text-slate-400'"></i>
-          <span class="text-xs font-semibold text-gray-700 dark:text-slate-300">{{ likeCount }}</span>
+          <i class="text-xl" [class]="isLiked ? 'fas fa-heart text-orange-500' : 'far fa-heart text-gray-500 dark:text-neutral-400'"></i>
+          <span class="text-xs font-semibold text-gray-700 dark:text-neutral-300">{{ likeCount }}</span>
         </button>
 
         <button (click)="focusComment()" class="flex flex-col items-center gap-0.5 transition-transform hover:scale-110">
           <i class="text-xl far fa-comment text-orange-500"></i>
-          <span class="text-xs font-semibold text-gray-700 dark:text-slate-300">{{ commentaires.length }}</span>
+          <span class="text-xs font-semibold text-gray-700 dark:text-neutral-300">{{ commentaires.length }}</span>
         </button>
 
         <button (click)="partagerArticle()" class="flex flex-col items-center gap-0.5 transition-transform hover:scale-110">
           <i class="text-xl fas fa-share-alt text-orange-500"></i>
-          <span class="text-xs font-semibold text-gray-700 dark:text-slate-300">Partager</span>
+          <span class="text-xs font-semibold text-gray-700 dark:text-neutral-300">Partager</span>
         </button>
       </div>
 
       <!-- COMMENTAIRES -->
       <!-- pb-24 : place pour la barre de saisie fixée en bas -->
       <div class="space-y-3 pb-24">
-        <h3 class="font-bold text-base text-gray-900 dark:text-slate-100">
+        <h3 class="font-bold text-base text-gray-900 dark:text-neutral-100">
           <i class="fas fa-comments mr-2 text-orange-500"></i>
           Commentaires ({{ commentaires.length }})
         </h3>
@@ -174,7 +174,7 @@
              [id]="'commentaire-' + commentaire.id"
              [class.ring-2]="commentaireSurligne === commentaire.id"
              [class.ring-orange-400]="commentaireSurligne === commentaire.id"
-             class="bg-gray-50 dark:bg-slate-800 p-3 shadow-lg rounded-xl flex gap-3 transition-all hover:shadow-xl">
+             class="bg-gray-50 dark:bg-neutral-900 p-3 shadow-lg rounded-xl flex gap-3 transition-all hover:shadow-xl">
           <!-- Avatar avec photo ou initiale -->
           <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-orange-200 dark:border-orange-800/50 overflow-hidden"
                [class.bg-white]="commentaire.photo && commentaire.photo !== 'assets/avatar-default.png'"
@@ -196,18 +196,18 @@
 
           <div class="flex-1 min-w-0">
             <div class="flex items-center justify-between gap-2">
-              <h4 class="font-bold text-sm text-gray-900 dark:text-slate-100 truncate">
+              <h4 class="font-bold text-sm text-gray-900 dark:text-neutral-100 truncate">
                 {{ getNomComplet(commentaire.prenom, commentaire.nom) }}
               </h4>
               <div class="flex items-center gap-2 flex-shrink-0">
-                <span class="text-xs text-gray-400 dark:text-slate-500">
+                <span class="text-xs text-gray-400 dark:text-neutral-500">
                   {{ commentaire.date }}<span *ngIf="commentaire.modifie" class="italic"> (modifié)</span>
                 </span>
                 <button
                   *ngIf="peutModifier(commentaire) && editionId !== commentaire.id"
                   type="button"
                   (click)="commencerEdition(commentaire)"
-                  class="w-7 h-7 -my-1 rounded-full flex items-center justify-center text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:text-slate-500 dark:hover:bg-slate-700 transition-colors"
+                  class="w-7 h-7 -my-1 rounded-full flex items-center justify-center text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:text-neutral-500 dark:hover:bg-neutral-800 transition-colors"
                   aria-label="Modifier le commentaire"
                   title="Modifier">
                   <i class="fas fa-pen text-xs"></i>
@@ -215,7 +215,7 @@
               </div>
             </div>
 
-            <p *ngIf="editionId !== commentaire.id" class="text-sm text-gray-600 dark:text-slate-300 mt-0.5 whitespace-pre-line break-words">{{ commentaire.contenu }}</p>
+            <p *ngIf="editionId !== commentaire.id" class="text-sm text-gray-600 dark:text-neutral-300 mt-0.5 whitespace-pre-line break-words">{{ commentaire.contenu }}</p>
 
             <!-- Mode édition -->
             <div *ngIf="editionId === commentaire.id" class="mt-2">
@@ -227,7 +227,7 @@
                 (keydown.meta.enter)="enregistrerEdition()"
                 rows="3"
                 id="edition-commentaire"
-                class="w-full text-sm rounded-xl px-3 py-2 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-orange-500/50 resize-none disabled:opacity-60"
+                class="w-full text-sm rounded-xl px-3 py-2 bg-white dark:!bg-black text-gray-700 dark:text-neutral-200 border border-gray-200 dark:border-neutral-800 outline-none focus:ring-2 focus:ring-orange-500/50 resize-none disabled:opacity-60"
                 aria-label="Modifier le commentaire"></textarea>
 
               <div class="flex items-center justify-between mt-1">
@@ -236,7 +236,7 @@
                       [class.text-gray-400]="editionTexte.trim().length <= commentaireMax">
                   {{ editionTexte.trim().length }}/{{ commentaireMax }}
                 </span>
-                <span class="text-[10px] text-gray-400 dark:text-slate-500 hidden sm:inline">Échap pour annuler · Ctrl+Entrée pour enregistrer</span>
+                <span class="text-[10px] text-gray-400 dark:text-neutral-500 hidden sm:inline">Échap pour annuler · Ctrl+Entrée pour enregistrer</span>
               </div>
 
               <p *ngIf="editionErreur" class="mt-1 text-xs text-red-500 flex items-start gap-1" role="alert">
@@ -249,7 +249,7 @@
                   type="button"
                   (click)="annulerEdition()"
                   [disabled]="isSavingEdition"
-                  class="px-3 py-1.5 text-xs font-semibold rounded-full text-gray-600 dark:text-slate-300 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50">
+                  class="px-3 py-1.5 text-xs font-semibold rounded-full text-gray-600 dark:text-neutral-300 bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50">
                   Annuler
                 </button>
                 <button
@@ -265,10 +265,10 @@
           </div>
         </div>
 
-        <div *ngIf="commentaires.length === 0" class="text-center py-6 bg-gray-50 dark:bg-slate-800 rounded-xl shadow-lg">
-          <i class="fas fa-comment-slash text-3xl text-gray-300 dark:text-slate-600"></i>
-          <p class="text-gray-400 dark:text-slate-500 text-sm mt-2">Aucun commentaire pour le moment</p>
-          <p class="text-gray-400 dark:text-slate-500 text-xs">Soyez le premier à commenter !</p>
+        <div *ngIf="commentaires.length === 0" class="text-center py-6 bg-gray-50 dark:bg-neutral-900 rounded-xl shadow-lg">
+          <i class="fas fa-comment-slash text-3xl text-gray-300 dark:text-neutral-600"></i>
+          <p class="text-gray-400 dark:text-neutral-500 text-sm mt-2">Aucun commentaire pour le moment</p>
+          <p class="text-gray-400 dark:text-neutral-500 text-xs">Soyez le premier à commenter !</p>
         </div>
       </div>
     </div>

@@ -16,24 +16,6 @@ $color-text-light: #718079;
 $color-text-muted: #a6afa9;
 
 // =====================================================
-// JETONS DES TEXTURES DÉCORATIVES (adaptés clair / sombre)
-// =====================================================
-
-:host {
-  --texture-orb-top: rgba(249, 115, 22, 0.16);
-  --texture-orb-bottom: rgba(253, 186, 116, 0.32);
-  --texture-dot: rgba(234, 88, 12, 0.3);
-  --texture-ring: rgba(249, 115, 22, 0.16);
-}
-
-:host-context(.dark) {
-  --texture-orb-top: rgba(249, 115, 22, 0.28);
-  --texture-orb-bottom: rgba(59, 130, 246, 0.22);
-  --texture-dot: rgba(253, 186, 116, 0.32);
-  --texture-ring: rgba(96, 165, 250, 0.18);
-}
-
-// =====================================================
 // BASE
 // =====================================================
 
@@ -95,60 +77,6 @@ h1 {
   padding: 36px 20px 44px;
   overflow: hidden;
   min-height: 100%;
-}
-
-// =====================================================
-// ÉLÉMENTS DÉCORATIFS
-// =====================================================
-
-.contact-texture {
-  position: absolute;
-  z-index: -1;
-  pointer-events: none;
-  transition: background 0.3s ease, border-color 0.3s ease;
-}
-
-// Halo lumineux en haut à droite
-.contact-texture--orb-top {
-  top: -50px;
-  right: -70px;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--texture-orb-top) 0%, transparent 72%);
-  filter: blur(6px);
-}
-
-// Halo doux en bas à gauche (orange en clair, bleu de nuit en sombre)
-.contact-texture--orb-bottom {
-  bottom: 60px;
-  left: -80px;
-  width: 210px;
-  height: 210px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--texture-orb-bottom) 0%, transparent 72%);
-  filter: blur(4px);
-}
-
-// Semis de points
-.contact-texture--dots {
-  top: 190px;
-  right: 6px;
-  width: 108px;
-  height: 92px;
-  opacity: .8;
-  background-image: radial-gradient(var(--texture-dot) 1.5px, transparent 1.5px);
-  background-size: 14px 14px;
-}
-
-// Anneau fin en fond
-.contact-texture--ring {
-  right: -70px;
-  bottom: -40px;
-  width: 170px;
-  height: 170px;
-  border: 20px solid var(--texture-ring);
-  border-radius: 50%;
 }
 
 // =====================================================
@@ -626,34 +554,6 @@ h1 {
     font-size: 12px !important;
   }
 
-  .contact-texture--dots {
-    width: 90px;
-    height: 80px;
-    background-size: 10px 10px;
-  }
-
-  .contact-texture--orb-top {
-    width: 180px;
-    height: 180px;
-    top: -40px;
-    right: -55px;
-  }
-
-  .contact-texture--orb-bottom {
-    width: 160px;
-    height: 160px;
-    bottom: 40px;
-    left: -60px;
-  }
-
-  .contact-texture--ring {
-    width: 140px;
-    height: 140px;
-    border-width: 18px;
-    right: -55px;
-    bottom: -30px;
-  }
-
   .topbar h1 {
     font-size: 22px !important;
   }
@@ -760,34 +660,6 @@ h1 {
     ion-icon {
       font-size: 11px;
     }
-  }
-
-  .contact-texture--dots {
-    width: 70px;
-    height: 60px;
-    background-size: 8px 8px;
-  }
-
-  .contact-texture--orb-top {
-    width: 140px;
-    height: 140px;
-    top: -30px;
-    right: -45px;
-  }
-
-  .contact-texture--orb-bottom {
-    width: 120px;
-    height: 120px;
-    bottom: 30px;
-    left: -45px;
-  }
-
-  .contact-texture--ring {
-    width: 100px;
-    height: 100px;
-    border-width: 14px;
-    right: -40px;
-    bottom: -20px;
   }
 
   .overlay-content {
@@ -923,7 +795,7 @@ h1 {
   }
 
   .overlay-content {
-    background: rgba(30, 41, 59, 0.9);
+    background: rgba(18, 18, 18, 0.9);
     border-color: rgba(255, 255, 255, 0.08);
   }
 

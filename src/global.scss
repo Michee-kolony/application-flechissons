@@ -37,29 +37,56 @@
 }
 
 // =====================================================
-// KINOVA — Mode sombre (bleu de nuit), activé via la classe .dark
+// KINOVA — Mode sombre (noir), activé via la classe .dark
 // sur <html> (voir ThemeService), pilotable depuis la page Profil
 // =====================================================
 html.dark {
   color-scheme: dark;
 
-  --app-bg: #0f172a;
-  --app-surface: #1e293b;
-  --app-surface-alt: #273549;
+  --app-bg: #000000;
+  --app-surface: #121212;
+  --app-surface-alt: #1c1c1c;
   --app-text: #ffffff;
-  --app-text-secondary: #cbd5e1;
-  --app-border: #334155;
+  --app-text-secondary: #d4d4d4;
+  --app-border: #2a2a2a;
 
-  // Variables Ionic — alignées sur le bleu de nuit ci-dessus
-  --ion-background-color: #0f172a;
-  --ion-background-color-rgb: 15, 23, 42;
+  // Variables Ionic — alignées sur le noir ci-dessus
+  --ion-background-color: #000000;
+  --ion-background-color-rgb: 0, 0, 0;
   --ion-text-color: #ffffff;
   --ion-text-color-rgb: 255, 255, 255;
-  --ion-toolbar-background: #1e293b;
-  --ion-item-background: #1e293b;
-  --ion-card-background: #1e293b;
-  --ion-border-color: #334155;
-  --ion-tab-bar-background: #1e293b;
+  --ion-toolbar-background: #121212;
+  --ion-item-background: #121212;
+  --ion-card-background: #121212;
+  --ion-border-color: #2a2a2a;
+  --ion-tab-bar-background: #121212;
+}
+
+// =====================================================
+// KINOVA — Texture décorative du fond (motifs chrétiens)
+// Croix, ichthys, étoile de Bethléem et points de lumière, très
+// discrets, sous le contenu de chaque ion-content.
+// Désactivable sur une page avec la classe .no-texture
+// =====================================================
+@function texture-motifs($couleur, $opacite) {
+  @return url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='#{$couleur}' fill-opacity='#{$opacite}'%3E%3Cpath d='M38 22h4v10h8v4h-8v26h-4V36h-8v-4h8z'/%3E%3Cpath d='M51 120h2v4h4v2h-4v8h-2v-8h-4v-2h4z'/%3E%3Cpath d='M120 30l2 6 6 2-6 2-2 6-2-6-6-2 6-2z'/%3E%3Ccircle cx='90' cy='70' r='1.5'/%3E%3Ccircle cx='14' cy='96' r='1.2'/%3E%3Ccircle cx='145' cy='140' r='1.2'/%3E%3Ccircle cx='140' cy='88' r='1'/%3E%3C/g%3E%3Cpath d='M98 103q12 15 24 5q-12-10-24 5' fill='none' stroke='#{$couleur}' stroke-opacity='#{$opacite}' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+:root {
+  --app-texture-motifs: #{texture-motifs('%23c2410c', 0.07)};
+  --app-texture-lumiere: radial-gradient(ellipse 120% 100% at 50% 0%, rgba(249, 115, 22, 0.09), transparent 70%);
+}
+
+html.dark {
+  --app-texture-motifs: #{texture-motifs('%23ffffff', 0.05)};
+  --app-texture-lumiere: radial-gradient(ellipse 120% 100% at 50% 0%, rgba(249, 115, 22, 0.1), transparent 70%);
+}
+
+ion-content:not(.no-texture)::part(background) {
+  background-image: var(--app-texture-lumiere), var(--app-texture-motifs);
+  background-repeat: no-repeat, repeat;
+  background-size: 100% 380px, 160px 160px;
+  background-position: top center, center;
 }
 
 html,
@@ -122,10 +149,10 @@ body {
 // Rendu hors de la page par Ionic : doit être stylé en global
 // =====================================================
 html.dark ion-action-sheet.bible-book-sheet {
-  --background: #1e293b;
-  --button-background: #1e293b;
-  --button-background-hover: #273549;
-  --button-background-activated: #273549;
+  --background: #121212;
+  --button-background: #121212;
+  --button-background-hover: #1c1c1c;
+  --button-background-activated: #1c1c1c;
   --button-background-selected: rgba(249, 115, 22, 0.15);
   --button-color: #ffffff;
   --button-color-hover: #ffffff;
@@ -135,15 +162,15 @@ html.dark ion-action-sheet.bible-book-sheet {
 
   .action-sheet-title {
     color: #ffffff;
-    background: #1e293b;
+    background: #121212;
   }
 
   .action-sheet-sub-title {
-    color: #cbd5e1;
+    color: #d4d4d4;
   }
 
   .action-sheet-group {
-    background: #1e293b;
+    background: #121212;
   }
 
   .action-sheet-button {

@@ -230,7 +230,11 @@
           </div>
 
           <div class="annonce-actions">
-            <button class="action-btn" [class.liked]="isAnnonceLiked(annonce)">
+            <button
+              class="action-btn"
+              [class.liked]="isAnnonceLiked(annonce)"
+              [disabled]="likeEnCours.has(annonce._id)"
+              (click)="toggleLikeAnnonce(annonce, $event)">
               <ion-icon
                 [name]="isAnnonceLiked(annonce) ? 'heart' : 'heart-outline'"
                 class="action-icon"
