@@ -20,6 +20,10 @@ const routes: Routes = [
         loadChildren: () => import('../tab3/tab3.module').then(m => m.Tab3PageModule)
       },
       {
+        path:'calendrier',
+        loadChildren: () => import('../pages/calendrier/calendrier.module').then(m => m.CalendrierPageModule)
+      },
+      {
         path:'contact',
         loadChildren: () => import('../pages/contact/contact.module').then(m => m.ContactPageModule)
       },

@@ -136,7 +136,7 @@
         <p class="text-sm text-gray-600 dark:text-neutral-300 leading-relaxed">{{ article.description }}</p>
       </div>
 
-      <div *ngIf="article.theme" class="p-3 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 border border-orange-200 dark:border-orange-800/50 rounded-lg">
+      <div *ngIf="article.theme" class="p-3 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 border border-orange-200 dark:!border-orange-800/50 rounded-lg">
         <p class="text-sm font-medium text-orange-700 dark:text-orange-300">
           <i class="fas fa-tag mr-2"></i>
           Thème : {{ article.theme }}
@@ -227,7 +227,7 @@
                 (keydown.meta.enter)="enregistrerEdition()"
                 rows="3"
                 id="edition-commentaire"
-                class="w-full text-sm rounded-xl px-3 py-2 bg-white dark:!bg-black text-gray-700 dark:text-neutral-200 border border-gray-200 dark:border-neutral-800 outline-none focus:ring-2 focus:ring-orange-500/50 resize-none disabled:opacity-60"
+                class="w-full text-sm rounded-xl px-3 py-2 bg-white dark:!bg-black text-gray-700 dark:text-neutral-200 border border-gray-200 dark:!border-neutral-800 outline-none focus:ring-2 focus:ring-orange-500/50 resize-none disabled:opacity-60"
                 aria-label="Modifier le commentaire"></textarea>
 
               <div class="flex items-center justify-between mt-1">

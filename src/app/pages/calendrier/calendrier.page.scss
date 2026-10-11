@@ -1,0 +1,62 @@
+// =====================================================
+// CALENDRIER (ion-datetime)
+// =====================================================
+
+.calendrier {
+  width: 100%;
+  max-width: none;
+  --background: transparent;
+  --background-rgb: 255, 255, 255;
+  // Couleur des flèches, du mois et du jour sélectionné
+  --ion-color-base: #f97316;
+  --ion-color-base-rgb: 249, 115, 22;
+  --ion-color-contrast: #ffffff;
+  --ion-color-contrast-rgb: 255, 255, 255;
+  --ion-color-shade: #ea580c;
+  --ion-color-tint: #fb923c;
+  --wheel-fade-background-rgb: 255, 255, 255;
+  // Couleurs internes du composant (mois, flèches, jours de la semaine, sélecteur mois / année)
+  --ion-text-color: #111827;
+  --ion-text-color-rgb: 17, 24, 39;
+  --ion-text-color-step-350: #374151;
+  --ion-text-color-step-500: #6b7280;
+  --ion-background-color-step-100: #ffffff;
+  --ion-background-color-step-300: #f3f4f6;
+  color: #111827;
+}
+
+// Jour sélectionné : anneau foncé, même s'il est déjà marqué en orange
+// (les couleurs de highlightedDates sont posées en style inline, d'où !important)
+.calendrier::part(calendar-day active) {
+  background: #26352f !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 2px #f97316;
+}
+
+.calendrier::part(calendar-day today) {
+  font-weight: 700;
+}
+
+
+// =====================================================
+// MODE SOMBRE
+// =====================================================
+
+:host-context(.dark) {
+  .calendrier {
+    --background-rgb: 23, 23, 23;
+    --wheel-fade-background-rgb: 23, 23, 23;
+    --ion-text-color: #f5f5f5;
+    --ion-text-color-rgb: 245, 245, 245;
+    --ion-text-color-step-350: #e5e5e5;
+    --ion-text-color-step-500: #a3a3a3;
+    --ion-background-color-step-100: #171717;
+    --ion-background-color-step-300: #2a2a2a;
+    color: #f5f5f5;
+  }
+
+  .calendrier::part(calendar-day active) {
+    background: #fdba74 !important;
+    color: #111827 !important;
+  }
+}

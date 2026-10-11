@@ -1,0 +1,164 @@
+<ion-header class="ion-no-border">
+
+  <ion-toolbar class="px-3 py-1 !bg-gray-50 dark:!bg-black !shadow-sm">
+
+    <div class="flex items-center gap-3 w-full">
+
+      <div class="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-500/15 flex items-center justify-center">
+        <ion-icon name="calendar" class="text-orange-500 text-base"></ion-icon>
+      </div>
+
+      <div>
+
+        <h1 class="text-base font-bold leading-tight text-gray-900 dark:text-neutral-100">
+          Calendrier
+        </h1>
+
+        <p class="text-[11px] text-gray-500 dark:text-neutral-400">
+          Les évènements de l'église
+        </p>
+
+      </div>
+
+    </div>
+
+  </ion-toolbar>
+
+</ion-header>
+
+
+
+<ion-content [fullscreen]="true" class="!bg-gray-50 dark:!bg-black">
+
+  <ion-refresher slot="fixed" (ionRefresh)="chargerEvenements($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+
+  <div class="pt-4 px-4 pb-28 space-y-4">
+
+
+    <!-- ================================================= -->
+    <!-- CALENDRIER (jours avec évènement en orange) -->
+    <!-- ================================================= -->
+
+    <div class="rounded-2xl bg-white dark:!bg-neutral-900 border border-gray-100 dark:!border-neutral-800 shadow-sm overflow-hidden">
+
+      <ion-datetime
+        class="calendrier"
+        presentation="date"
+        locale="fr-FR"
+        [firstDayOfWeek]="1"
+        [value]="dateSelectionnee"
+        [highlightedDates]="datesMarquees"
+        (ionChange)="onChangementDate($event)">
+      </ion-datetime>
+
+      <div class="flex items-center gap-2 px-4 pb-3 text-[11px] text-gray-500 dark:text-neutral-400">
+        <span class="w-3 h-3 rounded-full bg-orange-500"></span>
+        Jour avec un évènement
+      </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- ÉVÈNEMENTS DU JOUR SÉLECTIONNÉ -->
+    <!-- ================================================= -->
+
+    <div>
+
+      <h2 class="text-sm font-bold text-gray-900 dark:text-neutral-100 mb-2">
+        {{ formaterDate(dateSelectionnee) }}
+      </h2>
+
+      <div *ngIf="loading" class="h-20 rounded-2xl bg-gray-200 dark:bg-neutral-800 animate-pulse"></div>
+
+      <div
+        *ngIf="!loading && erreur"
+        class="rounded-2xl bg-white dark:!bg-neutral-900 border border-gray-100 dark:!border-neutral-800 p-4 text-center text-xs text-gray-500 dark:text-neutral-400">
+        Impossible de charger les évènements. Tirez vers le bas pour réessayer.
+      </div>
+
+      <div
+        *ngIf="!loading && !erreur && evenementsDuJour.length === 0"
+        class="rounded-2xl bg-white dark:!bg-neutral-900 border border-dashed border-gray-200 dark:!border-neutral-700 p-4 text-center text-xs text-gray-500 dark:text-neutral-400">
+        Aucun évènement ce jour-là.
+      </div>
+
+      <div class="space-y-2">
+
+        <div
+          *ngFor="let evenement of evenementsDuJour; trackBy: trackById"
+          class="rounded-2xl bg-white dark:!bg-neutral-900 border-l-4 border-orange-500 shadow-sm p-4">
+
+          <div class="flex items-center gap-2">
+            <h3 class="font-bold text-gray-900 dark:text-neutral-100 text-sm flex-1">
+              {{ evenement.titre }}
+            </h3>
+            <span
+              *ngIf="evenement.heure"
+              class="flex items-center gap-1 rounded-full bg-orange-50 dark:bg-orange-500/15 px-2 py-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-300">
+              <ion-icon name="time-outline"></ion-icon>
+              {{ evenement.heure }}
+            </span>
+          </div>
+
+          <p *ngIf="evenement.description" class="mt-1 text-xs text-gray-500 dark:text-neutral-400 whitespace-pre-line">
+            {{ evenement.description }}
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- PROCHAINS ÉVÈNEMENTS -->
+    <!-- ================================================= -->
+
+    <div *ngIf="prochainsEvenements.length > 0">
+
+      <h2 class="text-sm font-bold text-gray-900 dark:text-neutral-100 mb-2">
+        Prochains évènements
+      </h2>
+
+      <div class="space-y-2">
+
+        <button
+          type="button"
+          *ngFor="let evenement of prochainsEvenements; trackBy: trackById"
+          (click)="selectionner(evenement)"
+          class="w-full flex items-center gap-3 rounded-2xl bg-white dark:!bg-neutral-900 border shadow-sm p-3 text-left transition active:scale-[0.99]"
+          [ngClass]="evenement.date === dateSelectionnee
+            ? '!border-orange-400 dark:!border-orange-500/60'
+            : '!border-gray-100 dark:!border-neutral-800'">
+
+          <div class="w-12 h-12 shrink-0 rounded-xl bg-orange-500 text-white flex flex-col items-center justify-center">
+            <span class="text-base font-bold leading-none">{{ jour(evenement.date) }}</span>
+            <span class="text-[10px] font-semibold uppercase">{{ mois(evenement.date) }}</span>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-sm text-gray-900 dark:text-neutral-100 truncate">
+              {{ evenement.titre }}
+            </p>
+            <p class="text-[11px] text-gray-500 dark:text-neutral-400">
+              {{ estAujourdhui(evenement.date) ? "Aujourd'hui" : formaterDate(evenement.date) }}
+              <span *ngIf="evenement.heure"> · {{ evenement.heure }}</span>
+            </p>
+          </div>
+
+          <ion-icon name="chevron-forward-outline" class="text-gray-400"></ion-icon>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</ion-content>
