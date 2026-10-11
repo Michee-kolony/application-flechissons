@@ -40,6 +40,7 @@
     "bootstrap": "^5.3.8",
     "firebase": "^12.17.1",
     "ionicons": "^7.0.0",
+    "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -58,6 +59,7 @@
     "@capacitor/cli": "8.5.0",
     "@ionic/angular-toolkit": "^12.0.0",
     "@types/jasmine": "~5.1.0",
+    "@types/leaflet": "^1.9.12",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
     "autoprefixer": "^10.5.4",

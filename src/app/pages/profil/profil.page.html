@@ -99,6 +99,45 @@
     </section>
 
     <!-- ================================================= -->
+    <!-- NOTRE ÉGLISE - CARTE + ITINÉRAIRE -->
+    <!-- ================================================= -->
+    <section class="eglise-card">
+      <h3 class="appearance-title">
+        <ion-icon name="location-outline"></ion-icon>
+        Notre église
+      </h3>
+
+      <ng-container *ngIf="eglise; else egliseIndisponible">
+        <div class="eglise-carte-cadre">
+          <div #carteEglise class="eglise-carte"></div>
+
+          <!-- Squelette tant que les premières tuiles ne sont pas arrivées -->
+          <div *ngIf="!carteChargee" class="eglise-carte-chargement" aria-hidden="true">
+            <ion-icon name="map-outline"></ion-icon>
+          </div>
+        </div>
+
+        <div class="eglise-infos">
+          <h4>{{ eglise.nom }}</h4>
+          <p>{{ eglise.adresse }}</p>
+          <p *ngIf="eglise.description" class="eglise-description">{{ eglise.description }}</p>
+        </div>
+
+        <button type="button" class="eglise-itineraire-btn" (click)="lancerItineraire()">
+          <ion-icon name="navigate-outline"></ion-icon>
+          Lancer l'itinéraire
+        </button>
+      </ng-container>
+
+      <ng-template #egliseIndisponible>
+        <div class="eglise-vide">
+          <ion-icon name="map-outline"></ion-icon>
+          <p>L'adresse de l'église sera bientôt disponible.</p>
+        </div>
+      </ng-template>
+    </section>
+
+    <!-- ================================================= -->
     <!-- MENU CARTES OPTIONS -->
     <!-- ================================================= -->
     <div class="menu-options">
