@@ -190,7 +190,19 @@
         <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
 
-      <!-- Carte 5 : Déconnexion -->
+      <!-- Carte 5 : Suppression du compte -->
+      <button type="button" (click)="ouvrirSuppression()" [disabled]="isLoading" class="menu-card menu-card--danger">
+        <div class="menu-card-icon">
+          <ion-icon name="trash-outline"></ion-icon>
+        </div>
+        <div class="menu-card-content">
+          <h3>Supprimer mon compte</h3>
+          <p>Effacer définitivement vos données</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="menu-card-arrow menu-card-arrow--danger"></ion-icon>
+      </button>
+
+      <!-- Carte 6 : Déconnexion -->
       <button type="button" (click)="logout()" [disabled]="isLoading" class="menu-card menu-card--danger">
         <div class="menu-card-icon">
           <ion-spinner *ngIf="isLoading" name="crescent" class="spinner-danger"></ion-spinner>
@@ -211,4 +223,66 @@
       <span>Version 1.0.0</span>
     </div>
   </main>
+
+  <!-- ================================================= -->
+  <!-- MODAL : CONFIRMER LA SUPPRESSION DU COMPTE -->
+  <!-- ================================================= -->
+  <ion-modal
+    [isOpen]="suppressionOuverte"
+    [backdropDismiss]="!suppressionEnCours"
+    class="suppression-modal"
+    (didDismiss)="fermerSuppression()">
+    <ng-template>
+      <div class="suppression">
+
+        <div class="suppression-icone">
+          <ion-icon name="warning-outline"></ion-icon>
+        </div>
+
+        <h2>Supprimer votre compte ?</h2>
+
+        <p class="suppression-texte">
+          Cette action est <strong>définitive</strong>. Votre profil, votre photo,
+          vos commentaires et vos « j'aime » seront effacés et ne pourront pas être récupérés.
+          Vos dons restent enregistrés, sans lien avec votre compte.
+        </p>
+
+        <label class="suppression-label" for="suppression-phrase">
+          Pour confirmer, saisissez <strong>{{ phraseSuppression }}</strong>
+        </label>
+        <ion-input
+          id="suppression-phrase"
+          class="suppression-input"
+          [(ngModel)]="saisieSuppression"
+          (ngModelChange)="erreurSuppression = ''"
+          [placeholder]="phraseSuppression"
+          autocapitalize="characters"
+          autocomplete="off"
+          [disabled]="suppressionEnCours"
+          (keyup.enter)="supprimerCompte()"
+        ></ion-input>
+
+        <p *ngIf="erreurSuppression" class="suppression-erreur">{{ erreurSuppression }}</p>
+
+        <div class="suppression-actions">
+          <button
+            type="button"
+            class="suppression-btn suppression-btn--annuler"
+            (click)="fermerSuppression()"
+            [disabled]="suppressionEnCours">
+            Annuler
+          </button>
+          <button
+            type="button"
+            class="suppression-btn suppression-btn--supprimer"
+            (click)="supprimerCompte()"
+            [disabled]="!phraseCorrecte || suppressionEnCours">
+            <ion-spinner *ngIf="suppressionEnCours" name="crescent"></ion-spinner>
+            {{ suppressionEnCours ? 'Suppression...' : 'Supprimer' }}
+          </button>
+        </div>
+
+      </div>
+    </ng-template>
+  </ion-modal>
 </ion-content>

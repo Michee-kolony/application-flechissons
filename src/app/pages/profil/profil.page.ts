@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ThemeMode, ThemeService } from '../../services/theme.service';
@@ -74,6 +74,8 @@ export class ProfilPage implements OnInit, OnDestroy {
   // =====================================================
 
   private urlEglise = 'https://flechissons.com/eglise';
+
+  private urlUser = 'https://flechissons.com/user';
 
   eglise: Eglise | null = this.lireCacheEglise();
 
@@ -219,6 +221,83 @@ export class ProfilPage implements OnInit, OnDestroy {
   }
 
   // =====================================================
+  // SUPPRESSION DU COMPTE
+  // DELETE /user/account  { confirmation }
+  // =====================================================
+
+  readonly phraseSuppression = 'SUPPRIMER MON COMPTE';
+
+  suppressionOuverte = false;
+  suppressionEnCours = false;
+  saisieSuppression = '';
+  erreurSuppression = '';
+
+  get phraseCorrecte(): boolean {
+    return this.saisieSuppression.trim().toUpperCase() === this.phraseSuppression;
+  }
+
+  ouvrirSuppression() {
+    this.saisieSuppression = '';
+    this.erreurSuppression = '';
+    this.suppressionOuverte = true;
+  }
+
+  fermerSuppression() {
+    if (this.suppressionEnCours) {
+      return;
+    }
+    this.suppressionOuverte = false;
+  }
+
+  supprimerCompte() {
+    if (!this.phraseCorrecte || this.suppressionEnCours) {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      this.erreurSuppression = 'Votre session a expiré. Reconnectez-vous puis réessayez.';
+      return;
+    }
+
+    this.suppressionEnCours = true;
+    this.erreurSuppression = '';
+
+    this.http.delete(`${this.urlUser}/account`, {
+      headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
+      body: { confirmation: this.saisieSuppression.trim() }
+    }).subscribe({
+
+      next: () => {
+        this.suppressionEnCours = false;
+        this.suppressionOuverte = false;
+
+        // Ferme la session (prévient toutes les pages) puis retour à l'accueil
+        this.authService.logout();
+        this.navCtrl.navigateRoot('/tabs/tab1');
+      },
+
+      error: (error: HttpErrorResponse) => {
+        this.suppressionEnCours = false;
+
+        // Compte déjà supprimé ou session expirée : on ferme la session
+        if (error.status === 401 || error.status === 404) {
+          this.suppressionOuverte = false;
+          this.authService.logout();
+          this.navCtrl.navigateRoot('/tabs/tab1');
+          return;
+        }
+
+        this.erreurSuppression = error.status === 0
+          ? 'Impossible de contacter le serveur. Vérifiez votre connexion.'
+          : error.error?.message || 'La suppression a échoué. Veuillez réessayer.';
+      }
+
+    });
+  }
+
+  // =====================================================
   // APPARENCE (MODE CLAIR / SOMBRE)
   // =====================================================
 
@@ -259,7 +338,7 @@ export class ProfilPage implements OnInit, OnDestroy {
 
     this.carte = L.map(conteneur, {
       zoomControl: true,
-      attributionControl: true,
+      attributionControl: false,
       scrollWheelZoom: false,
       // Un doigt fait défiler la page, pas la carte
       dragging: !L.Browser.mobile

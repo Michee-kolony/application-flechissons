@@ -91,6 +91,12 @@ export class LoginPage {
       this.loginData.email = state['email'] || '';
       this.registeredMessage = 'Votre compte a été créé. Connectez-vous pour continuer.';
     }
+
+    // Arrivée depuis « Mot de passe oublié » : e-mail pré-rempli
+    if (state?.['passwordReset']) {
+      this.loginData.email = state['email'] || '';
+      this.registeredMessage = 'Votre mot de passe a été modifié. Connectez-vous avec le nouveau.';
+    }
   }
 
   // =====================================================
