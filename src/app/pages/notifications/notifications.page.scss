@@ -1,0 +1,244 @@
+// =====================================================
+// HEADER (même style que l'accueil)
+// =====================================================
+
+ion-content,
+.notif-header ion-toolbar {
+  --background: var(--app-bg);
+}
+
+.notif-header ion-toolbar {
+  --border-color: transparent;
+  --min-height: auto;
+  padding: 10px 12px 10px;
+}
+
+.notif-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  ion-back-button {
+    --color: var(--app-text);
+  }
+
+  h1 {
+    margin: 2px 0 0;
+    color: var(--app-text);
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+  }
+}
+
+.kicker {
+  color: #ea580c;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .15em;
+}
+
+// =====================================================
+// LISTE
+// =====================================================
+
+.notif-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 4px 16px 40px;
+}
+
+.notif-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notif-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  font-family: inherit;
+  color: var(--app-text);
+  background: var(--app-surface, #fff);
+  border: 1px solid var(--app-border);
+  border-radius: 18px;
+  transition: transform .15s ease;
+
+  &.cliquable:active {
+    transform: scale(.98);
+  }
+
+  &.nouvelle {
+    border-color: rgba(249, 115, 22, .45);
+    background: rgba(249, 115, 22, .06);
+  }
+}
+
+.notif-icone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 20px;
+  color: #ea580c;
+  background: rgba(249, 115, 22, .12);
+
+  &.type-like {
+    color: #e11d48;
+    background: rgba(225, 29, 72, .12);
+  }
+
+  &.type-commentaire {
+    color: #2563eb;
+    background: rgba(37, 99, 235, .12);
+  }
+
+  &.type-live {
+    color: #dc2626;
+    background: rgba(220, 38, 38, .12);
+  }
+
+  &.type-paiement {
+    color: #16a34a;
+    background: rgba(22, 163, 74, .12);
+  }
+}
+
+.notif-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-type {
+  color: var(--app-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.notif-titre {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-message {
+  color: var(--app-text-secondary);
+  font-size: 13px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notif-image {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.notif-point {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f97316;
+}
+
+// =====================================================
+// VIDE / ERREUR
+// =====================================================
+
+.notif-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 70px 24px 0;
+  text-align: center;
+
+  ion-icon {
+    font-size: 54px;
+    color: #f97316;
+    opacity: .8;
+  }
+
+  h2 {
+    margin: 16px 0 6px;
+    color: var(--app-text);
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: var(--app-text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.notif-btn {
+  margin-top: 18px;
+  padding: 10px 22px;
+  color: #fff;
+  font-weight: 700;
+  font-family: inherit;
+  background: #f97316;
+  border: none;
+  border-radius: 999px;
+}
+
+// =====================================================
+// SKELETON
+// =====================================================
+
+.skeleton {
+  background: linear-gradient(90deg, var(--app-border) 25%, var(--app-surface-alt, #f3f4f6) 50%, var(--app-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeleton-icone {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+}
+
+.skeleton-ligne {
+  height: 12px;
+  border-radius: 6px;
+  width: 85%;
+
+  &.courte {
+    width: 55%;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}

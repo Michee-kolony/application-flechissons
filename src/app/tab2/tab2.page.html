@@ -2,6 +2,12 @@
   <ion-toolbar>
     <div class="topbar">
       <div><span class="kicker">FLÉCHISSONS AUDIO</span><h1>Audios</h1></div>
+      <button class="header-icon notif-bell" (click)="goToNotifications()" aria-label="Notifications">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <span *ngIf="notificationsNonLues > 0" class="notif-badge">
+          {{ notificationsNonLues > 9 ? '9+' : notificationsNonLues }}
+        </span>
+      </button>
     </div>
     <div class="testimony-search">
       <ion-icon name="search-outline" class="search-icon" aria-hidden="true"></ion-icon>

@@ -67,6 +67,10 @@ const routes: Routes = [
   {
     path: 'editprofil',
     loadChildren: () => import('./pages/editprofil/editprofil.module').then( m => m.EditprofilPageModule)
+  },
+  {
+    path: 'notifications',
+    loadChildren: () => import('./pages/notifications/notifications.module').then( m => m.NotificationsPageModule)
   }
 ];
 @NgModule({

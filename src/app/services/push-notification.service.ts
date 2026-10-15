@@ -5,6 +5,7 @@ import { NavController, ToastController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications';
 import { AuthService } from './auth.service';
+import { NotificationService } from './notification.service';
 
 const API_URL = 'https://flechissons.com';
 
@@ -38,7 +39,8 @@ export class PushNotificationService {
     private navCtrl: NavController,
     private toastCtrl: ToastController,
     private zone: NgZone,
-    private authService: AuthService
+    private authService: AuthService,
+    private notificationService: NotificationService
   ) {
     this.http = new HttpClient(httpBackend);
   }
@@ -126,6 +128,9 @@ export class PushNotificationService {
 
   /** App ouverte : le système n'affiche pas la notification, on montre un toast */
   private async afficherEnPremierPlan(notification: PushNotificationSchema): Promise<void> {
+    // Nouvelle notification : met à jour le badge de la cloche
+    this.notificationService.rafraichirCompteur();
+
     const route = notification.data?.route;
 
     const toast = await this.toastCtrl.create({

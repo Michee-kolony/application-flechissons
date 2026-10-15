@@ -6,15 +6,32 @@
         <span class="kicker">BIENVENUE</span>
         <h1>Accueil</h1>
       </div>
-      <button class="header-icon mt-2" (click)="goToProfile()" aria-label="Profil">
-        <img *ngIf="userPhoto" [src]="userPhoto" alt="Photo de profil" class="profile-avatar" (error)="onPhotoError()">
-        <span *ngIf="!userPhoto" class="profile-initiale">{{ userInitiale }}</span>
-      </button>
+      <div class="topbar-actions mt-2">
+        <button class="header-icon notif-bell" (click)="goToNotifications()" aria-label="Notifications">
+          <ion-icon name="notifications-outline"></ion-icon>
+          <span *ngIf="notificationsNonLues > 0" class="notif-badge">
+            {{ notificationsNonLues > 9 ? '9+' : notificationsNonLues }}
+          </span>
+        </button>
+        <button class="header-icon" (click)="goToProfile()" aria-label="Profil">
+          <img *ngIf="userPhoto" [src]="userPhoto" alt="Photo de profil" class="profile-avatar" (error)="onPhotoError()">
+          <span *ngIf="!userPhoto" class="profile-initiale">{{ userInitiale }}</span>
+        </button>
+      </div>
     </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <button
+    *ngIf="nouvellesAnnonces.length > 0"
+    slot="fixed"
+    class="nouvelles-pill"
+    (click)="afficherNouvellesAnnonces()">
+    <ion-icon name="arrow-up-outline"></ion-icon>
+    {{ nouvellesAnnonces.length }} {{ nouvellesAnnonces.length > 1 ? 'nouvelles publications' : 'nouvelle publication' }}
+  </button>
+
   <main class="accueil-page">
     <!-- Pull-to-refresh -->
     <ion-refresher
@@ -181,7 +198,7 @@
       <!-- LISTE DES ANNONCES -->
       <div *ngIf="!chargementAnnonces" class="annonces-list">
         <article
-          *ngFor="let annonce of annoncesVisibles"
+          *ngFor="let annonce of annonces; trackBy: trackById"
           [routerLink]="['/article', annonce._id]"
           class="annonce-card">
 
@@ -255,27 +272,59 @@
           </div>
         </article>
 
-        <!-- INFINITE SCROLL -->
+        <!-- INFINITE SCROLL : page suivante quand on approche du bas -->
         <ion-infinite-scroll
-          threshold="150px"
-          [disabled]="!plusDAnnonces"
+          threshold="600px"
+          [disabled]="!plusDAnnonces || erreurPlusAnnonces || chargementPlusAnnonces"
           (ionInfinite)="chargerPlusAnnonces($event)">
-          <ion-infinite-scroll-content
-            loadingSpinner="crescent"
-            loadingText="Chargement...">
-          </ion-infinite-scroll-content>
+          <!-- Pendant le chargement : une carte squelette à la place d'un simple spinner -->
+          <div class="skeleton-annonce skeleton-annonce--suite">
+            <div class="skeleton-header">
+              <div class="skeleton skeleton-avatar"></div>
+              <div class="skeleton-info">
+                <div class="skeleton skeleton-name"></div>
+                <div class="skeleton skeleton-date"></div>
+              </div>
+            </div>
+            <div class="skeleton skeleton-body-text"></div>
+            <div class="skeleton skeleton-image-large"></div>
+          </div>
         </ion-infinite-scroll>
 
-        <!-- FIN DES ANNONCES -->
+        <!-- SUITE RELANCÉE À LA MAIN -->
+        <div *ngIf="chargementPlusAnnonces" class="feed-status">
+          <ion-spinner name="crescent"></ion-spinner>
+        </div>
+
+        <!-- ÉCHEC DE LA SUITE -->
+        <div *ngIf="erreurPlusAnnonces && !chargementPlusAnnonces" class="feed-status feed-status--error">
+          <p>Impossible de charger la suite.</p>
+          <button class="feed-retry" (click)="reessayerPlusAnnonces()">
+            <ion-icon name="refresh-outline"></ion-icon>
+            Réessayer
+          </button>
+        </div>
+
+        <!-- FIN DU FIL -->
         <div *ngIf="!plusDAnnonces && annonces.length > 0" class="end-message">
           <div class="end-icon">
             <ion-icon name="checkmark-outline"></ion-icon>
           </div>
-          <p>Toutes les annonces sont chargées</p>
+          <p>Vous êtes à jour 🙏</p>
+        </div>
+
+        <!-- ÉCHEC DU PREMIER CHARGEMENT -->
+        <div *ngIf="annonces.length === 0 && erreurAnnonces" class="empty-state">
+          <ion-icon name="cloud-offline-outline" class="empty-icon"></ion-icon>
+          <p class="empty-text">Impossible de charger le fil d'actualités</p>
+          <button class="feed-retry" (click)="chargerArticles()">
+            <ion-icon name="refresh-outline"></ion-icon>
+            Réessayer
+          </button>
         </div>
 
         <!-- AUCUNE ANNONCE -->
-        <div *ngIf="annonces.length === 0" class="empty-state">
+        <div *ngIf="annonces.length === 0 && !erreurAnnonces" class="empty-state">
           <ion-icon name="newspaper-outline" class="empty-icon"></ion-icon>
           <p class="empty-text">Aucune annonce disponible</p>
         </div>

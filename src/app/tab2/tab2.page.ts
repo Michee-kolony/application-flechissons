@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, IonContent } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { NotificationService } from '../services/notification.service';
 
 interface Audio {
   _id: string;
@@ -109,14 +110,22 @@ export class Tab2Page implements OnInit, OnDestroy {
   // Audio demandé par une notification (/tabs/tab2?audio=<id>)
   private audioDemande: string | null = null;
   private routeSub?: Subscription;
+  private notificationsSub?: Subscription;
+
+  /** Badge de la cloche (notifications pas encore vues) */
+  notificationsNonLues = 0;
 
   constructor(
     private http: HttpClient,
     private alertController: AlertController,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
+    this.notificationsSub = this.notificationService.nonLues$.subscribe(n => this.notificationsNonLues = n);
+
     this.routeSub = this.route.queryParamMap.subscribe(params => {
       const id = params.get('audio');
       if (!id) {
@@ -152,8 +161,13 @@ export class Tab2Page implements OnInit, OnDestroy {
     }
   }
 
+  goToNotifications(): void {
+    this.router.navigate(['/notifications']);
+  }
+
   ngOnDestroy() {
     this.routeSub?.unsubscribe();
+    this.notificationsSub?.unsubscribe();
     this.destroyed = true;
     this.durationQueue = [];
     this.cleanupAudio();

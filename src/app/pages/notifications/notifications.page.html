@@ -1,0 +1,76 @@
+<ion-header class="ion-no-border notif-header">
+  <ion-toolbar>
+    <div class="notif-toolbar">
+      <ion-back-button defaultHref="/tabs/tab1" text="" aria-label="Retour"></ion-back-button>
+      <div>
+        <span class="kicker">ACTIVITÉ</span>
+        <h1>Notifications</h1>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="charger($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="notif-page">
+
+    <!-- SKELETON -->
+    <div *ngIf="chargement" class="notif-liste">
+      <div *ngFor="let item of [1,2,3,4,5]" class="notif-item">
+        <div class="skeleton skeleton-icone"></div>
+        <div class="notif-texte">
+          <div class="skeleton skeleton-ligne"></div>
+          <div class="skeleton skeleton-ligne courte"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ERREUR -->
+    <div *ngIf="!chargement && erreur && notifications.length === 0" class="notif-vide">
+      <ion-icon name="cloud-offline-outline"></ion-icon>
+      <h2>Connexion impossible</h2>
+      <p>Vérifiez votre réseau puis réessayez.</p>
+      <button class="notif-btn" (click)="charger()">Réessayer</button>
+    </div>
+
+    <!-- VIDE -->
+    <div *ngIf="!chargement && !erreur && notifications.length === 0" class="notif-vide">
+      <ion-icon name="notifications-off-outline"></ion-icon>
+      <h2>Aucune notification</h2>
+      <p>Les nouvelles publications, les « j'aime » et les commentaires apparaîtront ici.</p>
+    </div>
+
+    <!-- LISTE -->
+    <div *ngIf="!chargement && notifications.length > 0" class="notif-liste">
+      <button
+        *ngFor="let notification of notifications; trackBy: trackById"
+        class="notif-item"
+        [class.nouvelle]="estNouvelle(notification)"
+        [class.cliquable]="!!notification.route"
+        (click)="ouvrir(notification)">
+
+        <div class="notif-icone" [ngClass]="'type-' + notification.type">
+          <ion-icon [name]="icone(notification)"></ion-icon>
+        </div>
+
+        <div class="notif-texte">
+          <span class="notif-type">{{ libelle(notification) }} · {{ depuis(notification.createdAt) }}</span>
+          <strong class="notif-titre">{{ notification.titre }}</strong>
+          <span *ngIf="notification.message" class="notif-message">{{ notification.message }}</span>
+        </div>
+
+        <img *ngIf="notification.image" [src]="notification.image" alt="" class="notif-image" loading="lazy">
+
+        <span *ngIf="estNouvelle(notification)" class="notif-point" aria-label="Nouvelle"></span>
+      </button>
+    </div>
+
+    <ion-infinite-scroll *ngIf="!fin && notifications.length > 0" (ionInfinite)="chargerPlus($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+
+  </main>
+</ion-content>

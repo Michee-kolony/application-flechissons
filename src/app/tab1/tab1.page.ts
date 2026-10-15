@@ -4,17 +4,19 @@ import {
   Component,
   ElementRef,
   OnDestroy,
-  OnInit
+  OnInit,
+  ViewChild
 } from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Router } from '@angular/router';
-import { IonInfiniteScroll } from '@ionic/angular';
-import { Subscription, interval } from 'rxjs';
+import { IonContent } from '@ionic/angular';
+import { Observable, Subscription, forkJoin, interval, map } from 'rxjs';
 import Splide from '@splidejs/splide';
 import { ArticleEvent, ArticleRealtimeService } from '../services/article-realtime.service';
 import { AuthService } from '../services/auth.service';
+import { NotificationService } from '../services/notification.service';
 import { BibleService, VersetDuJour } from '../services/bible';
 
 interface Article {
@@ -31,6 +33,18 @@ interface Article {
   createdAt: string;
   updatedAt?: string;
 }
+
+/** Une page du fil d'actualité (GET /article?type=...&limite=...) */
+interface PageArticles {
+  articles: Article[];
+  suivant: string | null;
+}
+
+/** Nombre d'annonces chargées à chaque page du fil */
+const TAILLE_PAGE_ANNONCES = 10;
+
+/** En dessous de cette position de défilement, les nouvelles annonces s'insèrent directement */
+const SEUIL_HAUT_DE_PAGE = 250;
 
 interface UserData {
   id: string;
@@ -54,20 +68,36 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   private urlArticle =
     'https://flechissons.com/article';
 
-  articles: Article[] = [];
+  @ViewChild(IonContent) private content?: IonContent;
 
   predications: Article[] = [];
 
+  /** Fil d'actualité : annonces déjà chargées, de la plus récente à la plus ancienne */
   annonces: Article[] = [];
-
-  annoncesVisibles: Article[] = [];
 
   chargementPredications = true;
   chargementAnnonces = true;
 
-  nombreAnnoncesAffichees = 5;
+  /** Curseur de la page suivante du fil (null : tout est chargé) */
+  private curseurAnnonces: string | null = null;
 
-  plusDAnnonces = true;
+  plusDAnnonces = false;
+
+  /** Échec du chargement de la page suivante : bouton "Réessayer" */
+  erreurPlusAnnonces = false;
+
+  /** Chargement relancé à la main ("Réessayer") */
+  chargementPlusAnnonces = false;
+
+  /** Échec du premier chargement du fil */
+  erreurAnnonces = false;
+
+  /**
+   * Annonces publiées pendant que l'utilisateur lit plus bas :
+   * proposées via la pastille "Nouvelles publications" au lieu
+   * de décaler le fil sous ses yeux
+   */
+  nouvellesAnnonces: Article[] = [];
 
   private splide: Splide | null = null;
 
@@ -118,6 +148,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   versetDuJour: VersetDuJour | null = null;
   chargementVerset = true;
   erreurVerset = false;
+  notificationsNonLues = 0;
   private versetEnCours = false;
 
   constructor(
@@ -126,12 +157,16 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     private realtime: ArticleRealtimeService,
     private authService: AuthService,
     private host: ElementRef<HTMLElement>,
-    private bibleService: BibleService
+    private bibleService: BibleService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
     // Utilisateur connecté, mis à jour en direct (profil modifié, connexion, déconnexion)
     this.realtimeSub.add(this.authService.user$.subscribe(() => this.loadUserData()));
+
+    // Badge de la cloche (notifications pas encore vues)
+    this.realtimeSub.add(this.notificationService.nonLues$.subscribe(n => this.notificationsNonLues = n));
 
     this.chargerArticles();
     this.chargerVersetDuJour();
@@ -155,7 +190,9 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
    * Met à jour les compteurs d'un article quand quelqu'un like / commente
    */
   private appliquerEvenement(event: ArticleEvent): void {
-    const article = this.articles.find(a => a._id === event.articleId);
+    const article =
+      this.annonces.find(a => a._id === event.articleId) ??
+      this.predications.find(a => a._id === event.articleId);
     if (!article) {
       return;
     }
@@ -442,6 +479,10 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  goToNotifications(): void {
+    this.router.navigate(['/notifications']);
+  }
+
   goToProfile(): void {
     this.router.navigate(['/tabs/profil']);
   }
@@ -453,53 +494,29 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
    */
 
   /**
-   * Gestionnaire du rafraîchissement par tirage
+   * Rafraîchissement par tirage : repart de la première page du fil
    */
   handleRefresh(event: any): void {
-    console.log('🔄 Rafraîchissement par tirage déclenché');
-
     this.isRefreshing = true;
 
-    // Recharger les données utilisateur
     this.loadUserData();
+    this.notificationService.rafraichirCompteur();
 
-    // Recharger les articles
-    this.http.get<any>(this.urlArticle)
+    forkJoin([this.chargerPredicationsApi(), this.chargerPageAnnonces()])
       .subscribe({
-        next: (response) => {
-          if (
-            response &&
-            response.success &&
-            Array.isArray(response.articles)
-          ) {
-            this.traiterArticles(response.articles);
-            console.log('✅ Articles rafraîchis avec succès');
-          } else {
-            console.warn('⚠️ Réponse invalide lors du rafraîchissement');
-          }
-
-          // Terminer le rafraîchissement
+        next: ([predications, page]) => {
+          this.appliquerPredications(predications);
+          this.remplacerAnnonces(page);
           this.isRefreshing = false;
           event.target.complete();
         },
         error: (error) => {
+          // On garde ce qui est déjà affiché
           console.error('❌ Erreur lors du rafraîchissement :', error);
-
-          // Terminer le rafraîchissement avec erreur
           this.isRefreshing = false;
           event.target.complete();
-
-          // Afficher un toast ou une notification d'erreur
-          this.showRefreshError();
         }
       });
-  }
-
-  /**
-   * Affiche une erreur de rafraîchissement
-   */
-  private showRefreshError(): void {
-    console.warn('⚠️ Impossible de rafraîchir les données');
   }
 
   /**
@@ -511,113 +528,104 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   chargerArticles(): void {
     this.chargementPredications = true;
     this.chargementAnnonces = true;
+    this.erreurAnnonces = false;
 
-    this.http.get<any>(this.urlArticle)
-      .subscribe({
-        next: (response) => {
-          if (
-            response &&
-            response.success &&
-            Array.isArray(response.articles)
-          ) {
-            this.traiterArticles(response.articles);
-          } else {
-            this.predications = [];
-            this.annonces = [];
-            this.annoncesVisibles = [];
-          }
+    this.chargerPredicationsApi().subscribe({
+      next: predications => {
+        this.chargementPredications = false;
+        this.appliquerPredications(predications);
+        // Le carrousel n'existe dans le DOM qu'une fois le chargement terminé
+        this.planifierSplide();
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération des prédications :', error);
+        this.predications = [];
+        this.chargementPredications = false;
+      }
+    });
 
-          this.chargementPredications = false;
-          this.chargementAnnonces = false;
-
-          // Le carrousel n'existe dans le DOM qu'une fois le chargement terminé
-          this.planifierSplide();
-        },
-        error: (error) => {
-          console.error(
-            'Erreur lors de la récupération des articles :',
-            error
-          );
-
-          this.predications = [];
-          this.annonces = [];
-          this.annoncesVisibles = [];
-
-          this.chargementPredications = false;
-          this.chargementAnnonces = false;
-        }
-      });
+    this.chargerPageAnnonces().subscribe({
+      next: page => {
+        this.remplacerAnnonces(page);
+        this.chargementAnnonces = false;
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération du fil :', error);
+        this.annonces = [];
+        this.plusDAnnonces = false;
+        this.erreurAnnonces = true;
+        this.chargementAnnonces = false;
+      }
+    });
   }
 
   /**
    * ========================================================
-   * ACTUALISATION AUTOMATIQUE
+   * ACTUALISATION AUTOMATIQUE (toutes les 30 s, reconnexion)
    * ========================================================
+   * Ne recharge que la première page du fil : les pages déjà
+   * chargées plus bas restent en place.
    */
 
   actualiserArticles(): void {
-    // Ne pas actualiser si un rafraîchissement est en cours
     if (this.isRefreshing) {
       return;
     }
 
-    // Recharger les données utilisateur
     this.loadUserData();
 
-    this.http.get<any>(this.urlArticle)
-      .subscribe({
-        next: (response) => {
-          if (
-            response &&
-            response.success &&
-            Array.isArray(response.articles)
-          ) {
-            this.traiterArticles(response.articles);
-            console.log('🔄 Actualisation automatique réussie');
-          }
-        },
-        error: (error) => {
-          /**
-           * On ne vide PAS les données existantes
-           * si l'actualisation échoue.
-           */
-          console.error(
-            'Erreur lors de l’actualisation automatique :',
-            error
-          );
-        }
-      });
+    // Premier chargement en échec : on retente complètement
+    if (this.erreurAnnonces) {
+      this.chargerArticles();
+      return;
+    }
+
+    this.chargerPredicationsApi().subscribe({
+      next: predications => this.appliquerPredications(predications),
+      error: (error) => console.error('Erreur actualisation prédications :', error)
+    });
+
+    this.chargerPageAnnonces().subscribe({
+      next: page => void this.fusionnerPremierePage(page),
+      // On ne vide PAS le fil si l'actualisation échoue
+      error: (error) => console.error('Erreur actualisation du fil :', error)
+    });
   }
 
   /**
    * ========================================================
-   * TRAITER LES ARTICLES
+   * API
    * ========================================================
    */
 
-  private traiterArticles(
-    articles: Article[]
-  ): void {
-    this.articles = articles;
+  private chargerPredicationsApi(): Observable<Article[]> {
+    return this.http
+      .get<PageArticles>(this.urlArticle, { params: { type: 'predications', limite: 3 } })
+      // Filtre aussi côté app : un serveur pas encore à jour ignore les paramètres
+      .pipe(map(response => (response?.articles ?? []).filter(a => a.type === 'predications').slice(0, 3)));
+  }
 
-    /**
-     * ======================================================
-     * PRÉDICATIONS
-     * ======================================================
-     */
+  private chargerPageAnnonces(apres?: string): Observable<PageArticles> {
+    const params: Record<string, string | number> = { type: 'annonces', limite: TAILLE_PAGE_ANNONCES };
+    if (apres) {
+      params['apres'] = apres;
+    }
 
-    const predications = [...this.articles]
-      .filter(
-        article =>
-          article.type?.toLowerCase() === 'predications'
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() -
-          new Date(a.createdAt).getTime()
-      )
-      .slice(0, 3);
+    return this.http
+      .get<PageArticles>(this.urlArticle, { params })
+      .pipe(map(response => ({
+        articles: (response?.articles ?? []).filter(a => a.type === 'annonces'),
+        suivant: response?.suivant ?? null
+      })));
+  }
 
+  /**
+   * ========================================================
+   * PRÉDICATIONS (carrousel)
+   * ========================================================
+   */
+
+  private appliquerPredications(predications: Article[]): void {
     /**
      * Mêmes prédications, même ordre (cas de l'actualisation toutes les 30 s) :
      * on met juste à jour leurs textes, sans toucher au carrousel.
@@ -629,63 +637,91 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
     if (memesPredications) {
       predications.forEach((p, i) => Object.assign(this.predications[i], p));
-    } else {
-      // Splide doit retirer ses clones avant qu'Angular ne modifie les slides
-      this.detruireSplide();
-      this.predications = predications;
-      this.splideAReconstruire = true;
+      return;
     }
 
-    /**
-     * ======================================================
-     * ANNONCES
-     * ======================================================
-     *
-     * Plus récente → plus ancienne
-     */
+    // Splide doit retirer ses clones avant qu'Angular ne modifie les slides
+    this.detruireSplide();
+    this.predications = predications;
+    this.splideAReconstruire = true;
 
-    this.annonces = [...this.articles]
-      .filter(
-        article =>
-          article.type?.toLowerCase() === 'annonces'
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() -
-          new Date(a.createdAt).getTime()
-      );
-
-    /**
-     * Remettre à jour l'affichage
-     */
-
-    this.mettreAJourAnnoncesVisibles();
-
-    /**
-     * Mettre à jour Splide
-     */
-
-    if (this.vuePrete && this.splideAReconstruire) {
+    if (this.vuePrete && !this.chargementPredications) {
       this.planifierSplide();
     }
   }
 
   /**
    * ========================================================
-   * ANNONCES VISIBLES
+   * FIL D'ACTUALITÉ
    * ========================================================
    */
 
-  private mettreAJourAnnoncesVisibles(): void {
-    this.annoncesVisibles =
-      this.annonces.slice(
-        0,
-        this.nombreAnnoncesAffichees
-      );
+  /** Remet le fil à zéro sur une première page fraîche */
+  private remplacerAnnonces(page: PageArticles): void {
+    this.annonces = page.articles;
+    this.curseurAnnonces = page.suivant;
+    this.plusDAnnonces = !!page.suivant;
+    this.erreurAnnonces = false;
+    this.erreurPlusAnnonces = false;
+    this.nouvellesAnnonces = [];
+  }
 
-    this.plusDAnnonces =
-      this.annoncesVisibles.length <
-      this.annonces.length;
+  /**
+   * Fusionne une première page fraîche dans le fil déjà chargé :
+   * - met à jour les annonces existantes (textes, likes, commentaires)
+   * - retire celles supprimées entre-temps
+   * - ajoute les nouvelles en haut, ou via la pastille si l'utilisateur lit plus bas
+   */
+  private async fusionnerPremierePage(page: PageArticles): Promise<void> {
+    const fraiches = new Map(page.articles.map(a => [a._id, a]));
+
+    // Zone couverte par la page reçue : tout ce qui est au moins aussi récent
+    // que sa dernière annonce (tout le fil s'il n'y a pas d'autre page)
+    const plusAncienne = page.articles[page.articles.length - 1]?.createdAt;
+    const couvert = (a: Article) => !page.suivant || (!!plusAncienne && a.createdAt >= plusAncienne);
+
+    this.annonces = this.annonces
+      .filter(a => fraiches.has(a._id) || !couvert(a))
+      .map(a => fraiches.has(a._id) ? Object.assign(a, fraiches.get(a._id)) : a);
+
+    this.nouvellesAnnonces = this.nouvellesAnnonces.filter(a => fraiches.has(a._id));
+
+    const dejaConnues = new Set([...this.annonces, ...this.nouvellesAnnonces].map(a => a._id));
+    const nouvelles = page.articles.filter(a => !dejaConnues.has(a._id));
+
+    if (!nouvelles.length) {
+      return;
+    }
+
+    // Fil vide (ex. première annonce publiée) : on repart de la page reçue
+    if (!this.annonces.length) {
+      this.remplacerAnnonces(page);
+      return;
+    }
+
+    const scroll = await this.content?.getScrollElement();
+    if (!scroll || scroll.scrollTop < SEUIL_HAUT_DE_PAGE) {
+      this.annonces = this.trierAnnonces([...nouvelles, ...this.annonces]);
+    } else {
+      this.nouvellesAnnonces = this.trierAnnonces([...nouvelles, ...this.nouvellesAnnonces]);
+    }
+  }
+
+  /** Pastille "Nouvelles publications" : insère les annonces et remonte au fil */
+  afficherNouvellesAnnonces(): void {
+    this.annonces = this.trierAnnonces([...this.nouvellesAnnonces, ...this.annonces]);
+    this.nouvellesAnnonces = [];
+
+    void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+
+    const section = this.host.nativeElement.querySelector<HTMLElement>('.section-annonces');
+    if (section) {
+      void this.content?.scrollToPoint(0, Math.max(0, section.offsetTop - 12), 400);
+    }
+  }
+
+  private trierAnnonces(annonces: Article[]): Article[] {
+    return annonces.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
   /**
@@ -694,24 +730,44 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
    * ========================================================
    */
 
-  chargerPlusAnnonces(
-    event: any
-  ): void {
-    /**
-     * Ajouter 5 annonces
-     */
+  chargerPlusAnnonces(event: any): void {
+    this.chargerSuiteAnnonces(() => event.target.complete());
+  }
 
-    this.nombreAnnoncesAffichees += 5;
+  /** Bouton "Réessayer" après un échec : relance tout de suite, sans attendre un défilement */
+  reessayerPlusAnnonces(): void {
+    this.erreurPlusAnnonces = false;
+    this.chargementPlusAnnonces = true;
+    this.chargerSuiteAnnonces(() => this.chargementPlusAnnonces = false);
+  }
 
-    this.mettreAJourAnnoncesVisibles();
+  private chargerSuiteAnnonces(terminer: () => void): void {
+    const curseur = this.curseurAnnonces;
 
-    /**
-     * Terminer l'animation Ionic
-     */
+    if (!curseur) {
+      this.plusDAnnonces = false;
+      terminer();
+      return;
+    }
 
-    setTimeout(() => {
-      event.target.complete();
-    }, 300);
+    this.chargerPageAnnonces(curseur).subscribe({
+      next: page => {
+        // Le fil a pu être rechargé pendant ce temps (tirage) : page obsolète
+        if (this.curseurAnnonces === curseur) {
+          const connues = new Set(this.annonces.map(a => a._id));
+          this.annonces = [...this.annonces, ...page.articles.filter(a => !connues.has(a._id))];
+          this.curseurAnnonces = page.suivant;
+          this.plusDAnnonces = !!page.suivant;
+        }
+        terminer();
+      },
+      error: (error) => {
+        console.error('Erreur chargement de la suite du fil :', error);
+        // Plus de déclenchement automatique : l'utilisateur relance avec "Réessayer"
+        this.erreurPlusAnnonces = true;
+        terminer();
+      }
+    });
   }
 
   /**
