@@ -20,7 +20,15 @@ export class SplashPage implements OnInit, OnDestroy {
 
   currentMessage = 0;
 
+  /*
+   * Scènes animées : 0 = croix, 1 = personne en prière, 2 = Bible
+   */
+  readonly sceneCount = 3;
+  readonly sceneDuration = 3000;
+  currentScene = 0;
+
   private messageInterval: any;
+  private sceneInterval: any;
   private redirectTimeout: any;
 
   constructor(
@@ -42,7 +50,18 @@ export class SplashPage implements OnInit, OnDestroy {
     }, 1000);
 
     /*
-     * Redirection vers l'accueil après quelques secondes.
+     * Changement de scène toutes les 3 secondes
+     */
+    this.sceneInterval = setInterval(() => {
+
+      this.currentScene =
+        (this.currentScene + 1) %
+        this.sceneCount;
+
+    }, this.sceneDuration);
+
+    /*
+     * Redirection vers l'accueil une fois toutes les scènes jouées.
      * L'application est en libre accès : connecté ou non,
      * l'utilisateur atterrit sur /tabs/tab1 (la connexion n'est
      * demandée qu'au moment d'une action qui la requiert, via la
@@ -59,7 +78,7 @@ export class SplashPage implements OnInit, OnDestroy {
         await this.navCtrl.navigateForward(route);
       }
 
-    }, 5000);
+    }, this.sceneCount * this.sceneDuration);
 
   }
 
@@ -67,6 +86,10 @@ export class SplashPage implements OnInit, OnDestroy {
 
     if (this.messageInterval) {
       clearInterval(this.messageInterval);
+    }
+
+    if (this.sceneInterval) {
+      clearInterval(this.sceneInterval);
     }
 
     if (this.redirectTimeout) {

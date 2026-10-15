@@ -95,54 +95,94 @@
 
 
 /* =========================================================
-   FORME PRINCIPALE
+   SCÈNES (croix → prière → Bible), 3 s chacune
 ========================================================= */
 
-.morph-shape {
+.scene-stage {
 
   position: relative;
 
-  width: 78px;
-  height: 78px;
+  width: 120px;
+  height: 120px;
 
-  background: linear-gradient(
-    135deg,
-    #fb923c,
-    #f97316,
-    #ea580c
-  );
-
-  box-shadow:
-    0 15px 35px rgba(249, 115, 22, 0.25);
-
-  animation:
-    morphShape 4s ease-in-out infinite,
-    floatShape 3s ease-in-out infinite;
+  animation: floatShape 3s ease-in-out infinite;
 
 }
 
 
-/* =========================================================
-   PETITE FORME INTÉRIEURE
-========================================================= */
-
-.inner-shape {
+.scene {
 
   position: absolute;
+  inset: 0;
 
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
 
-  top: 50%;
-  left: 50%;
+  overflow: visible;
 
-  transform: translate(-50%, -50%);
+  opacity: 0;
 
-  background: rgba(255, 255, 255, 0.9);
+  transform: scale(0.85);
 
-  border-radius: 50%;
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s ease;
 
-  animation: innerPulse 2s ease-in-out infinite;
+}
+
+
+.scene.active {
+
+  opacity: 1;
+
+  transform: scale(1);
+
+}
+
+
+.trait {
+
+  fill: none;
+
+  stroke: #f97316;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+
+}
+
+
+.trait.fin {
+
+  stroke-width: 2.5;
+
+}
+
+
+.trait.sol {
+
+  stroke: #fdba74;
+
+}
+
+
+/* Tracé progressif à chaque apparition de scène */
+.scene.active .trait {
+
+  animation: drawStroke 1.2s ease-out forwards;
+
+}
+
+
+/* Les rayons de lumière arrivent après le dessin principal */
+.scene.active .rayons .trait {
+
+  animation:
+    drawStroke 0.6s ease-out 1s forwards,
+    rayPulse 1.6s ease-in-out 1.6s infinite;
 
 }
 
@@ -264,61 +304,32 @@
 
 
 /* =========================================================
-   MORPHING
+   TRACÉ / RAYONS
 ========================================================= */
 
-@keyframes morphShape {
+@keyframes drawStroke {
 
-  0% {
+  to {
 
-    border-radius: 22% 78% 65% 35%
-      / 35% 45% 55% 65%;
-
-    transform: rotate(0deg)
-      scale(1);
+    stroke-dashoffset: 0;
 
   }
 
+}
 
-  25% {
 
-    border-radius: 50%;
+@keyframes rayPulse {
 
-    transform: rotate(90deg)
-      scale(1.08);
+  0%,
+  100% {
+
+    opacity: 1;
 
   }
-
 
   50% {
 
-    border-radius: 65% 35% 30% 70%
-      / 60% 40% 60% 40%;
-
-    transform: rotate(180deg)
-      scale(0.95);
-
-  }
-
-
-  75% {
-
-    border-radius: 35% 65% 70% 30%
-      / 40% 60% 35% 65%;
-
-    transform: rotate(270deg)
-      scale(1.07);
-
-  }
-
-
-  100% {
-
-    border-radius: 22% 78% 65% 35%
-      / 35% 45% 55% 65%;
-
-    transform: rotate(360deg)
-      scale(1);
+    opacity: 0.35;
 
   }
 
@@ -400,36 +411,6 @@
 
 
 /* =========================================================
-   FORME INTÉRIEURE
-========================================================= */
-
-@keyframes innerPulse {
-
-  0%,
-  100% {
-
-    transform:
-      translate(-50%, -50%)
-      scale(0.8);
-
-    opacity: 0.7;
-
-  }
-
-  50% {
-
-    transform:
-      translate(-50%, -50%)
-      scale(1.15);
-
-    opacity: 1;
-
-  }
-
-}
-
-
-/* =========================================================
    APP NAME
 ========================================================= */
 
@@ -501,6 +482,34 @@
 
     opacity: 1;
 
+  }
+
+}
+
+/* =========================================================
+   MODE SOMBRE (classe .dark sur <html>, cf. ThemeService)
+========================================================= */
+
+:host-context(html.dark) {
+
+  .splash-content {
+    --background: #000000;
+  }
+
+  .splash-container {
+    background: #000000;
+  }
+
+  .splash-container::before {
+    background: rgba(249, 115, 22, 0.12);
+  }
+
+  .app-name {
+    color: #ffffff;
+  }
+
+  .loading-text {
+    color: #a1a1a6;
   }
 
 }
