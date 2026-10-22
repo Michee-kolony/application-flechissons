@@ -24,10 +24,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/faq/faq.module').then( m => m.FaqPageModule)
   },
   {
-    path: 'checkout',
-    loadChildren: () => import('./pages/checkout/checkout.module').then( m => m.CheckoutPageModule)
-  },
-  {
     path: 'live',
     loadChildren: () => import('./pages/live/live.module').then( m => m.LivePageModule)
   },

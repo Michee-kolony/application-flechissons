@@ -154,19 +154,7 @@
         <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
 
-      <!-- Carte 2 : Faire un don -->
-      <div [routerLink]="['/checkout']" class="menu-card">
-        <div class="menu-card-icon">
-          <ion-icon name="heart-outline"></ion-icon>
-        </div>
-        <div class="menu-card-content">
-          <h3>Faire un don</h3>
-          <p>Soutenir notre mission</p>
-        </div>
-        <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
-      </div>
-
-      <!-- Carte 3 : FAQ -->
+      <!-- Carte 2 : FAQ -->
       <div [routerLink]="['/faq']" class="menu-card">
         <div class="menu-card-icon">
           <ion-icon name="help-circle-outline"></ion-icon>
@@ -178,7 +166,7 @@
         <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
 
-      <!-- Carte 4 : Confidentialité -->
+      <!-- Carte 3 : Confidentialité -->
       <div [routerLink]="['/privacy']" class="menu-card">
         <div class="menu-card-icon">
           <ion-icon name="lock-closed-outline"></ion-icon>
@@ -190,7 +178,7 @@
         <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
       </div>
 
-      <!-- Carte 5 : Suppression du compte -->
+      <!-- Carte 4 : Suppression du compte -->
       <button type="button" (click)="ouvrirSuppression()" [disabled]="isLoading" class="menu-card menu-card--danger">
         <div class="menu-card-icon">
           <ion-icon name="trash-outline"></ion-icon>
