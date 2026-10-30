@@ -16,7 +16,10 @@ export class AppComponent {
     private themeService: ThemeService,
     private pushNotificationService: PushNotificationService
   ) {
-    if (Capacitor.isNativePlatform()) {
+    // iOS : la page passe sous la barre d'état et les headers réservent
+    // var(--ion-safe-area-top). Sans overlay, iOS met une bande noire derrière
+    // l'heure et la batterie, illisibles en mode clair.
+    if (Capacitor.getPlatform() === 'android') {
       void StatusBar.setOverlaysWebView({ overlay: false });
     }
     // Notifications push : permission, token, clic sur une notification

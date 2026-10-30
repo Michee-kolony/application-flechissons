@@ -41,7 +41,7 @@ h1 {
   --background: var(--app-bg);
   --border-color: transparent;
   --min-height: auto;
-  padding: 10px 20px 14px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 10px) 20px 14px;
 }
 
 .topbar {

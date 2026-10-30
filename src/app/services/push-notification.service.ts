@@ -123,7 +123,7 @@ export class PushNotificationService {
       return;
     }
 
-    void this.navCtrl.navigateForward(route);
+    this.notificationService.resoudreRoute(route).subscribe(cible => void this.navCtrl.navigateForward(cible));
   }
 
   /** App ouverte : le système n'affiche pas la notification, on montre un toast */

@@ -1,10 +1,17 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of } from 'rxjs';
 import { App } from '@capacitor/app';
 import { AuthService } from './auth.service';
 
 const API_URL = 'https://flechissons.com/notification';
+const ARTICLE_URL = 'https://flechissons.com/article';
+
+/** Vidéos ouvertes dans le flux de l'onglet 3 plutôt que sur la page article */
+const FLUX_VIDEO: Record<string, string> = {
+  predications: '/tabs/tab3',
+  exhortations: '/tabs/tab3/exhortations'
+};
 
 /** Date (createdAt) de la plus récente notification déjà vue */
 const VUES_LE_KEY = 'notifications-vues-le';
@@ -56,6 +63,33 @@ export class NotificationService {
 
     return this.http.get<{ notifications: AppNotification[]; fin: boolean }>(API_URL, { params }).pipe(
       map(response => ({ notifications: response.notifications || [], fin: !!response.fin }))
+    );
+  }
+
+  /**
+   * Route à ouvrir pour une notification. Les anciennes notifications de vidéos
+   * pointent vers /article/<id> : on les redirige vers le flux vidéo.
+   */
+  resoudreRoute(route: string): Observable<string> {
+    const [chemin, query = ''] = route.split('?');
+    const id = /^\/article\/([^/]+)$/.exec(chemin)?.[1];
+
+    if (!id) {
+      return of(route);
+    }
+
+    return this.http.get<{ article?: { type?: string; youtube?: string | null } }>(`${ARTICLE_URL}/${id}`).pipe(
+      map(({ article }) => {
+        const flux = article?.youtube && article.type ? FLUX_VIDEO[article.type] : undefined;
+        if (!flux) {
+          return route;
+        }
+
+        const params = new URLSearchParams(query);
+        params.set('video', id);
+        return `${flux}?${params.toString()}`;
+      }),
+      catchError(() => of(route))
     );
   }
 

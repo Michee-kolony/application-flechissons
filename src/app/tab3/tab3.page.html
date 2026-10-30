@@ -190,7 +190,9 @@
           <span>Soyez le premier à commenter !</span>
         </div>
 
-        <div *ngFor="let commentaire of commentsArticle?.commentaires" class="comment">
+        <div *ngFor="let commentaire of commentsArticle?.commentaires" class="comment"
+             [id]="'commentaire-' + commentaire._id"
+             [class.surligne]="commentaireSurligne === commentaire._id">
           <div class="comment-avatar">
             <img
               *ngIf="commentaire.photo && commentaire.photo !== 'assets/avatar-default.png'"

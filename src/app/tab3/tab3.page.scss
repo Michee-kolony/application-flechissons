@@ -591,6 +591,12 @@ $tabbar-offset: calc(60px + env(safe-area-inset-bottom));
   display: flex;
   gap: 12px;
   padding: 10px 16px;
+  transition: background-color .4s ease;
+
+  // Commentaire ouvert depuis une notification
+  &.surligne {
+    background: rgba(249, 115, 22, .14);
+  }
 }
 
 .comment-avatar {

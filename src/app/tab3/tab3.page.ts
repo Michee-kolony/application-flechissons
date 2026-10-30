@@ -130,6 +130,10 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
   /** Vidéo demandée depuis l'accueil (?video=<id>), en attente d'affichage */
   private videoCible: string | null = null;
 
+  // Commentaire ouvert depuis une notification (?video=<id>&commentaire=<id>)
+  private commentaireCible: string | null = null;
+  commentaireSurligne: string | null = null;
+
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -161,6 +165,7 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
       const id = params.get('video');
       if (id) {
         this.videoCible = id;
+        this.commentaireCible = params.get('commentaire');
         this.allerVersVideoCible();
       }
     }));
@@ -191,10 +196,30 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
 
     this.videoCible = null;
     // Retire ?video= de l'URL : un nouveau clic sur la même vidéo fonctionnera
-    this.router.navigate([], { relativeTo: this.route, queryParams: { video: null }, replaceUrl: true });
+    this.router.navigate([], { relativeTo: this.route, queryParams: { video: null, commentaire: null }, replaceUrl: true });
 
     feed.scrollTop = index * feed.clientHeight;
     this.setActive(index, true);
+
+    const commentaireId = this.commentaireCible;
+    this.commentaireCible = null;
+    if (commentaireId) {
+      this.allerAuCommentaire(this.predicationsFiltrees[index], commentaireId);
+    }
+  }
+
+  /** Ouvre le panneau des commentaires et met en évidence le commentaire visé */
+  private allerAuCommentaire(article: Article, commentaireId: string): void {
+    this.commentsArticle = article;
+    this.commentsOpen = true;
+    this.cdr.detectChanges();
+
+    // Laisse le panneau s'ouvrir avant de défiler
+    setTimeout(() => {
+      document.getElementById(`commentaire-${commentaireId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.commentaireSurligne = commentaireId;
+      setTimeout(() => this.commentaireSurligne = null, 3000);
+    }, 400);
   }
 
   ngAfterViewInit() {

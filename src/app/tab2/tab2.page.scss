@@ -45,7 +45,7 @@ ion-toolbar {
     --min-height: auto;
     --padding-start: 0;
     --padding-end: 0;
-    padding: 10px 16px 14px;
+    padding: calc(var(--ion-safe-area-top, 0px) + 10px) 16px 14px;
   }
 }
 
@@ -1120,7 +1120,7 @@ ion-toolbar {
 
 @media (max-width: 640px) {
   .testimony-header ion-toolbar {
-    padding: 10px 12px 14px;
+    padding: calc(var(--ion-safe-area-top, 0px) + 10px) 12px 14px;
   }
 
   .testimony-page {

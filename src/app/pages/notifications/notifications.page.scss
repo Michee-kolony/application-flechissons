@@ -10,7 +10,7 @@ ion-content,
 .notif-header ion-toolbar {
   --border-color: transparent;
   --min-height: auto;
-  padding: 10px 12px 10px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 10px) 12px 10px;
 }
 
 .notif-toolbar {

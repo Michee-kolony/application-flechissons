@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { PushNotificationService } from '../../services/push-notification.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-splash',
@@ -33,7 +35,8 @@ export class SplashPage implements OnInit, OnDestroy {
 
   constructor(
     private navCtrl: NavController,
-    private pushNotificationService: PushNotificationService
+    private pushNotificationService: PushNotificationService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -75,7 +78,7 @@ export class SplashPage implements OnInit, OnDestroy {
       // on ouvre la page concernée par-dessus l'accueil
       const route = this.pushNotificationService.consommerRouteEnAttente();
       if (route) {
-        await this.navCtrl.navigateForward(route);
+        await this.navCtrl.navigateForward(await firstValueFrom(this.notificationService.resoudreRoute(route)));
       }
 
     }, this.sceneCount * this.sceneDuration);

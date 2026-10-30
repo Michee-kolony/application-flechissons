@@ -8,14 +8,17 @@ interface TypeAffichage {
 }
 
 const TYPES: Record<NotificationType, TypeAffichage> = {
-  article: { icone: 'newspaper-outline', libelle: 'Nouvelle publication' },
-  audio: { icone: 'headset-outline', libelle: 'Nouvel audio' },
-  live: { icone: 'radio-outline', libelle: 'En direct' },
-  like: { icone: 'heart', libelle: 'J\'aime' },
-  commentaire: { icone: 'chatbubble-ellipses-outline', libelle: 'Commentaire' },
-  paiement: { icone: 'gift-outline', libelle: 'Contribution' },
-  autre: { icone: 'notifications-outline', libelle: 'Notification' }
+  article: { icone: 'fa-solid fa-newspaper', libelle: 'Nouvelle publication' },
+  audio: { icone: 'fa-solid fa-headphones', libelle: 'Nouvel audio' },
+  live: { icone: 'fa-solid fa-tower-broadcast', libelle: 'En direct' },
+  like: { icone: 'fa-solid fa-heart', libelle: 'J\'aime' },
+  commentaire: { icone: 'fa-solid fa-comment-dots', libelle: 'Commentaire' },
+  paiement: { icone: 'fa-solid fa-gift', libelle: 'Contribution' },
+  autre: { icone: 'fa-solid fa-bell', libelle: 'Notification' }
 };
+
+/** Emojis (💬, ❤️, 🎧…) présents dans les titres des anciennes notifications */
+const EMOJIS = /[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu;
 
 @Component({
   selector: 'app-notifications',
@@ -84,7 +87,8 @@ export class NotificationsPage {
   ouvrir(notification: AppNotification): void {
     // Uniquement des routes internes à l'app
     if (notification.route?.startsWith('/')) {
-      void this.navCtrl.navigateForward(notification.route);
+      this.notificationService.resoudreRoute(notification.route)
+        .subscribe(route => void this.navCtrl.navigateForward(route));
     }
   }
 
@@ -94,6 +98,10 @@ export class NotificationsPage {
 
   icone(notification: AppNotification): string {
     return (TYPES[notification.type] || TYPES.autre).icone;
+  }
+
+  titre(notification: AppNotification): string {
+    return notification.titre.replace(EMOJIS, '').replace(/\s{2,}/g, ' ').trim();
   }
 
   libelle(notification: AppNotification): string {

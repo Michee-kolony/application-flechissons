@@ -53,12 +53,12 @@
         (click)="ouvrir(notification)">
 
         <div class="notif-icone" [ngClass]="'type-' + notification.type">
-          <ion-icon [name]="icone(notification)"></ion-icon>
+          <i [class]="icone(notification)" aria-hidden="true"></i>
         </div>
 
         <div class="notif-texte">
           <span class="notif-type">{{ libelle(notification) }} · {{ depuis(notification.createdAt) }}</span>
-          <strong class="notif-titre">{{ notification.titre }}</strong>
+          <strong class="notif-titre">{{ titre(notification) }}</strong>
           <span *ngIf="notification.message" class="notif-message">{{ notification.message }}</span>
         </div>
 
