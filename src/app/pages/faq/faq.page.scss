@@ -36,3 +36,13 @@ ion-content { --background: var(--app-bg); }
   .faq-contact h3 { color: #fdba74; }
   .faq-contact p { color: var(--app-text-secondary); }
 }
+
+// =====================================================
+// TABLETTE : LE CONTENU OCCUPE TOUTE LA LARGEUR
+// =====================================================
+@media (min-width: 768px) {
+  ion-toolbar.container,
+  .faq-page.container {
+    max-width: none;
+  }
+}

@@ -188,3 +188,30 @@
     background: rgba(255, 152, 0, 0.12);
   }
 }
+
+/* Tablette : onglets répartis sur toute la largeur, libellés toujours visibles */
+@media (min-width: 768px) {
+  .custom-tab-bar {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .custom-tab-bar ion-tab-button,
+  .custom-tab-bar ion-tab-button.tab-selected {
+    flex: 1 1 0;
+    max-width: none;
+  }
+
+  .custom-tab-bar ion-tab-button .tab-content,
+  .custom-tab-bar ion-tab-button.tab-selected .tab-content {
+    justify-content: center;
+  }
+
+  .custom-tab-bar ion-tab-button .tab-label {
+    opacity: 1;
+    max-width: none;
+    margin-left: 3px;
+    overflow: visible;
+    transform: none;
+  }
+}

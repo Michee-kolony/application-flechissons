@@ -1,37 +1,13 @@
-<ion-header class="ion-no-border">
-
-  <ion-toolbar class="px-3 py-1 !bg-gray-50 dark:!bg-black !shadow-sm">
-
-    <div class="flex items-center gap-3 w-full">
-
-      <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-
-        <ion-back-button
-          defaultHref="/tabs/tab1"
-          text=""
-          class="text-orange-500">
-        </ion-back-button>
-
-      </div>
-
-
+<ion-header class="live-header ion-no-border">
+  <ion-toolbar>
+    <div class="topbar">
+      <ion-back-button defaultHref="/tabs/tab1" text="" aria-label="Retour"></ion-back-button>
       <div>
-
-        <h1 class="text-base font-bold leading-tight text-gray-900 dark:text-neutral-100">
-          Nos directs
-        </h1>
-
-        <p class="text-[11px] text-gray-500 dark:text-neutral-400">
-          Cultes et moments spirituels en direct
-        </p>
-
+        <span class="kicker">Cultes et moments spirituels en direct</span>
+        <h1>Nos directs</h1>
       </div>
-
-
     </div>
-
   </ion-toolbar>
-
 </ion-header>
 
 
@@ -127,6 +103,8 @@ Aucun direct disponible pour le moment.
 
 <!-- Cartes des lives -->
 
+<div class="live-grille space-y-3">
+
 <div
 *ngFor="let live of lives; trackBy: trackById"
 (click)="ouvrirLive(live)"
@@ -199,6 +177,7 @@ class="w-10 h-10 shrink-0 rounded-full bg-orange-500 text-white text-sm flex ite
 </div>
 
 
+</div>
 </div>
 
 

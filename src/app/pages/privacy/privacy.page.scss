@@ -41,3 +41,13 @@ ion-content { --background: var(--app-bg); }
 
   .privacy-update { color: var(--app-text-secondary); }
 }
+
+// =====================================================
+// TABLETTE : LE CONTENU OCCUPE TOUTE LA LARGEUR
+// =====================================================
+@media (min-width: 768px) {
+  ion-toolbar.container,
+  .privacy-page.container {
+    max-width: none;
+  }
+}

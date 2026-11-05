@@ -217,3 +217,12 @@
     color: #fca5a5;
   }
 }
+
+// =====================================================
+// TABLETTE : LE CONTENU OCCUPE TOUTE LA LARGEUR
+// =====================================================
+@media (min-width: 768px) {
+  .page-shell {
+    width: 100%;
+  }
+}

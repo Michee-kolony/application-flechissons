@@ -1,4 +1,48 @@
 // =====================================================
+// HEADER - MÊME DESIGN QUE LES AUTRES PAGES
+// =====================================================
+
+.calendrier-header ion-toolbar {
+  --background: #fffaf5;
+  --border-color: transparent;
+  --min-height: auto;
+  padding: calc(var(--ion-safe-area-top, 0px) + 10px) 20px 14px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar h1 {
+  margin: 4px 0 0;
+  color: #26352f;
+  font-size: 25px !important;
+  font-weight: 800;
+  line-height: 26.4px;
+  letter-spacing: -.02em;
+}
+
+.kicker {
+  color: #ea580c;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+:host-context(.dark) {
+  .calendrier-header ion-toolbar {
+    --background: var(--app-surface);
+  }
+
+  .topbar h1 {
+    color: var(--app-text);
+  }
+}
+
+// =====================================================
 // CALENDRIER (ion-datetime)
 // =====================================================
 

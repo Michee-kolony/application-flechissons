@@ -224,3 +224,12 @@ ion-content {
     -webkit-text-fill-color: #a3a3a3;
   }
 }
+
+// =====================================================
+// TABLETTE : LE CONTENU OCCUPE TOUTE LA LARGEUR
+// =====================================================
+@media (min-width: 768px) {
+  .comment-input-wrapper {
+    max-width: none;
+  }
+}

@@ -242,3 +242,12 @@ ion-content,
     background-position: -200% 0;
   }
 }
+
+// =====================================================
+// TABLETTE : LE CONTENU OCCUPE TOUTE LA LARGEUR
+// =====================================================
+@media (min-width: 768px) {
+  .notif-page {
+    max-width: none;
+  }
+}

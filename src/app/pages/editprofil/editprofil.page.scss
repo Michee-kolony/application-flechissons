@@ -53,3 +53,12 @@ ion-content { --background: #fffaf5; }
   .upload-error .upload-error__hint { color: #fdba74; background: rgba(249, 115, 22, 0.12); }
   .privacy-note { color: var(--app-text-secondary); }
 }
+
+// =====================================================
+// TABLETTE : LE CONTENU OCCUPE TOUTE LA LARGEUR
+// =====================================================
+@media (min-width: 768px) {
+  .profile-editor {
+    max-width: none;
+  }
+}

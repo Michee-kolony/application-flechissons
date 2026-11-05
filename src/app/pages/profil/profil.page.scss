@@ -1063,3 +1063,26 @@ ion-modal.suppression-modal {
     color: var(--app-text-secondary);
   }
 }
+
+// =====================================================
+// TABLETTE : LE CONTENU OCCUPE TOUTE LA LARGEUR
+// =====================================================
+@media (min-width: 768px) {
+  .topbar.container {
+    max-width: none;
+  }
+
+  .profil-page {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    column-gap: 16px;
+    max-width: none;
+  }
+
+  .profil-hero,
+  .appearance-card,
+  .profil-version {
+    grid-column: 1 / -1;
+  }
+}

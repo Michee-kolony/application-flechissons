@@ -12,3 +12,7 @@ ion-toolbar {
   --min-height: 80px;
   backdrop-filter: blur(12px);
 }
+
+ion-header ion-toolbar {
+  padding-top: calc(var(--ion-safe-area-top, 0px) + 10px);
+}

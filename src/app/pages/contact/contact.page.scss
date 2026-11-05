@@ -811,3 +811,12 @@ h1 {
     background: var(--app-border);
   }
 }
+
+// =====================================================
+// TABLETTE : LE CONTENU OCCUPE TOUTE LA LARGEUR
+// =====================================================
+@media (min-width: 768px) {
+  .contact-page {
+    max-width: none;
+  }
+}
