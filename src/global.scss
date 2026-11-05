@@ -145,10 +145,11 @@ body {
 }
 
 // =====================================================
-// MODE SOMBRE — Action sheet « Choisir un livre » (page Bible)
+// MODE SOMBRE — Action sheets « Choisir un livre » (Bible) et choix de la carte (Profil)
 // Rendu hors de la page par Ionic : doit être stylé en global
 // =====================================================
-html.dark ion-action-sheet.bible-book-sheet {
+html.dark ion-action-sheet.bible-book-sheet,
+html.dark ion-action-sheet.carte-choix-sheet {
   --background: #121212;
   --button-background: #121212;
   --button-background-hover: #1c1c1c;

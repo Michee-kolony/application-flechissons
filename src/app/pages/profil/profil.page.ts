@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ThemeMode, ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
+import { LocalisationService } from '../../services/localisation.service';
 import { Subscription } from 'rxjs';
 import * as L from 'leaflet';
 
@@ -106,7 +107,8 @@ export class ProfilPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
     public themeService: ThemeService,
     private authService: AuthService,
-    private http: HttpClient
+    private http: HttpClient,
+    private localisationService: LocalisationService
   ) {}
 
   // =====================================================
@@ -388,17 +390,11 @@ export class ProfilPage implements OnInit, OnDestroy {
     this.carte.setView(position, 16);
   }
 
-  // Ouvre Google Maps (application si installée) avec l'itinéraire depuis la position actuelle
+  // iOS : choix Apple Maps / Google Maps / copie. Android : Google Maps directement.
   lancerItineraire() {
-    if (!this.eglise) {
-      return;
+    if (this.eglise) {
+      void this.localisationService.ouvrirItineraire(this.eglise);
     }
-
-    const destination = `${this.eglise.latitude},${this.eglise.longitude}`;
-    window.open(
-      `https://www.google.com/maps/dir/?api=1&destination=${destination}`,
-      '_system'
-    );
   }
 
   private lireCacheEglise(): Eglise | null {
