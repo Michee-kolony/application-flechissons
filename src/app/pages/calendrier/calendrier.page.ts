@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { DatetimeHighlight } from '@ionic/core';
 
 interface Evenement {
@@ -43,8 +44,17 @@ export class CalendrierPage {
   erreur = false;
 
   constructor(
-    private http: HttpClient
-  ) { }
+    private http: HttpClient,
+    private route: ActivatedRoute
+  ) {
+    // Rappel d'un évènement (notification) : ouvre le calendrier sur son jour
+    this.route.queryParamMap.subscribe(params => {
+      const date = params.get('date');
+      if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        this.dateSelectionnee = date;
+      }
+    });
+  }
 
   ionViewWillEnter() {
     // Rechargés à chaque visite : l'admin a pu ajouter ou modifier une date

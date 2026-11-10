@@ -16,7 +16,7 @@ const FLUX_VIDEO: Record<string, string> = {
 /** Date (createdAt) de la plus récente notification déjà vue */
 const VUES_LE_KEY = 'notifications-vues-le';
 
-export type NotificationType = 'article' | 'audio' | 'live' | 'like' | 'commentaire' | 'paiement' | 'autre';
+export type NotificationType = 'article' | 'audio' | 'live' | 'evenement' | 'like' | 'commentaire' | 'paiement' | 'autre';
 
 export interface AppNotification {
   _id: string;

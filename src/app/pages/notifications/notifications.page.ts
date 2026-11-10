@@ -11,6 +11,7 @@ const TYPES: Record<NotificationType, TypeAffichage> = {
   article: { icone: 'fa-solid fa-newspaper', libelle: 'Nouvelle publication' },
   audio: { icone: 'fa-solid fa-headphones', libelle: 'Nouvel audio' },
   live: { icone: 'fa-solid fa-tower-broadcast', libelle: 'En direct' },
+  evenement: { icone: 'fa-solid fa-calendar-day', libelle: 'Rappel' },
   like: { icone: 'fa-solid fa-heart', libelle: 'J\'aime' },
   commentaire: { icone: 'fa-solid fa-comment-dots', libelle: 'Commentaire' },
   paiement: { icone: 'fa-solid fa-gift', libelle: 'Contribution' },

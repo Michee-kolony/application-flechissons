@@ -77,7 +77,7 @@ export class PushNotificationService {
         await PushNotifications.createChannel({
           id: 'flechissons',
           name: 'Fléchissons',
-          description: 'Nouvelles publications, audios, likes et commentaires',
+          description: 'Nouvelles publications, audios, rappels du calendrier, likes et commentaires',
           importance: 4,
           visibility: 1
         });
