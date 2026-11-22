@@ -69,7 +69,13 @@ const routes: Routes = [
     loadChildren: () => import('./pages/notifications/notifications.module').then( m => m.NotificationsPageModule)
   },
   {
-    // Messagerie privée avec le pasteur et les administrateurs
+    // La liste des discussions vit dans les onglets (/tabs/messagerie)
+    path: 'messagerie',
+    pathMatch: 'full',
+    redirectTo: '/tabs/messagerie'
+  },
+  {
+    // Conversation (/messagerie/:id) : plein écran, sans barre d'onglets, comme WhatsApp
     path: 'messagerie',
     loadChildren: () => import('./pages/messagerie/messagerie.module').then( m => m.MessageriePageModule)
   }

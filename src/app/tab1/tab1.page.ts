@@ -484,7 +484,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   }
 
   goToMessagerie(): void {
-    this.router.navigate(['/messagerie']);
+    this.router.navigate(['/tabs/messagerie']);
   }
 
   goToNotifications(): void {

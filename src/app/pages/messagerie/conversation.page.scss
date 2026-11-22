@@ -1,136 +1,223 @@
-ion-content,
-.conv-header ion-toolbar,
-.conv-footer {
-  --background: var(--app-bg);
-  background: var(--app-bg);
-}
-
 // =====================================================
-// EN-TÊTE
+// CONVERSATION — inspirée de WhatsApp, aux couleurs Fléchissons
+// (en-tête orange, fond « papier peint » de croix et de cœurs,
+//  bulles avec pointe, coches de lecture orange)
 // =====================================================
 
-.conv-header ion-toolbar {
-  --border-color: transparent;
-  --min-height: auto;
-  padding: calc(var(--ion-safe-area-top, 0px) + 8px) 12px 8px;
-  border-bottom: 1px solid var(--app-border);
+:host {
+  // Couleurs (mode clair)
+  --conv-fond: #f7efe6;
+  --conv-motif-opacite: .07;
+  --conv-bulle-moi: #ffe2c8;
+  --conv-bulle-moi-texte: #3b1d0a;
+  --conv-bulle-autre: #ffffff;
+  --conv-bulle-autre-texte: #111827;
+  --conv-meta: rgba(17, 24, 39, .5);
+  --conv-puce: rgba(255, 255, 255, .92);
+  --conv-puce-texte: #6b5a4c;
+  --conv-avis: #fff4d6;
+  --conv-avis-texte: #7a5b12;
+  --conv-saisie-fond: #f3ebe2;
+  --conv-champ: #ffffff;
 }
 
-.conv-toolbar {
+:host-context(html.dark) {
+  --conv-fond: #0d0b0a;
+  --conv-motif-opacite: .06;
+  --conv-bulle-moi: #8a3b10;
+  --conv-bulle-moi-texte: #fff4ec;
+  --conv-bulle-autre: #1f1d1c;
+  --conv-bulle-autre-texte: #f5f5f5;
+  --conv-meta: rgba(255, 255, 255, .55);
+  --conv-puce: rgba(31, 29, 28, .95);
+  --conv-puce-texte: #d6cfc9;
+  --conv-avis: #2a2210;
+  --conv-avis-texte: #f1d38a;
+  --conv-saisie-fond: #161413;
+  --conv-champ: #262321;
+}
+
+
+// =====================================================
+// EN-TÊTE ORANGE
+// =====================================================
+
+.conv-header {
+  background: linear-gradient(135deg, #f26b1d 0%, #ea580c 60%, #c2410c 100%);
+  box-shadow: 0 2px 10px rgba(194, 65, 12, .25);
+}
+
+.conv-barre {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 8px) 12px 10px 4px;
 
   ion-back-button {
-    --color: var(--app-text);
+    --color: #fff;
+    --icon-font-size: 26px;
+    --padding-start: 4px;
+    --padding-end: 0;
+    min-width: 32px;
   }
 }
 
 .conv-avatar {
+  position: relative;
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  overflow: hidden;
-  border-radius: 50%;
+  width: 42px;
+  height: 42px;
   color: #ea580c;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
-  background: rgba(249, 115, 22, .14);
+  background: #fff;
+  border: 2px solid rgba(255, 255, 255, .85);
+  border-radius: 50%;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
   }
+}
+
+// Petite croix dorée : signale un responsable de l'église
+.conv-avatar-croix {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  color: #c2410c;
+  font-size: 10px;
+  font-weight: 900;
+  background: #ffd27a;
+  border: 2px solid #ea580c;
+  border-radius: 50%;
 }
 
 .conv-identite {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  color: #fff;
 
   strong {
-    color: var(--app-text);
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 800;
+    line-height: 1.2;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
   }
 
   span {
-    color: #ea580c;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     font-size: 12px;
-    font-weight: 700;
+    opacity: .9;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    &::first-letter {
+      text-transform: uppercase;
+    }
   }
-}
-
-// =====================================================
-// FIL
-// =====================================================
-
-.conv-fil {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 12px 14px 16px;
-}
-
-.conv-centre {
-  display: flex;
-  justify-content: center;
-  padding: 10px 0;
-
-  ion-spinner {
-    color: #f97316;
-  }
-}
-
-.conv-lien {
-  padding: 6px 12px;
-  color: #ea580c;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  background: none;
-  border: none;
-}
-
-.conv-intro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 60px 24px 0;
-  text-align: center;
 
   ion-icon {
-    font-size: 48px;
-    color: #f97316;
-    opacity: .8;
+    flex-shrink: 0;
+    font-size: 11px;
+  }
+}
+
+
+// =====================================================
+// FOND « PAPIER PEINT »
+// =====================================================
+
+.conv-content {
+  --background: var(--conv-fond);
+}
+
+.conv-content::part(background) {
+  background-color: var(--conv-fond);
+}
+
+.conv-fil {
+  position: relative;
+  min-height: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 10px 10px 18px;
+
+  // Motif : croix, cœurs, étoiles et colombes stylisées (SVG intégré)
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--conv-motif-opacite);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140' fill='none' stroke='%23ea580c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12v22M14 20h16'/%3E%3Cpath d='M98 30c-4-6-14-4-14 4 0 7 14 14 14 14s14-7 14-14c0-8-10-10-14-4z'/%3E%3Cpath d='M30 92l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z'/%3E%3Cpath d='M88 96c6-8 18-8 24 0-6 2-9 6-12 12-2-6-6-9-12-12zM100 98l-6-10'/%3E%3Cpath d='M64 60v16M57 66h14'/%3E%3Ccircle cx='124' cy='122' r='3'/%3E%3Ccircle cx='8' cy='60' r='2.5'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
   }
 
-  p {
-    margin: 12px 0 0;
-    color: var(--app-text-secondary);
-    font-size: 14px;
-    line-height: 1.5;
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+
+// =====================================================
+// PUCES (avis, jour, chargement)
+// =====================================================
+
+.conv-avis {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 320px;
+  margin: 6px auto 12px;
+  padding: 8px 12px;
+  color: var(--conv-avis-texte);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  background: var(--conv-avis);
+  border-radius: 10px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .06);
+
+  ion-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 12px;
   }
 }
 
 .conv-jour {
+  position: sticky;
+  top: 6px;
+  z-index: 2;
   display: flex;
   justify-content: center;
-  margin: 14px 0 10px;
+  margin: 12px 0 8px;
 
   span {
-    padding: 4px 12px;
-    color: var(--app-text-secondary);
-    font-size: 11px;
+    padding: 5px 12px;
+    color: var(--conv-puce-texte);
+    font-size: 12px;
     font-weight: 600;
-    background: var(--app-surface, #fff);
-    border: 1px solid var(--app-border);
-    border-radius: 999px;
+    background: var(--conv-puce);
+    border-radius: 8px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .08);
 
     &::first-letter {
       text-transform: uppercase;
@@ -138,66 +225,270 @@ ion-content,
   }
 }
 
+.conv-centre {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+
+  ion-spinner {
+    color: #ea580c;
+  }
+}
+
+.conv-puce-lien {
+  padding: 6px 14px;
+  color: #ea580c;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--conv-puce);
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .08);
+}
+
+
+// =====================================================
+// CONVERSATION VIDE : VERSET + SUGGESTIONS
+// =====================================================
+
+.conv-accueil {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 26px 8px 0;
+  text-align: center;
+}
+
+.conv-verset {
+  position: relative;
+  max-width: 320px;
+  padding: 18px 20px 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #f26b1d, #c2410c);
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(194, 65, 12, .25);
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+}
+
+.conv-verset-guillemet {
+  position: absolute;
+  top: -18px;
+  left: 14px;
+  font-family: Georgia, serif;
+  font-size: 56px;
+  line-height: 1;
+  opacity: .35;
+}
+
+.conv-verset-ref {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  opacity: .9;
+}
+
+.conv-accueil-texte {
+  max-width: 320px;
+  margin: 20px 0 12px;
+  color: var(--conv-puce-texte);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.conv-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 340px;
+}
+
+.conv-suggestion {
+  padding: 9px 14px;
+  color: var(--conv-bulle-autre-texte);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--conv-bulle-autre);
+  border: 1px solid rgba(234, 88, 12, .35);
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+
+  &:active {
+    transform: scale(.96);
+  }
+}
+
+
+// =====================================================
+// BULLES
+// =====================================================
+
 .conv-ligne {
   display: flex;
   justify-content: flex-start;
-  margin-bottom: 6px;
+  margin-top: 2px;
+  padding: 0 8px;
+
+  // Nouveau groupe : un peu plus d'espace, et une pointe sur la bulle
+  &.debut {
+    margin-top: 8px;
+
+    .conv-bulle {
+      border-top-left-radius: 0;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -8px;
+        width: 8px;
+        height: 13px;
+        background: var(--conv-bulle-autre);
+        clip-path: polygon(0 0, 100% 0, 100% 100%);
+      }
+    }
+  }
 
   &.moi {
     justify-content: flex-end;
 
     .conv-bulle {
-      color: #fff;
-      background: #f97316;
-      border-color: #f97316;
-      border-bottom-right-radius: 6px;
-      border-bottom-left-radius: 18px;
+      color: var(--conv-bulle-moi-texte);
+      background: var(--conv-bulle-moi);
     }
 
-    .conv-meta {
-      color: rgba(255, 255, 255, .8);
+    &.debut .conv-bulle {
+      border-top-left-radius: 10px;
+      border-top-right-radius: 0;
+
+      &::before {
+        left: auto;
+        right: -8px;
+        background: var(--conv-bulle-moi);
+        clip-path: polygon(0 0, 100% 0, 0 100%);
+      }
     }
   }
 }
 
 .conv-bulle {
-  max-width: 80%;
-  padding: 8px 12px 6px;
-  color: var(--app-text);
-  background: var(--app-surface, #fff);
-  border: 1px solid var(--app-border);
-  border-radius: 18px;
-  border-bottom-left-radius: 6px;
+  position: relative;
+  max-width: 82%;
+  padding: 6px 8px 6px 10px;
+  color: var(--conv-bulle-autre-texte);
+  background: var(--conv-bulle-autre);
+  border-radius: 10px;
+  box-shadow: 0 1px .5px rgba(0, 0, 0, .13);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+
+  &:active {
+    filter: brightness(.96);
+  }
+
+  &.echec {
+    opacity: .75;
+  }
 }
 
 .conv-texte {
-  display: block;
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 15.5px;
+  line-height: 1.35;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
+// L'heure flotte en bas à droite ; l'espace réservé évite qu'elle chevauche le texte
 .conv-meta {
-  display: flex;
+  float: right;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 3px;
-  margin-top: 2px;
-  color: var(--app-text-secondary);
-  font-size: 10px;
+  margin: 8px 0 -4px 10px;
+  color: var(--conv-meta);
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
 
   ion-icon {
-    font-size: 13px;
+    font-size: 15px;
+
+    // Lu : coches orange (la touche Fléchissons, au lieu du bleu)
+    &.lu {
+      color: #ea580c;
+    }
+
+    &.erreur {
+      color: #dc2626;
+    }
   }
 }
+
+:host-context(html.dark) .conv-meta ion-icon.lu {
+  color: #ffb27a;
+}
+
+.conv-echec {
+  margin: 2px 12px 0 0;
+  color: #dc2626;
+  font-size: 11px;
+  text-align: right;
+}
+
+
+// =====================================================
+// BOUTON « DESCENDRE »
+// =====================================================
+
+.conv-descendre {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin: 0 4px 6px 0;
+  color: var(--conv-puce-texte);
+  font-size: 22px;
+  background: var(--conv-puce);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+}
+
+.conv-descendre-badge {
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  background: #ea580c;
+  border-radius: 999px;
+}
+
 
 // =====================================================
 // SAISIE
 // =====================================================
 
 .conv-footer {
-  border-top: 1px solid var(--app-border);
+  background: var(--conv-saisie-fond);
   padding-bottom: var(--ion-safe-area-bottom, 0px);
 }
 
@@ -205,29 +496,34 @@ ion-content,
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 8px 12px;
+  padding: 7px 8px;
+}
+
+.conv-champ {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  min-height: 46px;
+  padding: 0 14px;
+  background: var(--conv-champ);
+  border-radius: 24px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .08);
 
   textarea {
     flex: 1;
-    min-height: 42px;
-    max-height: 130px;
-    padding: 10px 14px;
+    height: 46px;
+    max-height: 140px;
+    padding: 13px 0;
     color: var(--app-text);
     font-family: inherit;
-    font-size: 15px;
-    line-height: 1.35;
+    font-size: 16px; // 16px : évite le zoom automatique d'iOS
+    line-height: 1.3;
     resize: none;
-    background: var(--app-surface, #fff);
-    border: 1px solid var(--app-border);
-    border-radius: 21px;
+    background: transparent;
+    border: none;
     outline: none;
-    field-sizing: content;
-
-    &:focus {
-      border-color: #f97316;
-    }
   }
 }
 
@@ -235,22 +531,26 @@ ion-content,
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   color: #fff;
-  font-size: 18px;
-  background: #f97316;
+  font-size: 20px;
+  background: #f0a274;
   border: none;
   border-radius: 50%;
+  transition: transform .15s ease, background .15s ease;
 
-  &:disabled {
-    opacity: .45;
+  ion-icon {
+    margin-left: 3px;
   }
 
-  ion-spinner {
-    width: 20px;
-    height: 20px;
-    color: #fff;
+  &.actif {
+    background: linear-gradient(135deg, #f26b1d, #c2410c);
+    box-shadow: 0 3px 8px rgba(194, 65, 12, .35);
+  }
+
+  &:active.actif {
+    transform: scale(.92);
   }
 }
 
@@ -268,4 +568,189 @@ ion-content,
 .conv-indispo {
   margin-bottom: 12px;
   color: var(--app-text-secondary);
+}
+
+
+// =====================================================
+// PHOTOS DANS LES BULLES
+// =====================================================
+
+.conv-bulle.avec-photo {
+  padding: 3px 3px 6px;
+
+  .conv-texte {
+    display: block;
+    padding: 6px 6px 0 7px;
+  }
+
+  .conv-meta {
+    margin-right: 6px;
+  }
+}
+
+.conv-photo {
+  position: relative;
+  overflow: hidden;
+  width: min(250px, 64vw);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .06);
+
+  img {
+    display: block;
+    width: 100%;
+    max-height: 320px;
+    min-height: 120px;
+    object-fit: cover;
+  }
+}
+
+.conv-photo-envoi {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, .35);
+
+  ion-spinner {
+    width: 34px;
+    height: 34px;
+    color: #fff;
+  }
+}
+
+// Photo sans légende : l'heure se pose sur la photo, sur un léger dégradé
+.conv-bulle.photo-seule {
+  padding: 3px;
+
+  .conv-meta {
+    position: absolute;
+    right: 9px;
+    bottom: 8px;
+    float: none;
+    margin: 0;
+    padding: 2px 6px;
+    color: #fff;
+    background: rgba(0, 0, 0, .35);
+    border-radius: 999px;
+
+    ion-icon.lu {
+      color: #ffd2b0;
+    }
+  }
+}
+
+
+// =====================================================
+// BOUTON « PHOTO » DANS LA ZONE DE SAISIE
+// =====================================================
+
+.conv-champ {
+  padding-left: 4px;
+}
+
+.conv-joindre {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 46px;
+  color: #ea580c;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+
+  ion-spinner {
+    width: 20px;
+    height: 20px;
+    color: #ea580c;
+  }
+
+  &:disabled {
+    opacity: .6;
+  }
+}
+
+
+// =====================================================
+// APERÇU AVANT ENVOI ET PLEIN ÉCRAN
+// =====================================================
+
+.conv-apercu,
+.conv-visionneuse {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  background: #0b0908;
+}
+
+.conv-apercu-haut {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 8px) 12px 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.conv-apercu-fermer {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: #fff;
+  font-size: 26px;
+  background: rgba(255, 255, 255, .12);
+  border: none;
+  border-radius: 50%;
+}
+
+.conv-apercu-image {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 8px;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+  }
+}
+
+.conv-apercu-bas {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px 8px calc(var(--ion-safe-area-bottom, 0px) + 10px);
+
+  .conv-champ {
+    padding-left: 14px;
+    background: #262321;
+
+    textarea {
+      color: #fff;
+    }
+  }
+}
+
+.conv-visionneuse {
+  align-items: center;
+  justify-content: center;
+
+  .conv-apercu-fermer {
+    position: absolute;
+    top: calc(var(--ion-safe-area-top, 0px) + 10px);
+    right: 12px;
+  }
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
 }

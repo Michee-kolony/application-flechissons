@@ -18,6 +18,8 @@ const TYPES: Record<NotificationType, TypeAffichage> = {
   autre: { icone: 'fa-solid fa-bell', libelle: 'Notification' }
 };
 
+const MESSAGE: TypeAffichage = { icone: 'fa-solid fa-comments', libelle: 'Message privé' };
+
 /** Emojis (💬, ❤️, 🎧…) présents dans les titres des anciennes notifications */
 const EMOJIS = /[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu;
 
@@ -98,7 +100,12 @@ export class NotificationsPage {
   }
 
   icone(notification: AppNotification): string {
-    return (TYPES[notification.type] || TYPES.autre).icone;
+    return (this.estMessage(notification) ? MESSAGE : TYPES[notification.type] || TYPES.autre).icone;
+  }
+
+  /** Message privé (enregistré en type « autre », reconnu à sa page de destination) */
+  estMessage(notification: AppNotification): boolean {
+    return !!notification.route?.startsWith('/messagerie/');
   }
 
   titre(notification: AppNotification): string {
@@ -106,7 +113,7 @@ export class NotificationsPage {
   }
 
   libelle(notification: AppNotification): string {
-    return (TYPES[notification.type] || TYPES.autre).libelle;
+    return (this.estMessage(notification) ? MESSAGE : TYPES[notification.type] || TYPES.autre).libelle;
   }
 
   /** "À l'instant", "il y a 5 min", "il y a 3 h", "hier", "il y a 4 j", puis la date */

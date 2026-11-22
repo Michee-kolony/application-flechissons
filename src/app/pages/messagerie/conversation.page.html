@@ -1,76 +1,155 @@
+<!-- EN-TÊTE (style messagerie, aux couleurs Fléchissons) -->
 <ion-header class="ion-no-border conv-header">
-  <ion-toolbar>
-    <div class="conv-toolbar">
-      <ion-back-button defaultHref="/messagerie" text="" aria-label="Retour"></ion-back-button>
-      <div class="conv-avatar">
-        <img *ngIf="interlocuteur?.photo; else lettres" [src]="interlocuteur?.photo" alt="">
-        <ng-template #lettres>{{ initiales(interlocuteur?.nom) }}</ng-template>
-      </div>
-      <div class="conv-identite">
-        <strong>{{ interlocuteur?.nom || (indisponible ? 'Contact indisponible' : '…') }}</strong>
-        <span>{{ interlocuteur?.titre }}</span>
-      </div>
+  <div class="conv-barre">
+    <ion-back-button defaultHref="/tabs/messagerie" text="" icon="chevron-back" aria-label="Retour"></ion-back-button>
+
+    <div class="conv-avatar">
+      <img *ngIf="interlocuteur?.photo; else lettres" [src]="interlocuteur?.photo" alt="">
+      <ng-template #lettres>{{ initiales(interlocuteur?.nom) }}</ng-template>
+      <span class="conv-avatar-croix" aria-hidden="true">✝</span>
     </div>
-  </ion-toolbar>
+
+    <div class="conv-identite">
+      <strong>{{ interlocuteur?.nom || (indisponible ? 'Contact indisponible' : '…') }}</strong>
+      <span>
+        <ion-icon name="lock-closed" aria-hidden="true"></ion-icon>
+        {{ interlocuteur?.titre ? interlocuteur?.titre + ' · ' : '' }}conversation privée
+      </span>
+    </div>
+  </div>
 </ion-header>
 
-<ion-content>
+
+<ion-content class="conv-content" [scrollEvents]="true" (ionScroll)="surScroll()">
   <main class="conv-fil">
+
+    <!-- AVIS DE CONFIDENTIALITÉ (comme le bandeau de chiffrement de WhatsApp) -->
+    <div class="conv-avis">
+      <ion-icon name="lock-closed" aria-hidden="true"></ion-icon>
+      <span>
+        Seuls vous et {{ interlocuteur?.nom || 'votre interlocuteur' }} pouvez lire ces messages.
+        Les conversations sont effacées automatiquement le 1<sup>er</sup> de chaque mois.
+      </span>
+    </div>
 
     <div *ngIf="chargement" class="conv-centre">
       <ion-spinner name="crescent"></ion-spinner>
     </div>
 
     <div *ngIf="!chargement && !complet" class="conv-centre">
-      <button class="conv-lien" (click)="chargerAnciens()" [disabled]="chargementAnciens">
-        {{ chargementAnciens ? 'Chargement…' : 'Afficher les messages précédents' }}
+      <button class="conv-puce-lien" (click)="chargerAnciens()" [disabled]="chargementAnciens">
+        {{ chargementAnciens ? 'Chargement…' : 'Messages précédents' }}
       </button>
     </div>
 
-    <div *ngIf="!chargement && !messages.length && !erreur" class="conv-intro">
-      <ion-icon name="chatbubbles-outline"></ion-icon>
-      <p>
-        Écrivez votre message à {{ interlocuteur?.nom || 'votre interlocuteur' }}.
-        Il est privé : seule cette personne pourra le lire.
-      </p>
-    </div>
+    <!-- CONVERSATION VIDE : VERSET + SUGGESTIONS -->
+    <section *ngIf="!chargement && !messages.length && !erreur" class="conv-accueil">
+      <div class="conv-verset">
+        <span class="conv-verset-guillemet" aria-hidden="true">“</span>
+        <p>Portez les fardeaux les uns des autres, et vous accomplirez ainsi la loi de Christ.</p>
+        <span class="conv-verset-ref">Galates 6:2</span>
+      </div>
 
+      <p class="conv-accueil-texte">
+        Écrivez à {{ interlocuteur?.nom || 'votre interlocuteur' }} en toute confiance.
+        Vous pouvez commencer par :
+      </p>
+
+      <div class="conv-suggestions">
+        <button *ngFor="let s of suggestions" class="conv-suggestion" (click)="utiliserSuggestion(s.texte)" [disabled]="indisponible">
+          <span aria-hidden="true">{{ s.icone }}</span> {{ s.libelle }}
+        </button>
+      </div>
+    </section>
+
+    <!-- MESSAGES -->
     <ng-container *ngFor="let m of messages; let i = index; trackBy: trackById">
+
       <div *ngIf="nouveauJour(i)" class="conv-jour"><span>{{ libelleJour(m.createdAt) }}</span></div>
 
-      <div class="conv-ligne" [class.moi]="m.auteur === 'utilisateur'">
-        <div class="conv-bulle">
-          <span class="conv-texte">{{ m.texte }}</span>
+      <div
+        class="conv-ligne"
+        [class.moi]="m.auteur === 'utilisateur'"
+        [class.debut]="debutGroupe(i)">
+
+        <div
+          class="conv-bulle"
+          [class.echec]="m.etat === 'echec'"
+          [class.avec-photo]="!!m.image?.url"
+          [class.photo-seule]="!!m.image?.url && !m.texte"
+          (click)="m.etat === 'echec' ? reessayer(m) : ouvrirPhoto(m.image?.url)"
+          (touchstart)="debutAppui(m)"
+          (touchend)="finAppui()"
+          (touchmove)="finAppui()"
+          (contextmenu)="$event.preventDefault()">
+
+          <!-- Photo (avec un voile pendant l'envoi) -->
+          <div *ngIf="m.image?.url" class="conv-photo">
+            <img [src]="m.image?.url" alt="Photo" loading="lazy">
+            <div *ngIf="m.etat === 'envoi'" class="conv-photo-envoi">
+              <ion-spinner name="crescent"></ion-spinner>
+            </div>
+          </div>
+
+          <span *ngIf="m.texte" class="conv-texte">{{ m.texte }}</span>
+
+          <!-- Heure et coches, en bas à droite de la bulle -->
           <span class="conv-meta">
             {{ heure(m.createdAt) }}
             <ion-icon
               *ngIf="m.auteur === 'utilisateur'"
-              [name]="estLu(m) ? 'checkmark-done-outline' : 'checkmark-outline'"
-              [attr.aria-label]="estLu(m) ? 'Vu' : 'Envoyé'"></ion-icon>
+              [name]="iconeEtat(m)"
+              [class.lu]="estLu(m)"
+              [class.erreur]="m.etat === 'echec'"
+              [attr.aria-label]="m.etat === 'envoi' ? 'Envoi en cours' : m.etat === 'echec' ? 'Échec de l’envoi' : estLu(m) ? 'Vu' : 'Envoyé'"></ion-icon>
           </span>
         </div>
       </div>
+
+      <p *ngIf="m.etat === 'echec'" class="conv-echec">Non envoyé · touchez pour réessayer</p>
     </ng-container>
+
   </main>
+
+  <!-- BOUTON « DESCENDRE » (avec le nombre de nouveaux messages) -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="loinDuBas">
+    <button class="conv-descendre" (click)="descendre()" aria-label="Aller aux derniers messages">
+      <ion-icon name="chevron-down"></ion-icon>
+      <span *ngIf="nouveauxEnDessous > 0" class="conv-descendre-badge">{{ nouveauxEnDessous }}</span>
+    </button>
+  </ion-fab>
 </ion-content>
 
+
+<!-- SAISIE -->
 <ion-footer class="ion-no-border conv-footer">
-  <p *ngIf="erreur" class="conv-erreur">{{ erreur }}</p>
+  <p *ngIf="erreur && !indisponible" class="conv-erreur">{{ erreur }}</p>
 
   <div *ngIf="!indisponible; else indispo" class="conv-saisie">
-    <textarea
-      [(ngModel)]="texte"
-      rows="1"
-      maxlength="2000"
-      placeholder="Votre message…"
-      aria-label="Votre message"></textarea>
+    <div class="conv-champ">
+      <!-- Joindre une photo (appareil photo ou galerie) -->
+      <button class="conv-joindre" (click)="ajouterPhoto()" [disabled]="preparationPhoto" aria-label="Envoyer une photo">
+        <ion-spinner *ngIf="preparationPhoto" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!preparationPhoto" name="camera"></ion-icon>
+      </button>
+      <input #choixFichier type="file" accept="image/*" hidden (change)="surFichierChoisi($event)">
+      <textarea
+        #saisie
+        [(ngModel)]="texte"
+        (input)="ajusterSaisie()"
+        rows="1"
+        maxlength="2000"
+        placeholder="Message"
+        aria-label="Votre message"></textarea>
+    </div>
+
     <button
       class="conv-envoyer"
+      [class.actif]="!!texte.trim()"
       (click)="envoyer()"
-      [disabled]="!texte.trim() || envoiEnCours"
+      [disabled]="!texte.trim()"
       aria-label="Envoyer">
-      <ion-spinner *ngIf="envoiEnCours" name="crescent"></ion-spinner>
-      <ion-icon *ngIf="!envoiEnCours" name="send"></ion-icon>
+      <ion-icon name="send"></ion-icon>
     </button>
   </div>
 
@@ -78,3 +157,41 @@
     <p class="conv-indispo">Ce contact n'est plus disponible : vous ne pouvez plus lui écrire.</p>
   </ng-template>
 </ion-footer>
+
+
+<!-- APERÇU DE LA PHOTO AVANT L'ENVOI (avec légende), comme WhatsApp -->
+<div *ngIf="photo" class="conv-apercu" role="dialog" aria-label="Aperçu de la photo">
+  <div class="conv-apercu-haut">
+    <button class="conv-apercu-fermer" (click)="annulerPhoto()" aria-label="Annuler">
+      <ion-icon name="close"></ion-icon>
+    </button>
+    <span>Envoyer à {{ interlocuteur?.nom || 'votre interlocuteur' }}</span>
+  </div>
+
+  <div class="conv-apercu-image">
+    <img [src]="photo.url" alt="Photo à envoyer">
+  </div>
+
+  <div class="conv-apercu-bas">
+    <div class="conv-champ">
+      <textarea
+        [(ngModel)]="legende"
+        rows="1"
+        maxlength="2000"
+        placeholder="Ajouter une légende…"
+        aria-label="Légende"></textarea>
+    </div>
+    <button class="conv-envoyer actif" (click)="envoyerPhoto()" aria-label="Envoyer la photo">
+      <ion-icon name="send"></ion-icon>
+    </button>
+  </div>
+</div>
+
+
+<!-- PHOTO EN PLEIN ÉCRAN -->
+<div *ngIf="visionneuse" class="conv-visionneuse" (click)="fermerPhoto()" role="dialog" aria-label="Photo">
+  <button class="conv-apercu-fermer" (click)="fermerPhoto()" aria-label="Fermer">
+    <ion-icon name="close"></ion-icon>
+  </button>
+  <img [src]="visionneuse" alt="Photo" (click)="$event.stopPropagation()">
+</div>

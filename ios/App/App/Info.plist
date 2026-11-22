@@ -164,9 +164,9 @@
     <!-- ===================================================== -->
 
     <key>NSCameraUsageDescription</key>
-    <string>Fléchissons utilise l'appareil photo pour prendre votre photo de profil.</string>
+    <string>Fléchissons utilise l'appareil photo pour prendre votre photo de profil et les photos que vous envoyez au pasteur dans la messagerie.</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>Fléchissons accède à vos photos pour choisir votre photo de profil.</string>
+    <string>Fléchissons accède à vos photos pour choisir votre photo de profil et les photos que vous envoyez au pasteur dans la messagerie.</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>Fléchissons peut enregistrer des photos dans votre galerie.</string>
     <key>UIBackgroundModes</key>

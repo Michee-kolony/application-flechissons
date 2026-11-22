@@ -32,6 +32,11 @@ const routes: Routes = [
         loadChildren: () => import('../pages/profil/profil.module').then(m => m.ProfilPageModule)
       },
       {
+        // Liste des discussions, affichée avec la barre d'onglets
+        path:'messagerie',
+        loadChildren: () => import('../pages/messagerie/messagerie.module').then(m => m.MessageriePageModule)
+      },
+      {
         path:'live',
         loadChildren: () => import('../pages/live/live.module').then(m => m.LivePageModule)
       },

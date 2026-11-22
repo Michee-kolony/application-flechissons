@@ -1,12 +1,39 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonContent, NavController } from '@ionic/angular';
+import { ActionSheetController, IonContent, NavController, ToastController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Camera, MediaResult } from '@capacitor/camera';
 import { Subscription, timer } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ContactEglise, Conversation, MessageChat, MessagerieService } from '../../services/messagerie.service';
 
-/** Fil de discussion avec le pasteur ou un administrateur */
+/**
+ * Message affiché : peut être en cours d'envoi ou en échec (envoi optimiste, comme WhatsApp).
+ * Une photo en cours d'envoi garde son fichier (pour réessayer) et un aperçu local.
+ */
+type MessageAffiche = MessageChat & { etat?: 'envoi' | 'echec'; fichier?: File; apercuLocal?: string };
+
+// Photos : redimensionnées (1600 px) et ré-encodées en JPEG avant l'envoi
+const PHOTO_DIMENSION_MAX = 1600;
+const PHOTO_QUALITE = 0.82;
+const PHOTO_TAILLE_MAX = 10 * 1024 * 1024;
+
+// Codes d'erreur du plugin @capacitor/camera (mêmes valeurs que la page de profil)
+const CAMERA_ANNULEE = ['OS-PLUG-CAMR-0006', 'OS-PLUG-CAMR-0020'];
+const CAMERA_REFUSEE = ['OS-PLUG-CAMR-0003', 'OS-PLUG-CAMR-0005'];
+
+/** Débuts de message proposés quand la conversation est vide (touche Fléchissons) */
+const SUGGESTIONS = [
+  { icone: '🙏', libelle: 'Demande de prière', texte: 'Bonjour, je voudrais vous confier un sujet de prière : ' },
+  { icone: '💬', libelle: 'Besoin de conseil', texte: "Bonjour, j'aurais besoin de vos conseils au sujet de " },
+  { icone: '✨', libelle: 'Témoignage', texte: 'Bonjour, je voudrais partager un témoignage : ' },
+  { icone: '⛪', libelle: "Question sur l'église", texte: "Bonjour, j'ai une question au sujet de l'église : " }
+];
+
+/** Deux messages du même auteur à moins de 5 minutes d'écart forment un groupe */
+const ECART_GROUPE_MS = 5 * 60 * 1000;
+
 @Component({
   selector: 'app-conversation',
   templateUrl: './conversation.page.html',
@@ -16,27 +43,45 @@ import { ContactEglise, Conversation, MessageChat, MessagerieService } from '../
 export class ConversationPage {
 
   @ViewChild(IonContent) content?: IonContent;
+  @ViewChild('saisie') saisie?: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('choixFichier') choixFichier?: ElementRef<HTMLInputElement>;
+
+  readonly suggestions = SUGGESTIONS;
 
   conversationId = '';
   interlocuteur: ContactEglise | null = null;
-  messages: MessageChat[] = [];
+  messages: MessageAffiche[] = [];
   chargement = true;
   erreur = '';
   complet = true;
   chargementAnciens = false;
   luJusqua: string | null = null;
   texte = '';
-  envoiEnCours = false;
   indisponible = false;
 
+  /** Photo choisie, en attente de la légende et de l'envoi (écran d'aperçu) */
+  photo: { fichier: File; url: string } | null = null;
+  legende = '';
+  preparationPhoto = false;
+
+  /** Photo affichée en plein écran */
+  visionneuse: string | null = null;
+
+  /** Bouton « descendre » : visible quand on a remonté le fil */
+  loinDuBas = false;
+  nouveauxEnDessous = 0;
+
   private actualisation?: Subscription;
+  private appuiLong?: ReturnType<typeof setTimeout>;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private navCtrl: NavController,
     private auth: AuthService,
-    private messagerie: MessagerieService
+    private messagerie: MessagerieService,
+    private actionSheetCtrl: ActionSheetController,
+    private toastCtrl: ToastController
   ) {}
 
   ionViewWillEnter(): void {
@@ -65,7 +110,13 @@ export class ConversationPage {
   ionViewWillLeave(): void {
     this.actualisation?.unsubscribe();
     this.actualisation = undefined;
+    this.visionneuse = null;
   }
+
+
+  // =====================================================
+  // CHARGEMENT
+  // =====================================================
 
   private chargerInterlocuteur(): void {
     this.messagerie.conversations().subscribe({
@@ -86,7 +137,9 @@ export class ConversationPage {
 
     this.messagerie.messages(this.conversationId).subscribe({
       next: page => {
-        this.messages = page.messages;
+        // Garde les messages encore en cours d'envoi ou en échec
+        const enAttente = this.messages.filter(m => m.etat);
+        this.messages = [...page.messages, ...enAttente];
         this.complet = page.complet;
         this.luJusqua = page.luParInterlocuteurJusqua;
         this.chargement = false;
@@ -106,34 +159,54 @@ export class ConversationPage {
     });
   }
 
+  private get derniersConfirmes(): MessageAffiche[] {
+    return this.messages.filter(m => !m.etat);
+  }
+
   private actualiser(): void {
     if (document.visibilityState === 'hidden') {
       return;
     }
-    const dernier = this.messages[this.messages.length - 1];
+    const confirmes = this.derniersConfirmes;
+    const dernier = confirmes[confirmes.length - 1];
 
     this.messagerie.messages(this.conversationId, dernier ? { apres: dernier.createdAt } : {}).subscribe({
       next: page => {
         this.luJusqua = page.luParInterlocuteurJusqua;
         const connus = new Set(this.messages.map(m => m._id));
         const nouveaux = page.messages.filter(m => !connus.has(m._id));
-        if (nouveaux.length) {
-          this.messages = [...this.messages, ...nouveaux];
+        if (!nouveaux.length) {
+          return;
+        }
+        this.insererConfirmes(nouveaux);
+        this.messagerie.rafraichirNonLus();
+
+        const recus = nouveaux.filter(m => m.auteur === 'admin').length;
+        if (this.loinDuBas) {
+          this.nouveauxEnDessous += recus;
+        } else {
           this.defilerEnBas();
-          this.messagerie.rafraichirNonLus();
         }
       },
       error: () => {}
     });
   }
 
+  /** Ajoute des messages confirmés avant ceux encore en attente */
+  private insererConfirmes(nouveaux: MessageAffiche[]): void {
+    const confirmes = this.derniersConfirmes;
+    const enAttente = this.messages.filter(m => m.etat);
+    this.messages = [...confirmes, ...nouveaux, ...enAttente];
+  }
+
   chargerAnciens(): void {
-    if (this.complet || this.chargementAnciens || !this.messages.length) {
+    const premier = this.derniersConfirmes[0];
+    if (this.complet || this.chargementAnciens || !premier) {
       return;
     }
     this.chargementAnciens = true;
 
-    this.messagerie.messages(this.conversationId, { avant: this.messages[0].createdAt }).subscribe({
+    this.messagerie.messages(this.conversationId, { avant: premier.createdAt }).subscribe({
       next: page => {
         this.messages = [...page.messages, ...this.messages];
         this.complet = page.complet;
@@ -143,37 +216,348 @@ export class ConversationPage {
     });
   }
 
+
+  // =====================================================
+  // ENVOI (optimiste : la bulle apparaît tout de suite avec une horloge)
+  // =====================================================
+
   envoyer(): void {
     const texte = this.texte.trim();
-    if (!texte || this.envoiEnCours || this.indisponible) {
+    if (!texte || this.indisponible) {
       return;
     }
+    this.texte = '';
+    this.ajouterProvisoire(texte);
+    this.ajusterSaisie();
+  }
 
-    this.envoiEnCours = true;
+  /** Envoi depuis l'écran d'aperçu de la photo (légende facultative) */
+  envoyerPhoto(): void {
+    if (!this.photo || this.indisponible) {
+      return;
+    }
+    const { fichier, url } = this.photo;
+    const legende = this.legende.trim();
+    this.photo = null;
+    this.legende = '';
+    this.ajouterProvisoire(legende, fichier, url);
+  }
+
+  private ajouterProvisoire(texte: string, fichier?: File, apercuLocal?: string): void {
+    const provisoire: MessageAffiche = {
+      _id: `tmp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      conversation: this.conversationId,
+      auteur: 'utilisateur',
+      texte,
+      image: apercuLocal ? { url: apercuLocal } : null,
+      luLe: null,
+      createdAt: new Date().toISOString(),
+      etat: 'envoi',
+      fichier,
+      apercuLocal
+    };
+
+    this.messages = [...this.messages, provisoire];
     this.erreur = '';
+    this.defilerEnBas();
+    this.transmettre(provisoire);
+  }
 
-    this.messagerie.envoyer(this.conversationId, texte).subscribe({
+  private transmettre(provisoire: MessageAffiche): void {
+    provisoire.etat = 'envoi';
+
+    this.messagerie.envoyer(this.conversationId, provisoire.texte, provisoire.fichier).subscribe({
       next: r => {
-        this.envoiEnCours = false;
-        this.texte = '';
-        if (!this.messages.some(m => m._id === r.message._id)) {
-          this.messages = [...this.messages, r.message];
+        // Le message réel remplace la bulle provisoire (sauf s'il est déjà arrivé par l'actualisation)
+        const dejaLa = this.messages.some(m => m._id === r.message._id);
+        this.messages = this.messages.filter(m => m._id !== provisoire._id);
+        if (!dejaLa) {
+          this.insererConfirmes([r.message]);
         }
-        this.defilerEnBas();
+        if (provisoire.apercuLocal) {
+          // Laisse le temps à la photo du serveur de s'afficher avant de libérer l'aperçu
+          setTimeout(() => URL.revokeObjectURL(provisoire.apercuLocal!), 10000);
+        }
       },
       error: (err: HttpErrorResponse) => {
-        this.envoiEnCours = false;
+        provisoire.etat = 'echec';
+        this.messages = [...this.messages];
         if (err.status === 410) {
           this.indisponible = true;
         }
-        this.erreur = err.error?.message || "Le message n'a pas pu être envoyé.";
+        this.erreur = err.error?.message || 'Message non envoyé. Touchez-le pour réessayer.';
       }
     });
   }
 
-  estLu(message: MessageChat): boolean {
-    return message.auteur === 'utilisateur' && !!this.luJusqua
+
+  // =====================================================
+  // PHOTOS : APPAREIL PHOTO OU GALERIE
+  // =====================================================
+
+  async ajouterPhoto(): Promise<void> {
+    if (this.indisponible || this.preparationPhoto) {
+      return;
+    }
+    const feuille = await this.actionSheetCtrl.create({
+      header: 'Envoyer une photo',
+      buttons: [
+        { text: 'Appareil photo', icon: 'camera-outline', handler: () => void this.prendrePhoto('camera') },
+        { text: 'Galerie', icon: 'images-outline', handler: () => void this.prendrePhoto('galerie') },
+        { text: 'Annuler', role: 'cancel' }
+      ]
+    });
+    await feuille.present();
+  }
+
+  private async prendrePhoto(source: 'camera' | 'galerie'): Promise<void> {
+    // Navigateur : sélecteur de fichier classique
+    if (!Capacitor.isNativePlatform()) {
+      this.choixFichier?.nativeElement.click();
+      return;
+    }
+
+    try {
+      let resultat: MediaResult | undefined;
+      if (source === 'camera') {
+        resultat = await Camera.takePhoto({ quality: 90, correctOrientation: true });
+      } else {
+        const { results } = await Camera.chooseFromGallery({ quality: 90, correctOrientation: true });
+        resultat = results?.[0];
+      }
+      if (!resultat?.webPath) {
+        return;
+      }
+      this.preparationPhoto = true;
+      const blob = await (await fetch(resultat.webPath)).blob();
+      await this.preparerPhoto(new File([blob], 'photo.jpg', { type: blob.type || 'image/jpeg' }));
+    } catch (error: any) {
+      if (CAMERA_ANNULEE.includes(error?.code) || /cancel/i.test(error?.message || '')) {
+        return;
+      }
+      this.erreur = CAMERA_REFUSEE.includes(error?.code)
+        ? 'Autorisez l’accès à l’appareil photo et aux photos dans les réglages du téléphone.'
+        : 'La photo n’a pas pu être récupérée.';
+    } finally {
+      this.preparationPhoto = false;
+    }
+  }
+
+  surFichierChoisi(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const fichier = input.files?.[0];
+    input.value = '';
+    if (fichier) {
+      this.preparationPhoto = true;
+      void this.preparerPhoto(fichier).finally(() => this.preparationPhoto = false);
+    }
+  }
+
+  private async preparerPhoto(fichier: File): Promise<void> {
+    const compresse = await this.compresser(fichier);
+    if (compresse.size > PHOTO_TAILLE_MAX) {
+      this.erreur = 'Cette photo est trop lourde (10 Mo maximum).';
+      return;
+    }
+    this.erreur = '';
+    this.legende = '';
+    this.photo = { fichier: compresse, url: URL.createObjectURL(compresse) };
+  }
+
+  annulerPhoto(): void {
+    if (this.photo) {
+      URL.revokeObjectURL(this.photo.url);
+    }
+    this.photo = null;
+    this.legende = '';
+  }
+
+  /** Redimensionne et ré-encode en JPEG ; garde l'original si la compression échoue */
+  private async compresser(fichier: File): Promise<File> {
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const url = URL.createObjectURL(fichier);
+        const img = new Image();
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image illisible')); };
+        img.src = url;
+      });
+      const echelle = Math.min(1, PHOTO_DIMENSION_MAX / Math.max(image.naturalWidth, image.naturalHeight));
+      const largeur = Math.round(image.naturalWidth * echelle);
+      const hauteur = Math.round(image.naturalHeight * echelle);
+      const canvas = document.createElement('canvas');
+      canvas.width = largeur;
+      canvas.height = hauteur;
+      const contexte = canvas.getContext('2d');
+      if (!contexte) {
+        return fichier;
+      }
+      contexte.fillStyle = '#ffffff';
+      contexte.fillRect(0, 0, largeur, hauteur);
+      contexte.drawImage(image, 0, 0, largeur, hauteur);
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', PHOTO_QUALITE));
+      if (!blob || (blob.size >= fichier.size && /jpe?g/i.test(fichier.type))) {
+        return fichier;
+      }
+      return new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+    } catch {
+      return fichier;
+    }
+  }
+
+  ouvrirPhoto(url: string | null | undefined, event?: Event): void {
+    event?.stopPropagation();
+    if (url) {
+      this.visionneuse = url;
+    }
+  }
+
+  fermerPhoto(): void {
+    this.visionneuse = null;
+  }
+
+
+  reessayer(message: MessageAffiche): void {
+    if (message.etat !== 'echec' || this.indisponible) {
+      return;
+    }
+    this.erreur = '';
+    this.messages = [...this.messages.filter(m => m._id !== message._id), message];
+    this.transmettre(message);
+  }
+
+  utiliserSuggestion(texte: string): void {
+    this.texte = texte;
+    setTimeout(() => {
+      const zone = this.saisie?.nativeElement;
+      if (zone) {
+        zone.focus();
+        zone.setSelectionRange(zone.value.length, zone.value.length);
+        this.ajusterSaisie();
+      }
+    });
+  }
+
+  /** Zone de saisie qui s'agrandit avec le texte (jusqu'à 6 lignes environ) */
+  ajusterSaisie(): void {
+    setTimeout(() => {
+      const zone = this.saisie?.nativeElement;
+      if (!zone) {
+        return;
+      }
+      zone.style.height = 'auto';
+      zone.style.height = `${Math.min(zone.scrollHeight, 140)}px`;
+    });
+  }
+
+
+  // =====================================================
+  // APPUI LONG : COPIER (et réessayer / supprimer un message en échec)
+  // =====================================================
+
+  debutAppui(message: MessageAffiche): void {
+    this.finAppui();
+    this.appuiLong = setTimeout(() => void this.menuMessage(message), 500);
+  }
+
+  finAppui(): void {
+    if (this.appuiLong) {
+      clearTimeout(this.appuiLong);
+      this.appuiLong = undefined;
+    }
+  }
+
+  private async menuMessage(message: MessageAffiche): Promise<void> {
+    const boutons: any[] = [];
+    if (message.texte) {
+      boutons.push({ text: 'Copier', icon: 'copy-outline', handler: () => void this.copier(message.texte) });
+    }
+    if (message.image?.url) {
+      boutons.push({ text: 'Voir la photo', icon: 'expand-outline', handler: () => this.ouvrirPhoto(message.image?.url) });
+    }
+
+    if (message.etat === 'echec') {
+      boutons.push(
+        { text: 'Réessayer', icon: 'refresh-outline', handler: () => this.reessayer(message) },
+        {
+          text: 'Supprimer',
+          icon: 'trash-outline',
+          role: 'destructive',
+          handler: () => { this.messages = this.messages.filter(m => m._id !== message._id); }
+        }
+      );
+    }
+
+    boutons.push({ text: 'Annuler', role: 'cancel' });
+
+    const feuille = await this.actionSheetCtrl.create({ buttons: boutons });
+    await feuille.present();
+  }
+
+  private async copier(texte: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(texte);
+      const toast = await this.toastCtrl.create({ message: 'Message copié', duration: 1500, position: 'bottom' });
+      await toast.present();
+    } catch {
+      // Presse-papiers indisponible : rien à faire
+    }
+  }
+
+
+  // =====================================================
+  // DÉFILEMENT
+  // =====================================================
+
+  async surScroll(): Promise<void> {
+    const el = await this.content?.getScrollElement();
+    if (!el) {
+      return;
+    }
+    this.loinDuBas = el.scrollHeight - el.scrollTop - el.clientHeight > 220;
+    if (!this.loinDuBas) {
+      this.nouveauxEnDessous = 0;
+    }
+  }
+
+  descendre(): void {
+    this.nouveauxEnDessous = 0;
+    this.defilerEnBas();
+  }
+
+  private defilerEnBas(duree = 250): void {
+    setTimeout(() => void this.content?.scrollToBottom(duree), 50);
+  }
+
+
+  // =====================================================
+  // AFFICHAGE
+  // =====================================================
+
+  /** Premier message d'un groupe : il porte la petite pointe de la bulle */
+  debutGroupe(index: number): boolean {
+    if (index === 0 || this.nouveauJour(index)) {
+      return true;
+    }
+    const prec = this.messages[index - 1];
+    const cur = this.messages[index];
+    return prec.auteur !== cur.auteur
+      || new Date(cur.createdAt).getTime() - new Date(prec.createdAt).getTime() > ECART_GROUPE_MS;
+  }
+
+  estLu(message: MessageAffiche): boolean {
+    return message.auteur === 'utilisateur' && !message.etat && !!this.luJusqua
       && new Date(message.createdAt).getTime() <= new Date(this.luJusqua).getTime();
+  }
+
+  iconeEtat(message: MessageAffiche): string {
+    if (message.etat === 'envoi') {
+      return 'time-outline';
+    }
+    if (message.etat === 'echec') {
+      return 'alert-circle';
+    }
+    return this.estLu(message) ? 'checkmark-done' : 'checkmark';
   }
 
   nouveauJour(index: number): boolean {
@@ -205,11 +589,7 @@ export class ConversationPage {
     return (nom || '?').split(/\s+/).slice(0, 2).map(m => m.charAt(0).toUpperCase()).join('');
   }
 
-  trackById(_: number, item: MessageChat): string {
+  trackById(_: number, item: MessageAffiche): string {
     return item._id;
-  }
-
-  private defilerEnBas(duree = 250): void {
-    setTimeout(() => void this.content?.scrollToBottom(duree), 50);
   }
 }

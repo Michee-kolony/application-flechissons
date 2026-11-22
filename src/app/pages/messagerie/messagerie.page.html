@@ -1,120 +1,187 @@
-<ion-header class="ion-no-border msg-header">
-  <ion-toolbar>
-    <div class="msg-toolbar">
-      <ion-back-button defaultHref="/tabs/tab1" text="" aria-label="Retour"></ion-back-button>
-      <div>
-        <span class="kicker">ÉGLISE</span>
-        <h1>Messages</h1>
+<!-- EN-TÊTE ORANGE (comme la barre verte de WhatsApp) -->
+<ion-header class="ion-no-border wa-header">
+  <div class="wa-barre">
+    <button class="wa-icone" (click)="retour()" aria-label="Retour">
+      <ion-icon name="arrow-back"></ion-icon>
+    </button>
+
+    <!-- Titre, ou champ de recherche quand la loupe est ouverte -->
+    <ng-container *ngIf="!rechercheOuverte; else champRecherche">
+      <div class="wa-titre">
+        <h1>{{ choixContact ? 'Nouvelle discussion' : 'Messages' }}</h1>
+        <span *ngIf="choixContact">{{ contacts.length }} responsable{{ contacts.length > 1 ? 's' : '' }} de l'église</span>
       </div>
-    </div>
-  </ion-toolbar>
+      <button *ngIf="connecte" class="wa-icone" (click)="basculerRecherche()" aria-label="Rechercher">
+        <ion-icon name="search"></ion-icon>
+      </button>
+    </ng-container>
+
+    <ng-template #champRecherche>
+      <input
+        class="wa-recherche"
+        [(ngModel)]="recherche"
+        [placeholder]="choixContact ? 'Rechercher un responsable…' : 'Rechercher…'"
+        aria-label="Rechercher"
+        autofocus>
+      <button class="wa-icone" (click)="basculerRecherche()" aria-label="Fermer la recherche">
+        <ion-icon name="close"></ion-icon>
+      </button>
+    </ng-template>
+  </div>
 </ion-header>
 
-<ion-content>
-  <ion-refresher slot="fixed" (ionRefresh)="charger($event)" [disabled]="!connecte">
+
+<ion-content class="wa-content">
+  <ion-refresher slot="fixed" (ionRefresh)="charger($event)" [disabled]="!connecte || choixContact">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <main class="msg-page">
+  <!-- NON CONNECTÉ -->
+  <div *ngIf="!connecte" class="wa-vide">
+    <div class="wa-vide-icone"><ion-icon name="chatbubbles"></ion-icon></div>
+    <h2>Écrivez au pasteur</h2>
+    <p>Connectez-vous pour échanger en privé avec le pasteur et les responsables de l'église.</p>
+    <button class="wa-bouton" (click)="seConnecter()">Se connecter</button>
+  </div>
 
-    <!-- NON CONNECTÉ -->
-    <div *ngIf="!connecte" class="msg-vide">
-      <ion-icon name="chatbubbles-outline"></ion-icon>
-      <h2>Écrivez au pasteur</h2>
-      <p>Connectez-vous pour échanger en privé avec le pasteur et les responsables de l'église.</p>
-      <button class="msg-btn" (click)="seConnecter()">Se connecter</button>
-    </div>
+  <ng-container *ngIf="connecte">
 
-    <ng-container *ngIf="connecte">
-
-      <!-- CHARGEMENT -->
-      <div *ngIf="chargement" class="msg-liste">
-        <div *ngFor="let i of [1,2,3]" class="msg-item">
-          <div class="skeleton skeleton-avatar"></div>
-          <div class="msg-texte">
-            <div class="skeleton skeleton-ligne"></div>
-            <div class="skeleton skeleton-ligne courte"></div>
-          </div>
+    <!-- CHARGEMENT -->
+    <div *ngIf="chargement">
+      <div *ngFor="let i of [1,2,3,4]" class="wa-ligne">
+        <div class="wa-avatar skeleton"></div>
+        <div class="wa-corps">
+          <div class="skeleton skeleton-ligne"></div>
+          <div class="skeleton skeleton-ligne courte"></div>
         </div>
       </div>
+    </div>
 
-      <!-- ERREUR -->
-      <div *ngIf="!chargement && erreur && !conversations.length && !contacts.length" class="msg-vide">
-        <ion-icon name="cloud-offline-outline"></ion-icon>
-        <h2>Connexion impossible</h2>
-        <p>Vérifiez votre réseau puis réessayez.</p>
-        <button class="msg-btn" (click)="charger()">Réessayer</button>
+    <!-- ERREUR -->
+    <div *ngIf="!chargement && erreur && !conversations.length && !contacts.length" class="wa-vide">
+      <div class="wa-vide-icone"><ion-icon name="cloud-offline"></ion-icon></div>
+      <h2>Connexion impossible</h2>
+      <p>Vérifiez votre réseau puis réessayez.</p>
+      <button class="wa-bouton" (click)="charger()">Réessayer</button>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- LISTE DES DISCUSSIONS                           -->
+    <!-- ============================================== -->
+
+    <ng-container *ngIf="!chargement && !choixContact">
+
+      <!-- Bandeau verset (touche Fléchissons) -->
+      <div class="wa-verset" *ngIf="!recherche">
+        <ion-icon name="heart" aria-hidden="true"></ion-icon>
+        <span>« Confessez donc vos péchés les uns aux autres, et priez les uns pour les autres. » <em>Jacques 5:16</em></span>
       </div>
 
-      <ng-container *ngIf="!chargement">
+      <button
+        *ngFor="let c of conversationsFiltrees; trackBy: trackById"
+        class="wa-ligne"
+        (click)="ouvrirConversation(c)">
 
-        <!-- CONVERSATIONS -->
-        <section *ngIf="conversations.length">
-          <h2 class="msg-section">Conversations</h2>
-          <div class="msg-liste">
-            <button
-              *ngFor="let c of conversations; trackBy: trackById"
-              class="msg-item"
-              [class.non-lu]="c.nonLus > 0"
-              (click)="ouvrirConversation(c)">
+        <div class="wa-avatar">
+          <img *ngIf="c.interlocuteur?.photo; else lettres" [src]="c.interlocuteur?.photo" alt="">
+          <ng-template #lettres>{{ initiales(c.interlocuteur?.nom) }}</ng-template>
+        </div>
 
-              <div class="msg-avatar">
-                <img *ngIf="c.interlocuteur?.photo; else lettres" [src]="c.interlocuteur?.photo" alt="">
-                <ng-template #lettres>{{ initiales(c.interlocuteur?.nom) }}</ng-template>
-              </div>
-
-              <div class="msg-texte">
-                <div class="msg-ligne">
-                  <strong>{{ c.interlocuteur?.nom || 'Contact indisponible' }}</strong>
-                  <span class="msg-heure">{{ heure(c.dernierMessage?.date) }}</span>
-                </div>
-                <div class="msg-ligne">
-                  <p>
-                    <span *ngIf="c.dernierMessage?.auteur === 'utilisateur'" class="msg-vous">Vous : </span>{{ c.dernierMessage?.texte }}
-                  </p>
-                  <span *ngIf="c.nonLus > 0" class="msg-badge">{{ c.nonLus > 9 ? '9+' : c.nonLus }}</span>
-                </div>
-              </div>
-            </button>
+        <div class="wa-corps">
+          <div class="wa-haut">
+            <strong>{{ c.interlocuteur?.nom || 'Contact indisponible' }}</strong>
+            <span class="wa-heure" [class.non-lu]="c.nonLus > 0">{{ heure(c.dernierMessage?.date) }}</span>
           </div>
-        </section>
-
-        <!-- CONTACTS -->
-        <section *ngIf="contacts.length">
-          <h2 class="msg-section">Écrire à</h2>
-          <div class="msg-liste">
-            <button
-              *ngFor="let contact of contacts; trackBy: trackById"
-              class="msg-item"
-              (click)="ecrireA(contact)"
-              [disabled]="!!ouvertureEnCours">
-
-              <div class="msg-avatar">
-                <img *ngIf="contact.photo; else lettresContact" [src]="contact.photo" alt="">
-                <ng-template #lettresContact>{{ initiales(contact.nom) }}</ng-template>
-              </div>
-
-              <div class="msg-texte">
-                <strong>{{ contact.nom }}</strong>
-                <span class="msg-titre">{{ contact.titre }}</span>
-                <p *ngIf="contact.bio" class="msg-bio">{{ contact.bio }}</p>
-              </div>
-
-              <ion-spinner *ngIf="ouvertureEnCours === contact.id" name="crescent"></ion-spinner>
-              <ion-icon *ngIf="ouvertureEnCours !== contact.id" name="chatbubble-ellipses-outline" class="msg-action"></ion-icon>
-            </button>
+          <div class="wa-bas">
+            <p [class.non-lu]="c.nonLus > 0">
+              <ion-icon
+                *ngIf="c.dernierMessage?.auteur === 'utilisateur'"
+                [name]="c.dernierMessageLu ? 'checkmark-done' : 'checkmark'"
+                class="wa-coche"
+                [class.lu]="c.dernierMessageLu"
+                aria-hidden="true"></ion-icon>
+              {{ c.dernierMessage?.texte }}
+            </p>
+            <span *ngIf="c.nonLus > 0" class="wa-badge">{{ c.nonLus > 99 ? '99+' : c.nonLus }}</span>
           </div>
-        </section>
+          <span *ngIf="c.interlocuteur?.titre" class="wa-titre-contact">{{ c.interlocuteur?.titre }}</span>
+        </div>
+      </button>
 
-        <p *ngIf="!erreur && !contacts.length && !conversations.length" class="msg-info">
-          Aucun responsable n'est disponible pour le moment.
-        </p>
+      <!-- Aucune discussion -->
+      <div *ngIf="!conversations.length && !erreur" class="wa-vide">
+        <div class="wa-vide-icone"><ion-icon name="chatbubbles"></ion-icon></div>
+        <h2>Aucune discussion</h2>
+        <p>Écrivez au pasteur ou à un responsable : votre message reste privé.</p>
+        <button class="wa-bouton" (click)="nouvelleDiscussion()">Démarrer une discussion</button>
+      </div>
 
-        <p class="msg-info">
-          <ion-icon name="lock-closed-outline"></ion-icon>
-          Vos messages sont privés : seule la personne à qui vous écrivez peut les lire.
-        </p>
-      </ng-container>
+      <p *ngIf="conversations.length && !conversationsFiltrees.length" class="wa-aucun">
+        Aucun résultat pour « {{ recherche }} »
+      </p>
+
+      <p *ngIf="conversations.length" class="wa-pied">
+        <ion-icon name="lock-closed" aria-hidden="true"></ion-icon>
+        Vos messages sont privés : seule la personne à qui vous écrivez peut les lire.
+      </p>
+      <p *ngIf="conversations.length" class="wa-pied">
+        <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+        Les conversations et leurs photos sont effacées le 1er de chaque mois.
+      </p>
     </ng-container>
-  </main>
+
+
+    <!-- ============================================== -->
+    <!-- NOUVELLE DISCUSSION : CHOIX DU CONTACT          -->
+    <!-- ============================================== -->
+
+    <ng-container *ngIf="!chargement && choixContact">
+
+      <ng-container *ngIf="pasteurs.length">
+        <h3 class="wa-section">Pasteur{{ pasteurs.length > 1 ? 's' : '' }}</h3>
+        <ng-container *ngTemplateOutlet="listeContacts; context: { $implicit: pasteurs }"></ng-container>
+      </ng-container>
+
+      <ng-container *ngIf="responsables.length">
+        <h3 class="wa-section">Responsables de l'église</h3>
+        <ng-container *ngTemplateOutlet="listeContacts; context: { $implicit: responsables }"></ng-container>
+      </ng-container>
+
+      <p *ngIf="!contactsFiltres.length" class="wa-aucun">
+        {{ recherche ? 'Aucun résultat pour « ' + recherche + ' »' : "Aucun responsable n'est disponible pour le moment." }}
+      </p>
+    </ng-container>
+
+    <ng-template #listeContacts let-liste>
+      <button
+        *ngFor="let contact of liste; trackBy: trackById"
+        class="wa-ligne"
+        (click)="ecrireA(contact)"
+        [disabled]="!!ouvertureEnCours">
+
+        <div class="wa-avatar pasteur">
+          <img *ngIf="contact.photo; else lettresContact" [src]="contact.photo" alt="">
+          <ng-template #lettresContact>{{ initiales(contact.nom) }}</ng-template>
+          <span class="wa-croix" aria-hidden="true">✝</span>
+        </div>
+
+        <div class="wa-corps">
+          <strong>{{ contact.nom }}</strong>
+          <p class="wa-statut">{{ contact.bio || contact.titre }}</p>
+          <span class="wa-titre-contact" *ngIf="contact.bio">{{ contact.titre }}</span>
+        </div>
+
+        <ion-spinner *ngIf="ouvertureEnCours === contact.id" name="crescent"></ion-spinner>
+      </button>
+    </ng-template>
+  </ng-container>
+
+
+  <!-- BOUTON « NOUVELLE DISCUSSION » (en forme de bulle, comme sur l'accueil) -->
+  <ion-fab *ngIf="connecte && !chargement && !choixContact" slot="fixed" vertical="bottom" horizontal="end" class="wa-fab">
+    <button class="wa-nouvelle" (click)="nouvelleDiscussion()" aria-label="Nouvelle discussion">
+      <ion-icon name="create"></ion-icon>
+    </button>
+  </ion-fab>
 </ion-content>

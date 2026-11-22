@@ -19,6 +19,8 @@ export interface Conversation {
   interlocuteur: ContactEglise | null;
   dernierMessage: { texte: string; auteur: 'utilisateur' | 'admin'; date: string } | null;
   nonLus: number;
+  /** Mon dernier message a été lu (absent avec un ancien serveur) */
+  dernierMessageLu?: boolean | null;
   updatedAt: string;
 }
 
@@ -27,6 +29,8 @@ export interface MessageChat {
   conversation: string;
   auteur: 'utilisateur' | 'admin';
   texte: string;
+  /** Photo jointe (absente avec un ancien serveur) */
+  image?: { url: string | null } | null;
   luLe: string | null;
   createdAt: string;
 }
@@ -118,7 +122,17 @@ export class MessagerieService {
     return this.http.get<PageMessages>(`${API_URL}/conversations/${conversationId}/messages`, { params });
   }
 
-  envoyer(conversationId: string, texte: string): Observable<{ message: MessageChat }> {
-    return this.http.post<{ message: MessageChat }>(`${API_URL}/conversations/${conversationId}/messages`, { texte });
+  /** Texte seul en JSON ; avec une photo, envoi multipart (la légende est facultative) */
+  envoyer(conversationId: string, texte: string, photo?: File): Observable<{ message: MessageChat }> {
+    const url = `${API_URL}/conversations/${conversationId}/messages`;
+    if (!photo) {
+      return this.http.post<{ message: MessageChat }>(url, { texte });
+    }
+    const donnees = new FormData();
+    donnees.append('photo', photo, photo.name);
+    if (texte) {
+      donnees.append('texte', texte);
+    }
+    return this.http.post<{ message: MessageChat }>(url, donnees);
   }
 }

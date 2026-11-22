@@ -7,12 +7,6 @@
         <h1>Accueil</h1>
       </div>
       <div class="topbar-actions mt-2">
-        <button class="header-icon notif-bell" (click)="goToMessagerie()" aria-label="Messages">
-          <ion-icon name="chatbubbles-outline"></ion-icon>
-          <span *ngIf="messagesNonLus > 0" class="notif-badge">
-            {{ messagesNonLus > 9 ? '9+' : messagesNonLus }}
-          </span>
-        </button>
         <button class="header-icon notif-bell" (click)="goToNotifications()" aria-label="Notifications">
           <ion-icon name="notifications-outline"></ion-icon>
           <span *ngIf="notificationsNonLues > 0" class="notif-badge">
@@ -337,4 +331,16 @@
       </div>
     </section>
   </main>
+
+  <!-- BULLE DE MESSAGERIE : écrire au pasteur (bouton flottant en forme de bulle) -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="bulle-fab">
+    <button
+      class="bulle-messagerie"
+      [class.a-lire]="messagesNonLus > 0"
+      (click)="goToMessagerie()"
+      [attr.aria-label]="messagesNonLus > 0 ? messagesNonLus + ' message(s) non lu(s) — ouvrir la messagerie' : 'Écrire au pasteur'">
+      <ion-icon name="chatbubble-ellipses" aria-hidden="true"></ion-icon>
+      <span *ngIf="messagesNonLus > 0" class="bulle-badge">{{ messagesNonLus > 9 ? '9+' : messagesNonLus }}</span>
+    </button>
+  </ion-fab>
 </ion-content>

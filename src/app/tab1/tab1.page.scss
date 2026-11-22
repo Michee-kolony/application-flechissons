@@ -1267,3 +1267,105 @@ h1 {
     gap: 16px;
   }
 }
+
+
+// =====================================================
+// BULLE DE MESSAGERIE (bouton flottant)
+// Forme de bulle de dialogue : trois coins arrondis,
+// le coin bas-droit pointu comme la queue d'une bulle.
+// =====================================================
+
+// La barre d'onglets flotte par-dessus le bas du contenu (position absolue) :
+// 40px de boutons + 14px de marge + la zone de la barre d'accueil iOS
+// (même calcul que .custom-tab-bar dans tabs.page.scss). La bulle se pose 14px au-dessus.
+ion-fab.bulle-fab {
+  bottom: calc(54px + max(calc(env(safe-area-inset-bottom) - 14px), 0px) + 14px);
+  right: 14px;
+  z-index: 20;
+}
+
+.bulle-messagerie {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  padding: 0;
+  color: #fff;
+  font-size: 27px;
+  background: linear-gradient(135deg, #ff9a4d 0%, #f26b1d 45%, #c2410c 100%);
+  border: none;
+  border-radius: 50% 50% 8px 50%;
+  box-shadow:
+    0 10px 22px rgba(194, 65, 12, .35),
+    0 2px 6px rgba(0, 0, 0, .12),
+    inset 0 1px 0 rgba(255, 255, 255, .35);
+  transition: transform .18s ease, box-shadow .18s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  // Reflet lumineux en haut à gauche
+  &::after {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 11px;
+    width: 18px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .35);
+    transform: rotate(-25deg);
+    pointer-events: none;
+  }
+
+  ion-icon {
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .15));
+  }
+
+  &:active {
+    transform: scale(.92);
+    box-shadow: 0 5px 12px rgba(194, 65, 12, .3);
+  }
+
+  // Messages non lus : la bulle « respire » doucement
+  &.a-lire {
+    animation: bulle-pulse 2.4s ease-in-out infinite;
+  }
+}
+
+.bulle-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  background: #dc2626;
+  border: 2px solid var(--app-bg, #fff);
+  border-radius: 999px;
+}
+
+@keyframes bulle-pulse {
+  0%, 100% {
+    box-shadow:
+      0 10px 22px rgba(194, 65, 12, .35),
+      0 0 0 0 rgba(242, 107, 29, .45);
+  }
+
+  50% {
+    box-shadow:
+      0 10px 22px rgba(194, 65, 12, .35),
+      0 0 0 12px rgba(242, 107, 29, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bulle-messagerie.a-lire {
+    animation: none;
+  }
+}
