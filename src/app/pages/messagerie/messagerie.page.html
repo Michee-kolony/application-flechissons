@@ -81,7 +81,11 @@
       <button
         *ngFor="let c of conversationsFiltrees; trackBy: trackById"
         class="wa-ligne"
-        (click)="ouvrirConversation(c)">
+        (click)="toucherDiscussion(c)"
+        (touchstart)="debutAppui(c)"
+        (touchend)="finAppui()"
+        (touchmove)="finAppui()"
+        (contextmenu)="$event.preventDefault(); menuDiscussionClic(c)">
 
         <div class="wa-avatar">
           <img *ngIf="c.interlocuteur?.photo; else lettres" [src]="c.interlocuteur?.photo" alt="">
@@ -128,6 +132,9 @@
       <p *ngIf="conversations.length" class="wa-pied">
         <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
         Les conversations et leurs photos sont effacées le 1er de chaque mois.
+      </p>
+      <p *ngIf="conversations.length" class="wa-pied">
+        Appui long sur une discussion pour la supprimer.
       </p>
     </ng-container>
 

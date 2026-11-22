@@ -457,6 +457,28 @@ export class Tab3Page implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /** Publications dont la vidéo ne peut pas être lue sur cet appareil (format non pris en charge) */
+  readonly videosIllisibles = new Set<string>();
+
+  signalerIllisible(article: Article, index: number): void {
+    this.videosIllisibles.add(article._id);
+    this.onVideoPlaying(index);
+  }
+
+  /**
+   * Certains navigateurs (Chrome / Edge sous Windows avec une vidéo iPhone en HEVC)
+   * ne déclenchent pas d'erreur : ils lisent le son mais l'image reste à 0×0.
+   */
+  verifierLecture(article: Article, event: Event): void {
+    const video = event.target as HTMLVideoElement;
+    const estFichierVideo = /\.(mp4|mov|m4v|webm)(\?|$)/i.test(article.youtube || '');
+    if (estFichierVideo && video.videoWidth === 0 && video.videoHeight === 0) {
+      this.videosIllisibles.add(article._id);
+    } else {
+      this.videosIllisibles.delete(article._id);
+    }
+  }
+
   private getVideo(index: number): HTMLVideoElement | null {
     return this.slideRefs?.get(index)?.nativeElement.querySelector('video') ?? null;
   }

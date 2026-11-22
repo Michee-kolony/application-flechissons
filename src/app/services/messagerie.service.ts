@@ -122,6 +122,11 @@ export class MessagerieService {
     return this.http.get<PageMessages>(`${API_URL}/conversations/${conversationId}/messages`, { params });
   }
 
+  /** Supprime la discussion pour l'utilisateur (le responsable garde sa copie) */
+  supprimer(conversationId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${API_URL}/conversations/${conversationId}`);
+  }
+
   /** Texte seul en JSON ; avec une photo, envoi multipart (la légende est facultative) */
   envoyer(conversationId: string, texte: string, photo?: File): Observable<{ message: MessageChat }> {
     const url = `${API_URL}/conversations/${conversationId}/messages`;

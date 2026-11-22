@@ -81,12 +81,20 @@
           (loadstart)="onVideoWaiting(i)"
           (waiting)="onVideoWaiting(i)"
           (playing)="onVideoPlaying(i)"
-          (error)="onVideoPlaying(i)">
+          (loadedmetadata)="verifierLecture(predication, $event)"
+          (error)="signalerIllisible(predication, i)">
         </video>
       </div>
 
+      <!-- Vidéo dans un format que cet appareil ne sait pas lire -->
+      <div *ngIf="videosIllisibles.has(predication._id)" class="reel-illisible" role="alert">
+        <ion-icon name="videocam-off-outline" aria-hidden="true"></ion-icon>
+        <strong>Cette vidéo ne peut pas être lue sur cet appareil</strong>
+        <span>Son format n'est pas pris en charge ici. Réessayez un peu plus tard : elle est peut-être en cours de conversion.</span>
+      </div>
+
       <!-- Chargement de la vidéo -->
-      <div *ngIf="i === activeIndex && (!feedReady || videoBuffering) && !isPaused" class="reel-loading" aria-label="Chargement de la vidéo">
+      <div *ngIf="i === activeIndex && (!feedReady || videoBuffering) && !isPaused && !videosIllisibles.has(predication._id)" class="reel-loading" aria-label="Chargement de la vidéo">
         <ion-spinner name="crescent"></ion-spinner>
       </div>
 

@@ -1,12 +1,13 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionSheetController, IonContent, NavController, ToastController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonContent, NavController, ToastController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { Camera, MediaResult } from '@capacitor/camera';
 import { Subscription, timer } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ContactEglise, Conversation, MessageChat, MessagerieService } from '../../services/messagerie.service';
+import { FONDS_PRESETS, FondEcran, FondEcranService } from '../../services/fond-ecran.service';
 
 /**
  * Message affiché : peut être en cours d'envoi ou en échec (envoi optimiste, comme WhatsApp).
@@ -45,6 +46,7 @@ export class ConversationPage {
   @ViewChild(IonContent) content?: IonContent;
   @ViewChild('saisie') saisie?: ElementRef<HTMLTextAreaElement>;
   @ViewChild('choixFichier') choixFichier?: ElementRef<HTMLInputElement>;
+  @ViewChild('choixFond') choixFond?: ElementRef<HTMLInputElement>;
 
   readonly suggestions = SUGGESTIONS;
 
@@ -81,11 +83,14 @@ export class ConversationPage {
     private auth: AuthService,
     private messagerie: MessagerieService,
     private actionSheetCtrl: ActionSheetController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private fondEcran: FondEcranService,
+    private alertCtrl: AlertController
   ) {}
 
   ionViewWillEnter(): void {
     this.conversationId = this.route.snapshot.paramMap.get('id') || '';
+    this.appliquerFond();
 
     // Ouverte depuis une notification sans être connecté
     if (!this.auth.isLoggedIn) {
@@ -111,6 +116,8 @@ export class ConversationPage {
     this.actualisation?.unsubscribe();
     this.actualisation = undefined;
     this.visionneuse = null;
+    this.choixFondOuvert = false;
+    this.apercuFond = null;
   }
 
 
@@ -448,6 +455,191 @@ export class ConversationPage {
       zone.style.height = 'auto';
       zone.style.height = `${Math.min(zone.scrollHeight, 140)}px`;
     });
+  }
+
+
+  // =====================================================
+  // FOND D'ÉCRAN (enregistré sur l'appareil uniquement)
+  // =====================================================
+
+  readonly presets = FONDS_PRESETS;
+
+  /** Fond appliqué (valeur CSS), null = fond Fléchissons par défaut */
+  fondCss: string | null = null;
+
+  /** Fenêtre de choix du fond */
+  choixFondOuvert = false;
+
+  /** Fond en cours d'aperçu ('defaut' = revenir au fond par défaut) */
+  apercuFond: FondEcran | 'defaut' | null = null;
+
+  preparationFond = false;
+
+  private get sombre(): boolean {
+    return document.documentElement.classList.contains('dark');
+  }
+
+  appliquerFond(): void {
+    const fond = this.fondEcran.pour(this.conversationId);
+    this.fondCss = fond ? this.fondEcran.css(fond, this.sombre) || null : null;
+  }
+
+  get apercuCss(): string | null {
+    if (!this.apercuFond || this.apercuFond === 'defaut') {
+      return null;
+    }
+    return this.fondEcran.css(this.apercuFond, this.sombre) || null;
+  }
+
+  async menu(): Promise<void> {
+    const feuille = await this.actionSheetCtrl.create({
+      buttons: [
+        { text: 'Fond d’écran', icon: 'image-outline', handler: () => { this.choixFondOuvert = true; } },
+        { text: 'Supprimer la discussion', icon: 'trash-outline', role: 'destructive', handler: () => void this.confirmerSuppression() },
+        { text: 'Annuler', role: 'cancel' }
+      ]
+    });
+    await feuille.present();
+  }
+
+  private async confirmerSuppression(): Promise<void> {
+    const nom = this.interlocuteur?.nom || 'votre interlocuteur';
+    const alerte = await this.alertCtrl.create({
+      header: 'Supprimer la discussion ?',
+      message: `Les messages et les photos de cette discussion disparaîtront de votre application. ${nom} garde sa copie jusqu'à l'effacement du 1er du mois.`,
+      buttons: [
+        { text: 'Annuler', role: 'cancel' },
+        { text: 'Supprimer', role: 'destructive', handler: () => this.supprimerDiscussion() }
+      ]
+    });
+    await alerte.present();
+  }
+
+  private supprimerDiscussion(): void {
+    this.messagerie.supprimer(this.conversationId).subscribe({
+      next: () => {
+        this.actualisation?.unsubscribe();
+        this.messages = [];
+        this.messagerie.rafraichirNonLus();
+        void this.toastCtrl.create({ message: 'Discussion supprimée', duration: 1500, position: 'bottom' }).then(t => t.present());
+        void this.navCtrl.navigateBack('/tabs/messagerie');
+      },
+      error: () => {
+        this.erreur = 'La discussion n’a pas pu être supprimée. Réessayez.';
+      }
+    });
+  }
+
+  fermerChoixFond(): void {
+    this.choixFondOuvert = false;
+  }
+
+  choisirPreset(id: string): void {
+    this.apercuFond = { type: 'preset', id };
+  }
+
+  choisirDefaut(): void {
+    this.apercuFond = 'defaut';
+  }
+
+  /** Photo de l'appareil (galerie) */
+  async choisirPhotoFond(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      this.choixFond?.nativeElement.click();
+      return;
+    }
+    try {
+      const { results } = await Camera.chooseFromGallery({ quality: 90, correctOrientation: true });
+      const resultat = results?.[0];
+      if (!resultat?.webPath) {
+        return;
+      }
+      this.preparationFond = true;
+      const blob = await (await fetch(resultat.webPath)).blob();
+      await this.preparerFond(blob);
+    } catch (error: any) {
+      if (CAMERA_ANNULEE.includes(error?.code) || /cancel/i.test(error?.message || '')) {
+        return;
+      }
+      this.erreur = CAMERA_REFUSEE.includes(error?.code)
+        ? 'Autorisez l’accès à vos photos dans les réglages du téléphone.'
+        : 'La photo n’a pas pu être récupérée.';
+    } finally {
+      this.preparationFond = false;
+    }
+  }
+
+  surFondChoisi(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const fichier = input.files?.[0];
+    input.value = '';
+    if (fichier) {
+      this.preparationFond = true;
+      void this.preparerFond(fichier).finally(() => this.preparationFond = false);
+    }
+  }
+
+  /** Réduit la photo (1280 px, JPEG) pour qu'elle tienne dans la mémoire de l'app */
+  private async preparerFond(fichier: Blob): Promise<void> {
+    try {
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const url = URL.createObjectURL(fichier);
+        const img = new Image();
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image illisible')); };
+        img.src = url;
+      });
+      const echelle = Math.min(1, 1280 / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(image.naturalWidth * echelle);
+      canvas.height = Math.round(image.naturalHeight * echelle);
+      const contexte = canvas.getContext('2d');
+      if (!contexte) {
+        throw new Error('Canvas indisponible');
+      }
+      contexte.drawImage(image, 0, 0, canvas.width, canvas.height);
+      this.apercuFond = { type: 'image', donnees: canvas.toDataURL('image/jpeg', 0.8) };
+    } catch {
+      this.erreur = 'Cette photo ne peut pas être utilisée comme fond d’écran.';
+    }
+  }
+
+  annulerApercuFond(): void {
+    this.apercuFond = null;
+  }
+
+  /** Applique le fond en aperçu à cette conversation, ou à toutes */
+  validerFond(pourToutes: boolean): void {
+    const fond = this.apercuFond;
+    if (!fond) {
+      return;
+    }
+
+    if (fond === 'defaut') {
+      this.fondEcran.reinitialiser(this.conversationId);
+      if (pourToutes) {
+        this.fondEcran.reinitialiser(null);
+      }
+    } else {
+      const ok = this.fondEcran.definir(fond, pourToutes ? null : this.conversationId);
+      if (!ok) {
+        this.erreur = 'Pas assez de place sur l’appareil pour enregistrer ce fond. Essayez une autre photo.';
+        return;
+      }
+      // Fond pour toutes : cette conversation suit aussi le fond commun
+      if (pourToutes) {
+        this.fondEcran.reinitialiser(this.conversationId);
+      }
+    }
+
+    this.apercuFond = null;
+    this.choixFondOuvert = false;
+    this.appliquerFond();
+    void this.toastCtrl.create({
+      message: pourToutes ? 'Fond appliqué à toutes vos conversations' : 'Fond appliqué à cette conversation',
+      duration: 1600,
+      position: 'top'
+    }).then(t => t.present());
   }
 
 

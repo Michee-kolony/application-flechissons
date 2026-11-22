@@ -754,3 +754,182 @@
     object-fit: contain;
   }
 }
+
+
+// =====================================================
+// FOND D'ÉCRAN PERSONNALISÉ
+// =====================================================
+
+// Fond choisi par l'utilisateur : le motif Fléchissons s'efface.
+// Appliqué directement sur le fond de ion-content (::part) : la texture globale
+// de l'app (global.scss) est désactivée par la classe .no-texture, sinon elle
+// recouvrirait le fond choisi.
+.conv-fil.fond-perso::before {
+  display: none;
+}
+
+.conv-content.fond-perso::part(background) {
+  background: var(--conv-fond-perso);
+}
+
+.conv-menu {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+  color: #fff;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+
+  &:active {
+    background: rgba(255, 255, 255, .18);
+  }
+}
+
+.fond-panneau,
+.fond-apercu {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: var(--app-bg);
+}
+
+.fond-panneau-haut {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(var(--ion-safe-area-top, 0px) + 8px) 12px 10px;
+  color: #fff;
+  font-size: 18px;
+  background: linear-gradient(135deg, #f26b1d 0%, #ea580c 60%, #c2410c 100%);
+}
+
+.fond-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 16px 4px;
+  color: var(--app-text-secondary);
+  font-size: 13px;
+
+  ion-icon {
+    flex-shrink: 0;
+    color: #ea580c;
+    font-size: 17px;
+  }
+}
+
+.fond-grille {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 12px 16px calc(var(--ion-safe-area-bottom, 0px) + 16px);
+  overflow-y: auto;
+}
+
+.fond-tuile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  aspect-ratio: 9 / 15;
+  padding: 8px;
+  overflow: hidden;
+  font-family: inherit;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
+
+  &:active {
+    transform: scale(.96);
+  }
+}
+
+.fond-tuile-libelle {
+  padding: 3px 9px;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, .35);
+  border-radius: 999px;
+}
+
+.fond-tuile-photo {
+  justify-content: center;
+  color: #ea580c;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--app-surface, #fff);
+  border: 2px dashed rgba(234, 88, 12, .5);
+
+  ion-icon {
+    font-size: 30px;
+  }
+
+  ion-spinner {
+    color: #ea580c;
+  }
+}
+
+// Vignette du fond par défaut : crème + motif de croix
+.fond-tuile-defaut {
+  background-color: var(--conv-fond);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='46' viewBox='0 0 46 46' fill='none' stroke='%23ea580c' stroke-opacity='.25' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 6v14M5 12h14M34 26v14M27 32h14'/%3E%3C/svg%3E");
+}
+
+// Aperçu : l'écran de conversation avec deux bulles d'exemple
+.fond-apercu-ecran {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--conv-fond);
+}
+
+.fond-apercu-fil {
+  min-height: 100%;
+  padding-top: calc(var(--ion-safe-area-top, 0px) + 40px);
+
+  // Le motif par défaut reste dans le cadre de l'aperçu
+  &::before {
+    position: absolute;
+  }
+}
+
+.fond-apercu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px calc(var(--ion-safe-area-bottom, 0px) + 14px);
+  background: var(--app-surface, #fff);
+  border-top: 1px solid var(--app-border);
+}
+
+.fond-bouton {
+  width: 100%;
+  padding: 13px;
+  color: #ea580c;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  background: rgba(234, 88, 12, .08);
+  border: none;
+  border-radius: 14px;
+
+  &.principal {
+    color: #fff;
+    background: linear-gradient(135deg, #f26b1d, #c2410c);
+  }
+
+  &.discret {
+    color: var(--app-text-secondary);
+    background: transparent;
+  }
+}

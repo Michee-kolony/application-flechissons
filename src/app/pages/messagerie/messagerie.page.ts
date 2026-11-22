@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { NavController } from '@ionic/angular';
+import { ActionSheetController, AlertController, NavController, ToastController } from '@ionic/angular';
 import { Subscription, timer } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { ContactEglise, Conversation, MessagerieService } from '../../services/messagerie.service';
@@ -34,7 +34,10 @@ export class MessageriePage implements OnDestroy {
   constructor(
     private messagerie: MessagerieService,
     private auth: AuthService,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private actionSheetCtrl: ActionSheetController,
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController
   ) {
     // Connexion depuis la fenêtre de connexion : la page se met à jour seule
     this.userSub = this.auth.user$.subscribe(user => {
@@ -164,6 +167,83 @@ export class MessageriePage implements OnDestroy {
       return;
     }
     void this.navCtrl.navigateBack('/tabs/tab1');
+  }
+
+  // =====================================================
+  // APPUI LONG SUR UNE DISCUSSION : SUPPRIMER
+  // =====================================================
+
+  private appuiLong?: ReturnType<typeof setTimeout>;
+  /** Évite d'ouvrir la discussion au relâchement qui suit l'appui long */
+  private appuiLongDeclenche = false;
+
+  debutAppui(conversation: Conversation): void {
+    this.finAppui();
+    this.appuiLongDeclenche = false;
+    this.appuiLong = setTimeout(() => {
+      this.appuiLongDeclenche = true;
+      void this.menuDiscussion(conversation);
+    }, 500);
+  }
+
+  finAppui(): void {
+    if (this.appuiLong) {
+      clearTimeout(this.appuiLong);
+      this.appuiLong = undefined;
+    }
+  }
+
+  toucherDiscussion(conversation: Conversation): void {
+    if (this.appuiLongDeclenche) {
+      this.appuiLongDeclenche = false;
+      return;
+    }
+    this.ouvrirConversation(conversation);
+  }
+
+  /** Clic droit (version navigateur) : même menu que l'appui long */
+  menuDiscussionClic(conversation: Conversation): void {
+    void this.menuDiscussion(conversation);
+  }
+
+  private async menuDiscussion(conversation: Conversation): Promise<void> {
+    const feuille = await this.actionSheetCtrl.create({
+      header: conversation.interlocuteur?.nom || 'Discussion',
+      buttons: [
+        { text: 'Supprimer la discussion', icon: 'trash-outline', role: 'destructive', handler: () => void this.confirmerSuppression(conversation) },
+        { text: 'Annuler', role: 'cancel' }
+      ]
+    });
+    await feuille.present();
+  }
+
+  private async confirmerSuppression(conversation: Conversation): Promise<void> {
+    const nom = conversation.interlocuteur?.nom || 'votre interlocuteur';
+    const alerte = await this.alertCtrl.create({
+      header: 'Supprimer la discussion ?',
+      message: `Les messages et les photos de cette discussion disparaîtront de votre application. ${nom} garde sa copie jusqu'à l'effacement du 1er du mois.`,
+      buttons: [
+        { text: 'Annuler', role: 'cancel' },
+        { text: 'Supprimer', role: 'destructive', handler: () => this.supprimer(conversation) }
+      ]
+    });
+    await alerte.present();
+  }
+
+  private supprimer(conversation: Conversation): void {
+    const avant = this.conversations;
+    // Retrait immédiat de la liste ; remise en place si le serveur refuse
+    this.conversations = this.conversations.filter(c => c._id !== conversation._id);
+    this.messagerie.supprimer(conversation._id).subscribe({
+      next: () => {
+        this.messagerie.rafraichirNonLus();
+        void this.toastCtrl.create({ message: 'Discussion supprimée', duration: 1500, position: 'bottom' }).then(t => t.present());
+      },
+      error: () => {
+        this.conversations = avant;
+        void this.toastCtrl.create({ message: 'La discussion n’a pas pu être supprimée. Réessayez.', duration: 2500, position: 'bottom', color: 'danger' }).then(t => t.present());
+      }
+    });
   }
 
   ouvrirConversation(conversation: Conversation): void {

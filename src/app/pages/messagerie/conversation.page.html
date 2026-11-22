@@ -16,12 +16,23 @@
         {{ interlocuteur?.titre ? interlocuteur?.titre + ' · ' : '' }}conversation privée
       </span>
     </div>
+
+    <!-- Menu (fond d'écran) -->
+    <button class="conv-menu" (click)="menu()" aria-label="Plus d'options">
+      <ion-icon name="ellipsis-vertical"></ion-icon>
+    </button>
   </div>
 </ion-header>
 
 
-<ion-content class="conv-content" [scrollEvents]="true" (ionScroll)="surScroll()">
-  <main class="conv-fil">
+<ion-content
+  class="conv-content"
+  [scrollEvents]="true"
+  (ionScroll)="surScroll()"
+  [class.no-texture]="!!fondCss"
+  [class.fond-perso]="!!fondCss"
+  [ngStyle]="fondCss ? { '--conv-fond-perso': fondCss } : null">
+  <main class="conv-fil" [class.fond-perso]="!!fondCss">
 
     <!-- AVIS DE CONFIDENTIALITÉ (comme le bandeau de chiffrement de WhatsApp) -->
     <div class="conv-avis">
@@ -194,4 +205,70 @@
     <ion-icon name="close"></ion-icon>
   </button>
   <img [src]="visionneuse" alt="Photo" (click)="$event.stopPropagation()">
+</div>
+
+
+
+<!-- ============================================== -->
+<!-- CHOIX DU FOND D'ÉCRAN                           -->
+<!-- ============================================== -->
+<div *ngIf="choixFondOuvert && !apercuFond" class="fond-panneau" role="dialog" aria-label="Fond d'écran">
+  <div class="fond-panneau-haut">
+    <button class="conv-apercu-fermer" (click)="fermerChoixFond()" aria-label="Fermer">
+      <ion-icon name="close"></ion-icon>
+    </button>
+    <strong>Fond d'écran</strong>
+  </div>
+
+  <p class="fond-info">
+    <ion-icon name="phone-portrait-outline" aria-hidden="true"></ion-icon>
+    Votre fond reste sur ce téléphone : personne d'autre ne le voit.
+  </p>
+
+  <div class="fond-grille">
+    <!-- Photo de l'appareil -->
+    <button class="fond-tuile fond-tuile-photo" (click)="choisirPhotoFond()" [disabled]="preparationFond">
+      <ion-spinner *ngIf="preparationFond" name="crescent"></ion-spinner>
+      <ion-icon *ngIf="!preparationFond" name="images"></ion-icon>
+      <span>Mes photos</span>
+    </button>
+
+    <!-- Fond Fléchissons par défaut -->
+    <button class="fond-tuile fond-tuile-defaut" (click)="choisirDefaut()">
+      <span class="fond-tuile-libelle">Fléchissons</span>
+    </button>
+
+    <!-- Fonds prêts à l'emploi -->
+    <button
+      *ngFor="let p of presets"
+      class="fond-tuile"
+      [style.background]="p.css"
+      (click)="choisirPreset(p.id)">
+      <span class="fond-tuile-libelle">{{ p.libelle }}</span>
+    </button>
+  </div>
+
+  <input #choixFond type="file" accept="image/*" hidden (change)="surFondChoisi($event)">
+</div>
+
+
+<!-- APERÇU DU FOND AVANT DE L'APPLIQUER (comme WhatsApp) -->
+<div *ngIf="apercuFond" class="fond-apercu" role="dialog" aria-label="Aperçu du fond d'écran">
+  <div class="fond-apercu-ecran conv-content-apercu" [style.background]="apercuCss">
+    <div class="conv-fil fond-apercu-fil" [class.fond-perso]="!!apercuCss">
+      <div class="conv-jour"><span>Aperçu</span></div>
+      <div class="conv-ligne debut">
+        <div class="conv-bulle"><span class="conv-texte">Que la paix de Dieu soit avec vous 🙏</span></div>
+      </div>
+      <div class="conv-ligne moi debut">
+        <div class="conv-bulle"><span class="conv-texte">Amen, merci Pasteur !</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fond-apercu-actions">
+    <button class="fond-bouton principal" (click)="validerFond(false)">Pour cette conversation</button>
+    <button class="fond-bouton" (click)="validerFond(true)">Pour toutes mes conversations</button>
+    <button class="fond-bouton discret" (click)="annulerApercuFond()">Annuler</button>
+  </div>
 </div>
