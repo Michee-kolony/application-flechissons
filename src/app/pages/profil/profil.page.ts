@@ -5,6 +5,7 @@ import { NavController } from '@ionic/angular';
 import { ThemeMode, ThemeService } from '../../services/theme.service';
 import { AuthService } from '../../services/auth.service';
 import { LocalisationService } from '../../services/localisation.service';
+import { MessagerieService } from '../../services/messagerie.service';
 import { Subscription } from 'rxjs';
 import * as L from 'leaflet';
 
@@ -69,6 +70,8 @@ export class ProfilPage implements OnInit, OnDestroy {
   isLoading = false;
 
   private userSub?: Subscription;
+  private messagesSub?: Subscription;
+  messagesNonLus = 0;
 
   // =====================================================
   // ÉGLISE (CARTE + ITINÉRAIRE)
@@ -108,7 +111,8 @@ export class ProfilPage implements OnInit, OnDestroy {
     public themeService: ThemeService,
     private authService: AuthService,
     private http: HttpClient,
-    private localisationService: LocalisationService
+    private localisationService: LocalisationService,
+    private messagerieService: MessagerieService
   ) {}
 
   // =====================================================
@@ -120,6 +124,7 @@ export class ProfilPage implements OnInit, OnDestroy {
     this.userSub = this.authService.user$.subscribe(user => {
       this.user = { ...(user as User | null) };
     });
+    this.messagesSub = this.messagerieService.nonLus$.subscribe(n => this.messagesNonLus = n);
   }
 
   ionViewWillEnter() {
@@ -135,6 +140,7 @@ export class ProfilPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.userSub?.unsubscribe();
+    this.messagesSub?.unsubscribe();
     this.detruireCarte();
   }
 

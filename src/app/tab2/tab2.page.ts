@@ -109,6 +109,7 @@ export class Tab2Page implements OnInit, OnDestroy {
 
   // Audio demandé par une notification (/tabs/tab2?audio=<id>)
   private audioDemande: string | null = null;
+  private premiereEntreeFaite = false;
   private routeSub?: Subscription;
   private notificationsSub?: Subscription;
 
@@ -154,6 +155,13 @@ export class Tab2Page implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
+    // L'onglet reste en mémoire : on recharge la liste à chaque retour
+    // (sinon un audio supprimé depuis l'admin resterait affiché)
+    if (this.premiereEntreeFaite) {
+      this.fetchAudios();
+    }
+    this.premiereEntreeFaite = true;
+
     // Les durées ne sont lues qu'une fois la page affichée, sans bloquer la navigation
     if (!this.durationsStarted) {
       this.durationsStarted = true;
@@ -196,6 +204,10 @@ export class Tab2Page implements OnInit, OnDestroy {
     );
     if (!this.currentAudio) {
       this.featuredAudio = this.audios[0] ?? null;
+    } else if (this.featuredAudio && this.featuredAudio !== this.currentAudio
+      && !this.audios.some(a => a._id === this.featuredAudio!._id)) {
+      // L'audio « à la une » a été supprimé (celui en lecture continue jusqu'au bout)
+      this.featuredAudio = this.currentAudio;
     }
     this.afficherAudioDemande();
     this.extractCategories();
@@ -230,7 +242,9 @@ export class Tab2Page implements OnInit, OnDestroy {
     this.isLoading = this.audios.length === 0;
     this.http.get<AudioResponse>(this.urlAudio).subscribe({
       next: (response) => {
-        if (response.success && response.audios.length > 0) {
+        // Une liste vide est une vraie réponse (tous les audios ont été supprimés) :
+        // elle doit remplacer l'affichage et le cache, sinon les anciens audios restent.
+        if (response.success && Array.isArray(response.audios)) {
           this.appliquerAudios(response.audios);
           this.sauverCache(response.audios);
         }
@@ -272,7 +286,7 @@ export class Tab2Page implements OnInit, OnDestroy {
 
     this.http.get<AudioResponse>(this.urlAudio).subscribe({
       next: (response) => {
-        if (response.success && response.audios.length > 0) {
+        if (response.success && Array.isArray(response.audios)) {
           this.appliquerAudios(response.audios);
           this.sauverCache(response.audios);
         }

@@ -85,7 +85,8 @@
         </button>
       </div>
 
-      <section class="featured-player">
+      <!-- Pas d'audio fictif quand la liste est vide -->
+      <section class="featured-player" *ngIf="featuredAudio">
         <img [src]="featuredAudio ? featuredAudio.photoCouverture : 'https://picsum.photos/800/500?random=1'" [alt]="featuredAudio ? featuredAudio.nom : 'Audio'">
         <div class="featured-player__shade"></div>
         <div class="featured-player__content">

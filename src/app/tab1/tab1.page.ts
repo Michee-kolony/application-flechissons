@@ -17,6 +17,7 @@ import Splide from '@splidejs/splide';
 import { ArticleEvent, ArticleRealtimeService } from '../services/article-realtime.service';
 import { AuthService } from '../services/auth.service';
 import { NotificationService } from '../services/notification.service';
+import { MessagerieService } from '../services/messagerie.service';
 import { BibleService, VersetDuJour } from '../services/bible';
 
 interface Article {
@@ -149,6 +150,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   chargementVerset = true;
   erreurVerset = false;
   notificationsNonLues = 0;
+  messagesNonLus = 0;
   private versetEnCours = false;
 
   constructor(
@@ -158,7 +160,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     private authService: AuthService,
     private host: ElementRef<HTMLElement>,
     private bibleService: BibleService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private messagerieService: MessagerieService
   ) {}
 
   ngOnInit(): void {
@@ -167,6 +170,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
 
     // Badge de la cloche (notifications pas encore vues)
     this.realtimeSub.add(this.notificationService.nonLues$.subscribe(n => this.notificationsNonLues = n));
+    this.realtimeSub.add(this.messagerieService.nonLus$.subscribe(n => this.messagesNonLus = n));
 
     this.chargerArticles();
     this.chargerVersetDuJour();
@@ -477,6 +481,10 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
         console.error('Impossible de copier le verset :', error);
       }
     }
+  }
+
+  goToMessagerie(): void {
+    this.router.navigate(['/messagerie']);
   }
 
   goToNotifications(): void {

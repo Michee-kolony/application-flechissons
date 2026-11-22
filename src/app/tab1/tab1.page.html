@@ -7,6 +7,12 @@
         <h1>Accueil</h1>
       </div>
       <div class="topbar-actions mt-2">
+        <button class="header-icon notif-bell" (click)="goToMessagerie()" aria-label="Messages">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+          <span *ngIf="messagesNonLus > 0" class="notif-badge">
+            {{ messagesNonLus > 9 ? '9+' : messagesNonLus }}
+          </span>
+        </button>
         <button class="header-icon notif-bell" (click)="goToNotifications()" aria-label="Notifications">
           <ion-icon name="notifications-outline"></ion-icon>
           <span *ngIf="notificationsNonLues > 0" class="notif-badge">

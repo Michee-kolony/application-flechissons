@@ -142,6 +142,19 @@
     <!-- ================================================= -->
     <div class="menu-options">
 
+      <!-- Messagerie : écrire au pasteur et aux responsables -->
+      <div [routerLink]="['/messagerie']" class="menu-card">
+        <div class="menu-card-icon">
+          <ion-icon name="chatbubbles-outline"></ion-icon>
+        </div>
+        <div class="menu-card-content">
+          <h3>Écrire au pasteur</h3>
+          <p>Messages privés avec les responsables</p>
+        </div>
+        <span *ngIf="messagesNonLus > 0" class="menu-card-badge">{{ messagesNonLus > 9 ? '9+' : messagesNonLus }}</span>
+        <ion-icon name="chevron-forward-outline" class="menu-card-arrow"></ion-icon>
+      </div>
+
       <!-- Carte 1 : Lire la Bible -->
       <div [routerLink]="['/bible']" class="menu-card">
         <div class="menu-card-icon">

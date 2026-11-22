@@ -6,6 +6,7 @@ import { Capacitor } from '@capacitor/core';
 import { PushNotifications, PushNotificationSchema } from '@capacitor/push-notifications';
 import { AuthService } from './auth.service';
 import { NotificationService } from './notification.service';
+import { MessagerieService } from './messagerie.service';
 
 const API_URL = 'https://flechissons.com';
 
@@ -40,7 +41,8 @@ export class PushNotificationService {
     private toastCtrl: ToastController,
     private zone: NgZone,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private messagerieService: MessagerieService
   ) {
     this.http = new HttpClient(httpBackend);
   }
@@ -128,10 +130,18 @@ export class PushNotificationService {
 
   /** App ouverte : le système n'affiche pas la notification, on montre un toast */
   private async afficherEnPremierPlan(notification: PushNotificationSchema): Promise<void> {
-    // Nouvelle notification : met à jour le badge de la cloche
-    this.notificationService.rafraichirCompteur();
-
     const route = notification.data?.route;
+
+    // Message privé : badge de la messagerie, et pas de bandeau si la conversation est déjà à l'écran
+    if (notification.data?.type === 'message') {
+      this.messagerieService.rafraichirNonLus();
+      if (route && this.router.url.split('?')[0] === route) {
+        return;
+      }
+    } else {
+      // Nouvelle notification : met à jour le badge de la cloche
+      this.notificationService.rafraichirCompteur();
+    }
 
     const toast = await this.toastCtrl.create({
       header: notification.title,

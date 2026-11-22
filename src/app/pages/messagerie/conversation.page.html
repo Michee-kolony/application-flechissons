@@ -1,0 +1,80 @@
+<ion-header class="ion-no-border conv-header">
+  <ion-toolbar>
+    <div class="conv-toolbar">
+      <ion-back-button defaultHref="/messagerie" text="" aria-label="Retour"></ion-back-button>
+      <div class="conv-avatar">
+        <img *ngIf="interlocuteur?.photo; else lettres" [src]="interlocuteur?.photo" alt="">
+        <ng-template #lettres>{{ initiales(interlocuteur?.nom) }}</ng-template>
+      </div>
+      <div class="conv-identite">
+        <strong>{{ interlocuteur?.nom || (indisponible ? 'Contact indisponible' : '…') }}</strong>
+        <span>{{ interlocuteur?.titre }}</span>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <main class="conv-fil">
+
+    <div *ngIf="chargement" class="conv-centre">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+
+    <div *ngIf="!chargement && !complet" class="conv-centre">
+      <button class="conv-lien" (click)="chargerAnciens()" [disabled]="chargementAnciens">
+        {{ chargementAnciens ? 'Chargement…' : 'Afficher les messages précédents' }}
+      </button>
+    </div>
+
+    <div *ngIf="!chargement && !messages.length && !erreur" class="conv-intro">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      <p>
+        Écrivez votre message à {{ interlocuteur?.nom || 'votre interlocuteur' }}.
+        Il est privé : seule cette personne pourra le lire.
+      </p>
+    </div>
+
+    <ng-container *ngFor="let m of messages; let i = index; trackBy: trackById">
+      <div *ngIf="nouveauJour(i)" class="conv-jour"><span>{{ libelleJour(m.createdAt) }}</span></div>
+
+      <div class="conv-ligne" [class.moi]="m.auteur === 'utilisateur'">
+        <div class="conv-bulle">
+          <span class="conv-texte">{{ m.texte }}</span>
+          <span class="conv-meta">
+            {{ heure(m.createdAt) }}
+            <ion-icon
+              *ngIf="m.auteur === 'utilisateur'"
+              [name]="estLu(m) ? 'checkmark-done-outline' : 'checkmark-outline'"
+              [attr.aria-label]="estLu(m) ? 'Vu' : 'Envoyé'"></ion-icon>
+          </span>
+        </div>
+      </div>
+    </ng-container>
+  </main>
+</ion-content>
+
+<ion-footer class="ion-no-border conv-footer">
+  <p *ngIf="erreur" class="conv-erreur">{{ erreur }}</p>
+
+  <div *ngIf="!indisponible; else indispo" class="conv-saisie">
+    <textarea
+      [(ngModel)]="texte"
+      rows="1"
+      maxlength="2000"
+      placeholder="Votre message…"
+      aria-label="Votre message"></textarea>
+    <button
+      class="conv-envoyer"
+      (click)="envoyer()"
+      [disabled]="!texte.trim() || envoiEnCours"
+      aria-label="Envoyer">
+      <ion-spinner *ngIf="envoiEnCours" name="crescent"></ion-spinner>
+      <ion-icon *ngIf="!envoiEnCours" name="send"></ion-icon>
+    </button>
+  </div>
+
+  <ng-template #indispo>
+    <p class="conv-indispo">Ce contact n'est plus disponible : vous ne pouvez plus lui écrire.</p>
+  </ng-template>
+</ion-footer>

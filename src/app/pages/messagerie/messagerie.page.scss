@@ -1,0 +1,294 @@
+// =====================================================
+// HEADER (même style que les notifications)
+// =====================================================
+
+ion-content,
+.msg-header ion-toolbar {
+  --background: var(--app-bg);
+}
+
+.msg-header ion-toolbar {
+  --border-color: transparent;
+  --min-height: auto;
+  padding: calc(var(--ion-safe-area-top, 0px) + 10px) 12px 10px;
+}
+
+.msg-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  ion-back-button {
+    --color: var(--app-text);
+  }
+
+  h1 {
+    margin: 2px 0 0;
+    color: var(--app-text);
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -.02em;
+  }
+}
+
+.kicker {
+  color: #ea580c;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .15em;
+}
+
+// =====================================================
+// LISTES
+// =====================================================
+
+.msg-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 4px 16px 40px;
+}
+
+.msg-section {
+  margin: 18px 4px 10px;
+  color: var(--app-text-secondary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.msg-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  font-family: inherit;
+  color: var(--app-text);
+  background: var(--app-surface, #fff);
+  border: 1px solid var(--app-border);
+  border-radius: 18px;
+  transition: transform .15s ease;
+
+  &:active {
+    transform: scale(.98);
+  }
+
+  &.non-lu {
+    border-color: rgba(249, 115, 22, .45);
+    background: rgba(249, 115, 22, .06);
+
+    strong,
+    p {
+      font-weight: 800;
+      color: var(--app-text);
+    }
+  }
+
+  ion-spinner {
+    width: 20px;
+    height: 20px;
+    color: #f97316;
+  }
+}
+
+.msg-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  border-radius: 50%;
+  color: #ea580c;
+  font-size: 15px;
+  font-weight: 800;
+  background: rgba(249, 115, 22, .14);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.msg-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+
+  strong {
+    font-size: 15px;
+    font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  p {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    color: var(--app-text-secondary);
+    font-size: 13px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.msg-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.msg-heure {
+  flex-shrink: 0;
+  color: var(--app-text-secondary);
+  font-size: 11px;
+}
+
+.msg-vous {
+  font-weight: 600;
+}
+
+.msg-titre {
+  color: #ea580c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.msg-texte .msg-bio {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.msg-action {
+  flex-shrink: 0;
+  font-size: 22px;
+  color: #f97316;
+}
+
+.msg-badge {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  background: #f97316;
+  border-radius: 999px;
+}
+
+.msg-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 22px 8px 0;
+  color: var(--app-text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+// =====================================================
+// VIDE / ERREUR / NON CONNECTÉ
+// =====================================================
+
+.msg-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 70px 24px 0;
+  text-align: center;
+
+  ion-icon {
+    font-size: 54px;
+    color: #f97316;
+    opacity: .8;
+  }
+
+  h2 {
+    margin: 16px 0 6px;
+    color: var(--app-text);
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: var(--app-text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.msg-btn {
+  margin-top: 18px;
+  padding: 10px 22px;
+  color: #fff;
+  font-weight: 700;
+  font-family: inherit;
+  background: #f97316;
+  border: none;
+  border-radius: 999px;
+}
+
+// =====================================================
+// SKELETON
+// =====================================================
+
+.skeleton {
+  background: linear-gradient(90deg, var(--app-border) 25%, var(--app-surface-alt, #f3f4f6) 50%, var(--app-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeleton-avatar {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+}
+
+.skeleton-ligne {
+  height: 12px;
+  border-radius: 6px;
+  width: 85%;
+
+  &.courte {
+    width: 55%;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .msg-page {
+    max-width: none;
+  }
+}

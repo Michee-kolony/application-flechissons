@@ -1,0 +1,120 @@
+<ion-header class="ion-no-border msg-header">
+  <ion-toolbar>
+    <div class="msg-toolbar">
+      <ion-back-button defaultHref="/tabs/tab1" text="" aria-label="Retour"></ion-back-button>
+      <div>
+        <span class="kicker">ÉGLISE</span>
+        <h1>Messages</h1>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="charger($event)" [disabled]="!connecte">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="msg-page">
+
+    <!-- NON CONNECTÉ -->
+    <div *ngIf="!connecte" class="msg-vide">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      <h2>Écrivez au pasteur</h2>
+      <p>Connectez-vous pour échanger en privé avec le pasteur et les responsables de l'église.</p>
+      <button class="msg-btn" (click)="seConnecter()">Se connecter</button>
+    </div>
+
+    <ng-container *ngIf="connecte">
+
+      <!-- CHARGEMENT -->
+      <div *ngIf="chargement" class="msg-liste">
+        <div *ngFor="let i of [1,2,3]" class="msg-item">
+          <div class="skeleton skeleton-avatar"></div>
+          <div class="msg-texte">
+            <div class="skeleton skeleton-ligne"></div>
+            <div class="skeleton skeleton-ligne courte"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ERREUR -->
+      <div *ngIf="!chargement && erreur && !conversations.length && !contacts.length" class="msg-vide">
+        <ion-icon name="cloud-offline-outline"></ion-icon>
+        <h2>Connexion impossible</h2>
+        <p>Vérifiez votre réseau puis réessayez.</p>
+        <button class="msg-btn" (click)="charger()">Réessayer</button>
+      </div>
+
+      <ng-container *ngIf="!chargement">
+
+        <!-- CONVERSATIONS -->
+        <section *ngIf="conversations.length">
+          <h2 class="msg-section">Conversations</h2>
+          <div class="msg-liste">
+            <button
+              *ngFor="let c of conversations; trackBy: trackById"
+              class="msg-item"
+              [class.non-lu]="c.nonLus > 0"
+              (click)="ouvrirConversation(c)">
+
+              <div class="msg-avatar">
+                <img *ngIf="c.interlocuteur?.photo; else lettres" [src]="c.interlocuteur?.photo" alt="">
+                <ng-template #lettres>{{ initiales(c.interlocuteur?.nom) }}</ng-template>
+              </div>
+
+              <div class="msg-texte">
+                <div class="msg-ligne">
+                  <strong>{{ c.interlocuteur?.nom || 'Contact indisponible' }}</strong>
+                  <span class="msg-heure">{{ heure(c.dernierMessage?.date) }}</span>
+                </div>
+                <div class="msg-ligne">
+                  <p>
+                    <span *ngIf="c.dernierMessage?.auteur === 'utilisateur'" class="msg-vous">Vous : </span>{{ c.dernierMessage?.texte }}
+                  </p>
+                  <span *ngIf="c.nonLus > 0" class="msg-badge">{{ c.nonLus > 9 ? '9+' : c.nonLus }}</span>
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <!-- CONTACTS -->
+        <section *ngIf="contacts.length">
+          <h2 class="msg-section">Écrire à</h2>
+          <div class="msg-liste">
+            <button
+              *ngFor="let contact of contacts; trackBy: trackById"
+              class="msg-item"
+              (click)="ecrireA(contact)"
+              [disabled]="!!ouvertureEnCours">
+
+              <div class="msg-avatar">
+                <img *ngIf="contact.photo; else lettresContact" [src]="contact.photo" alt="">
+                <ng-template #lettresContact>{{ initiales(contact.nom) }}</ng-template>
+              </div>
+
+              <div class="msg-texte">
+                <strong>{{ contact.nom }}</strong>
+                <span class="msg-titre">{{ contact.titre }}</span>
+                <p *ngIf="contact.bio" class="msg-bio">{{ contact.bio }}</p>
+              </div>
+
+              <ion-spinner *ngIf="ouvertureEnCours === contact.id" name="crescent"></ion-spinner>
+              <ion-icon *ngIf="ouvertureEnCours !== contact.id" name="chatbubble-ellipses-outline" class="msg-action"></ion-icon>
+            </button>
+          </div>
+        </section>
+
+        <p *ngIf="!erreur && !contacts.length && !conversations.length" class="msg-info">
+          Aucun responsable n'est disponible pour le moment.
+        </p>
+
+        <p class="msg-info">
+          <ion-icon name="lock-closed-outline"></ion-icon>
+          Vos messages sont privés : seule la personne à qui vous écrivez peut les lire.
+        </p>
+      </ng-container>
+    </ng-container>
+  </main>
+</ion-content>

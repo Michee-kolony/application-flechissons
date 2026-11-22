@@ -67,6 +67,11 @@ const routes: Routes = [
   {
     path: 'notifications',
     loadChildren: () => import('./pages/notifications/notifications.module').then( m => m.NotificationsPageModule)
+  },
+  {
+    // Messagerie privée avec le pasteur et les administrateurs
+    path: 'messagerie',
+    loadChildren: () => import('./pages/messagerie/messagerie.module').then( m => m.MessageriePageModule)
   }
 ];
 @NgModule({
